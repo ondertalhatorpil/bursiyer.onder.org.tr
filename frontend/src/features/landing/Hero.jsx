@@ -91,14 +91,7 @@ export default function Hero({ program }) {
               </div>
             )}
 
-            <div className="anim-rise mt-10 flex items-center gap-6 border-t border-slate-100 pt-6 text-xs text-slate-500" style={d(900)}>
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="size-4 shrink-0 text-emerald-600" aria-hidden /> KVKK uyumlu
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock className="size-4 shrink-0 text-slate-400" aria-hidden /> Yaklaşık 10 dakika
-              </span>
-            </div>
+          
           </div>
         </div>
       </div>

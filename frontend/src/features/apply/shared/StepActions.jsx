@@ -1,18 +1,28 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
-import { Button, CardFooter } from '../../../components/ui';
+import { Link } from 'react-router';
+import { Button } from '../../../components/ui';
 import { STEP_ROUTES } from '../../../config';
 
 /**
  * Adım alt çubuğu: Geri + ileri/kaydet.
+ * Mobilde ekranın altına sabitlenir; geniş ekranda içeriğin altında durur.
  * onNext verilirse buton onu çalıştırır; yoksa `form` id'li formu gönderir.
  */
 export default function StepActions({ step, nextDisabled, loading, nextLabel = 'Kaydet ve Devam Et', onNext, form, hint }) {
   const back = STEP_ROUTES[step - 1];
   return (
-    <CardFooter>
-      {back ? <Button to={back} variant="ghost" icon={ArrowLeft}>Geri</Button> : <span />}
-      <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
-        {hint && <span className="text-center text-sm text-slate-500 sm:text-right">{hint}</span>}
+    <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-6 lg:backdrop-blur-none">
+      {hint && <p className="mb-3 text-center text-sm text-slate-500 lg:text-right">{hint}</p>}
+      <div className="flex items-center gap-4">
+        {back && (
+          <Link
+            to={back}
+            className="inline-flex shrink-0 items-center gap-1.5 text-sm font-semibold text-slate-600 transition-colors hover:text-brand-700"
+          >
+            <ArrowLeft className="size-4" aria-hidden />
+            Geri
+          </Link>
+        )}
         <Button
           type={onNext ? 'button' : 'submit'}
           form={form}
@@ -21,10 +31,11 @@ export default function StepActions({ step, nextDisabled, loading, nextLabel = '
           disabled={nextDisabled}
           iconRight={ArrowRight}
           size="lg"
+          className="ml-auto w-full sm:w-auto"
         >
           {nextLabel}
         </Button>
       </div>
-    </CardFooter>
+    </div>
   );
 }

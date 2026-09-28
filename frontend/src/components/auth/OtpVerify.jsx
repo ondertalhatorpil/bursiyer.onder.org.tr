@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeft, MessageSquareText, RotateCw } from 'lucide-react';
 import OtpInput from './OtpInput';
 import { Alert, Button } from '../ui';
 import { useCountdown } from '../../hooks/useCountdown';
@@ -66,42 +65,56 @@ export default function OtpVerify({ info, onVerify, onResend, onBack, submitLabe
     }
   };
 
+  const textBtn = 'text-sm font-semibold text-brand-700 underline-offset-4 hover:underline disabled:cursor-not-allowed disabled:text-slate-400 disabled:no-underline';
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-start gap-3 rounded-xl bg-brand-50 p-4 text-sm text-brand-900">
-        <MessageSquareText className="mt-0.5 size-5 shrink-0 text-brand-600" aria-hidden />
-        <p>
-          <strong className="tabular-nums">{current.maskedPhone}</strong> numaralı telefona 6 haneli bir doğrulama kodu gönderdik.
-        </p>
-      </div>
+    <div className="space-y-7">
+      <p className="text-sm leading-relaxed text-slate-600">
+        <strong className="font-semibold tabular-nums text-slate-900">{current.maskedPhone}</strong> numaralı
+        telefona 6 haneli bir doğrulama kodu gönderdik.
+      </p>
 
       {children}
 
-      <OtpInput value={code} onChange={setCode} disabled={verifying || expired} invalid={!!error} autoFocus />
-
-      <p className="text-center text-sm text-slate-600" aria-live="polite">
-        {expired ? (
-          <span className="font-semibold text-accent-600">Kodun süresi doldu. Lütfen yeni kod isteyin.</span>
-        ) : (
-          <>Kalan süre: <span className="font-bold tabular-nums text-brand-800">{mmss(expiresLeft)}</span></>
-        )}
-      </p>
+      <div className="space-y-3">
+        <OtpInput value={code} onChange={setCode} disabled={verifying || expired} invalid={!!error} autoFocus />
+        <p className="text-center text-sm" aria-live="polite">
+          {expired ? (
+            <span className="font-semibold text-accent-600">Kodun süresi doldu, yeni kod isteyin.</span>
+          ) : (
+            <span className="text-slate-500">
+              Kod <span className="font-semibold tabular-nums text-slate-900">{mmss(expiresLeft)}</span> içinde geçerliliğini yitirecek
+            </span>
+          )}
+        </p>
+      </div>
 
       {error && <Alert variant="error">{error}</Alert>}
       {notice && !error && <Alert variant="success">{notice}</Alert>}
 
-      <div className="flex flex-col gap-3">
-        <Button size="lg" loading={verifying} disabled={code.length !== 6 || expired || !canSubmit} onClick={() => verify()}>
-          {submitLabel}
-        </Button>
-        <div className="flex flex-col-reverse items-center justify-between gap-2 sm:flex-row">
-          {onBack ? (
-            <Button variant="ghost" size="sm" icon={ArrowLeft} onClick={onBack}>Bilgileri düzenle</Button>
-          ) : <span />}
-          <Button variant="ghost" size="sm" icon={RotateCw} loading={resending} disabled={resendLeft > 0} onClick={resend}>
-            {resendLeft > 0 ? `Tekrar gönder (${resendLeft} sn)` : 'Kodu tekrar gönder'}
-          </Button>
-        </div>
+      <Button
+        size="lg"
+        className="w-full"
+        loading={verifying}
+        disabled={code.length !== 6 || expired || !canSubmit}
+        onClick={() => verify()}
+      >
+        {submitLabel}
+      </Button>
+
+      <div className="flex flex-col-reverse items-center gap-4 border-t border-slate-200 pt-6 sm:flex-row sm:justify-between">
+        {onBack ? (
+          <button type="button" onClick={onBack} className={textBtn}>
+            Bilgileri düzenle
+          </button>
+        ) : <span />}
+        <button type="button" onClick={resend} disabled={resendLeft > 0 || resending} className={textBtn}>
+          {resending
+            ? 'Gönderiliyor…'
+            : resendLeft > 0
+              ? <>Tekrar gönder <span className="tabular-nums">({resendLeft} sn)</span></>
+              : 'Kodu tekrar gönder'}
+        </button>
       </div>
     </div>
   );

@@ -1,38 +1,20 @@
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { ArrowRight, Fingerprint, ScrollText, Smartphone } from 'lucide-react';
-import { Alert, Button, Card, CardBody, Field, MaskedInput, MASKS, TextInput } from '../../components/ui';
+import { ArrowRight } from 'lucide-react';
+import { Alert, Button, Field, MaskedInput, MASKS, TextInput } from '../../components/ui';
 import { ConsentCheckbox } from '../../components/auth';
 import { applyApiErrors } from '../../lib/form-errors';
 import { ageFrom, isYkn } from '../../lib/validation';
 import { REGISTER_FIELDS, registerDefaults, registerSchema } from './schema';
 
-/** Rozetli ikon: marka renginde yumuşak zemin + ince çerçeve */
-function IconBadge({ icon: Icon }) {
-  return (
-    <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-50 to-brand-100 text-brand-700 shadow-sm ring-1 ring-inset ring-brand-200/70">
-      <Icon className="size-[18px]" strokeWidth={1.75} aria-hidden />
-    </span>
-  );
-}
-
-/** Kart içi bölüm başlığı: rozetli ikon + başlık + kısa açıklama */
-function SectionHeading({ icon, title, note }) {
-  return (
-    <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-      <IconBadge icon={icon} />
-      <div className="min-w-0">
-        <h2 className="text-[15px] font-bold text-slate-900">{title}</h2>
-        {note && <p className="text-xs text-slate-500">{note}</p>}
-      </div>
-    </div>
-  );
-}
-
-function Section({ icon, title, note, children }) {
+/** Bölüm başlığı: küçük yazı + yanında ince çizgi */
+function Section({ title, children }) {
   return (
     <section className="space-y-5">
-      <SectionHeading icon={icon} title={title} note={note} />
+      <div className="flex items-center gap-4">
+        <h2 className="shrink-0 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{title}</h2>
+        <span className="h-px flex-1 bg-slate-200" aria-hidden />
+      </div>
       {children}
     </section>
   );
@@ -40,8 +22,8 @@ function Section({ icon, title, note, children }) {
 
 /**
  * Adım 1: kişisel bilgiler + KVKK onayları.
- * Geniş ekranda yatay düzen: solda bilgiler (iki bölüm), sağda onaylar ve gönder (sabit panel).
- * onSubmit(values) backend'e gönderir; hata fırlatırsa alan hataları forma yazılır.
+ * Mobil: tek sütun, gönder butonu ekranın altında sabit.
+ * Geniş ekran: solda bilgiler, sağda onaylar + gönder (kaydırırken sabit).
  */
 export default function PersonalInfoForm({ defaultValues, onSubmit }) {
   const {
@@ -69,77 +51,78 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
     <form
       onSubmit={handleSubmit(submit)}
       noValidate
-      className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start"
+      className="grid grid-cols-1 gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-14"
     >
       {/* Sol: kişisel bilgiler */}
-      <Card>
-        <CardBody className="space-y-8">
-          {errors.root && <Alert variant="error">{errors.root.message}</Alert>}
+      <div className="min-w-0 space-y-10">
+        {errors.root && <Alert variant="error">{errors.root.message}</Alert>}
 
-          <Section
-            icon={Fingerprint}
-            title="Kimlik bilgileri"
-            note="Kimlik kartınızdaki gibi yazın; ikinci adınız varsa ekleyin."
-          >
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Adı" htmlFor="firstName" required error={errors.firstName?.message}>
-                <TextInput id="firstName" autoComplete="given-name" invalid={!!errors.firstName} {...register('firstName')} />
+        <Section title="Kimlik bilgileri">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field label="Adı" htmlFor="firstName" required error={errors.firstName?.message}>
+              <TextInput id="firstName" autoComplete="given-name" className="text-base" invalid={!!errors.firstName} {...register('firstName')} />
+            </Field>
+            <Field label="Soyadı" htmlFor="lastName" required error={errors.lastName?.message}>
+              <TextInput id="lastName" autoComplete="family-name" className="text-base" invalid={!!errors.lastName} {...register('lastName')} />
+            </Field>
+            <Field
+              label="T.C. Kimlik No / YKN"
+              htmlFor="idNumber"
+              required
+              error={errors.idNumber?.message}
+              hint="Uluslararası öğrenciler 99 ile başlayan numarayı yazar"
+            >
+              <Controller control={control} name="idNumber" render={({ field }) => (
+                <MaskedInput id="idNumber" mask={MASKS.idNumber} className="text-base" invalid={!!errors.idNumber} {...field} />
+              )} />
+            </Field>
+            <Field label="Doğum Tarihi" htmlFor="birthDate" required error={errors.birthDate?.message} hint="GG/AA/YYYY">
+              <Controller control={control} name="birthDate" render={({ field }) => (
+                <MaskedInput id="birthDate" mask={MASKS.date} autoComplete="bday" className="text-base" invalid={!!errors.birthDate} {...field} />
+              )} />
+            </Field>
+            {foreign && (
+              <Field label="Uyruk" htmlFor="nationality" required error={errors.nationality?.message} className="sm:col-span-2">
+                <TextInput id="nationality" placeholder="Örn. Azerbaycan" className="text-base" invalid={!!errors.nationality} {...register('nationality')} />
               </Field>
-              <Field label="Soyadı" htmlFor="lastName" required error={errors.lastName?.message}>
-                <TextInput id="lastName" autoComplete="family-name" invalid={!!errors.lastName} {...register('lastName')} />
-              </Field>
-              <Field label="T.C. Kimlik No / Yabancı Kimlik No" htmlFor="idNumber" required error={errors.idNumber?.message}>
-                <Controller control={control} name="idNumber" render={({ field }) => (
-                  <MaskedInput id="idNumber" mask={MASKS.idNumber} invalid={!!errors.idNumber} {...field} />
-                )} />
-              </Field>
-              <Field label="Doğum Tarihi" htmlFor="birthDate" required error={errors.birthDate?.message}>
-                <Controller control={control} name="birthDate" render={({ field }) => (
-                  <MaskedInput id="birthDate" mask={MASKS.date} autoComplete="bday" invalid={!!errors.birthDate} {...field} />
-                )} />
-              </Field>
-              {foreign && (
-                <Field label="Uyruk" htmlFor="nationality" required error={errors.nationality?.message} className="sm:col-span-2">
-                  <TextInput id="nationality" placeholder="Örn. Azerbaycan" invalid={!!errors.nationality} {...register('nationality')} />
-                </Field>
-              )}
-            </div>
-            <p className="text-xs text-slate-500">
-              Uluslararası öğrenciler 99 ile başlayan Yabancı Kimlik Numarasını yazar.
-            </p>
-          </Section>
-
-          <Section
-            icon={Smartphone}
-            title="İletişim bilgileri"
-            note="Doğrulama kodu cep telefonunuza gönderilir."
-          >
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <Field label="Cep Telefonu" htmlFor="phone" required error={errors.phone?.message}>
-                <Controller control={control} name="phone" render={({ field }) => (
-                  <MaskedInput id="phone" mask={MASKS.phone} autoComplete="tel-national" invalid={!!errors.phone} {...field} />
-                )} />
-              </Field>
-              <Field label="E-posta Adresi" htmlFor="email" required error={errors.email?.message}>
-                <TextInput id="email" type="email" autoComplete="email" placeholder="ornek@eposta.com" invalid={!!errors.email} {...register('email')} />
-              </Field>
-            </div>
-          </Section>
+            )}
+          </div>
 
           {age !== null && age < 18 && (
             <Alert variant="info" title="18 yaşından küçüksünüz">
               İlerleyen adımda veli / vasi bilgileriniz istenecek ve velinizin telefonuna bir onay kodu gönderilecek.
             </Alert>
           )}
-        </CardBody>
-      </Card>
+        </Section>
 
-      {/* Sağ: onaylar + gönder (geniş ekranda kaydırırken sabit kalır) */}
-      <Card className="lg:sticky lg:top-28">
-        <CardBody className="space-y-5">
-          <SectionHeading icon={ScrollText} title="Onaylar" note="Devam etmek için iki onay da gerekli." />
+        <Section title="İletişim bilgileri">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <Field label="Cep Telefonu" htmlFor="phone" required error={errors.phone?.message} hint="Doğrulama kodu bu numaraya gelir">
+              <Controller control={control} name="phone" render={({ field }) => (
+                <MaskedInput id="phone" mask={MASKS.phone} autoComplete="tel-national" className="text-base" invalid={!!errors.phone} {...field} />
+              )} />
+            </Field>
+            <Field label="E-posta Adresi" htmlFor="email" required error={errors.email?.message}>
+              <TextInput
+                id="email"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                autoCapitalize="none"
+                placeholder="ornek@eposta.com"
+                className="text-base"
+                invalid={!!errors.email}
+                {...register('email')}
+              />
+            </Field>
+          </div>
+        </Section>
+      </div>
 
-          <fieldset className="space-y-4">
+      {/* Sağ: onaylar + gönder */}
+      <div className="lg:sticky lg:top-28 lg:self-start lg:border-l lg:border-slate-200 lg:pl-10">
+        <Section title="Onaylar">
+          <fieldset className="space-y-5">
             <legend className="sr-only">Hukuki onaylar</legend>
             <ConsentCheckbox
               control={control}
@@ -160,13 +143,18 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
               kapsamında kişisel, iletişim ve eğitim bilgilerimin ÖNDER'in işbirliği yaptığı protokol kurumları, vakıflar ve sponsor kuruluşlarla paylaşılmasına açık rıza veriyorum.
             </ConsentCheckbox>
           </fieldset>
+        </Section>
 
+        {/* Gönder: mobilde ekranın altında sabit, geniş ekranda onayların altında */}
+        <div className="sticky bottom-0 -mx-4 mt-8 border-t border-slate-200 bg-white/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0 lg:backdrop-blur-none">
           <Button type="submit" size="lg" loading={isSubmitting} iconRight={ArrowRight} className="w-full">
             Doğrulama Kodu Gönder
           </Button>
-          <p className="text-center text-xs text-slate-500">Telefonunuza 6 haneli bir kod gönderilecek.</p>
-        </CardBody>
-      </Card>
+          <p className="mt-3 hidden text-center text-xs text-slate-500 lg:block">
+            Telefonunuza 6 haneli bir kod gönderilecek.
+          </p>
+        </div>
+      </div>
     </form>
   );
 }

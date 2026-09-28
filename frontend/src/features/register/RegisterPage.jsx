@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import Container from '../../components/layout/Container';
-import { Alert, Button, Card, CardBody, CardHeader, PageSpinner } from '../../components/ui';
+import { Alert, Button, PageSpinner } from '../../components/ui';
 import { OtpVerify } from '../../components/auth';
 import PersonalInfoForm from './PersonalInfoForm';
 import StepHeading from '../../components/layout/StepHeading';
@@ -35,6 +35,7 @@ export default function RegisterPage() {
     const res = await authApi.registerStart(formValues);
     setValues(formValues);
     setFlow(res);
+    window.scrollTo({ top: 0 });
   };
 
   const verify = async (code) => {
@@ -47,22 +48,19 @@ export default function RegisterPage() {
 
   return (
     <Container size="xl">
-      <div className={flow ? 'mx-auto max-w-xl' : 'mx-auto max-w-6xl'}>
+      <div className={flow ? 'mx-auto max-w-md' : 'mx-auto max-w-6xl'}>
         <StepHeading step={flow ? 2 : 1} title={flow ? 'Telefon Doğrulama' : 'Kişisel Bilgiler'} />
 
         {flow ? (
-          <Card>
-            <CardHeader title="SMS ile doğrulayın" description="Telefonunuza gelen 6 haneli kodu girin." />
-            <CardBody>
-              <OtpVerify
-                info={flow}
-                onVerify={verify}
-                onResend={resend}
-                onBack={() => setFlow(null)}
-                submitLabel="Doğrula ve Başvuruya Devam Et"
-              />
-            </CardBody>
-          </Card>
+          <div className="mt-8">
+            <OtpVerify
+              info={flow}
+              onVerify={verify}
+              onResend={resend}
+              onBack={() => setFlow(null)}
+              submitLabel="Doğrula ve Devam Et"
+            />
+          </div>
         ) : (
           <PersonalInfoForm defaultValues={values} onSubmit={start} />
         )}

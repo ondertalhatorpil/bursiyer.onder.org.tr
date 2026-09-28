@@ -8,12 +8,17 @@
  *   - Yeni kod gönderilince aynı numara + amaç + konu için önceki kodlar geçersiz olur
  *   - Kod düz metin saklanmaz; amaç ve numarayla bağlanmış HMAC tutulur
  *     (veli kodu aday doğrulamasında kullanılamaz)
+ *
+ * Test numaraları (TEST_OTP_PHONES): kod her zaman TEST_OTP_CODE, SMS gönderilmez,
+ * bekleme süresi / saatlik sınır yoktur. Admin 2FA'da test numarası istisnası uygulanmaz.
  */
 const db = require('../db/knex');
 const { hmac, safeEqualHex, randomDigits } = require('../lib/crypto');
 const { AppError } = require('../lib/errors');
 const { maskTrMobile } = require('../lib/phone');
 const sms = require('./sms');
+const config = require('../config');
+const logger = require('../lib/logger');
 
 const OTP = {
   length: 6,
@@ -34,17 +39,16 @@ const TEMPLATE_BY_PURPOSE = {
 const codeHash = ({ purpose, phone, subjectRef, code }) => hmac(`${purpose}|${phone}|${subjectRef || ''}|${code}`);
 const secondsAgo = (s) => new Date(Date.now() - s * 1000);
 
-/**
- * Kod üretir ve SMS ile gönderir.
- * @param {object} p { phone, purpose, subjectRef?, ip?, vars?, applicationId? }
- * @returns {{ maskedPhone, expiresIn, resendIn }}
- */
+/** Test numarası mı? (admin girişi hiçbir zaman test istisnasına girmez) */
+const isTestPhone = (phone, purpose) => purpose !== 'admin_2fa' && (config.testOtp?.phones || []).includes(phone);
+
 async function sendOtp({ phone, purpose, subjectRef = null, ip = null, vars = {}, applicationId = null }) {
   const template = TEMPLATE_BY_PURPOSE[purpose];
   if (!template) throw new Error(`Bilinmeyen OTP amacı: ${purpose}`);
 
-  // 1) Yeniden gönderme bekleme süresi
-  const last = await db('otp_codes')
+  const test = isTestPhone(phone, purpose);
+
+  const last = test ? null : await db('otp_codes')
     .where({ phone, purpose })
     .andWhere('created_at', '>', secondsAgo(OTP.resendSec))
     .orderBy('id', 'desc')
@@ -54,22 +58,22 @@ async function sendOtp({ phone, purpose, subjectRef = null, ip = null, vars = {}
     throw new AppError(429, 'OTP_COOLDOWN', `Yeni kod için ${Math.max(wait, 1)} saniye bekleyin`, { retryAfter: Math.max(wait, 1) });
   }
 
-  // 2) Saatlik sınırlar
   const hourAgo = secondsAgo(3600);
-  const [{ n: phoneCount }] = await db('otp_codes').where({ phone }).andWhere('created_at', '>', hourAgo).count({ n: '*' });
-  if (Number(phoneCount) >= OTP.perPhonePerHour) {
-    throw new AppError(429, 'OTP_PHONE_LIMIT', 'Bu numaraya çok fazla kod gönderildi, lütfen 1 saat sonra tekrar deneyin');
-  }
-  if (ip) {
-    const [{ n: ipCount }] = await db('otp_codes').where({ ip }).andWhere('created_at', '>', hourAgo).count({ n: '*' });
-    if (Number(ipCount) >= OTP.perIpPerHour) {
-      throw new AppError(429, 'OTP_IP_LIMIT', 'Çok fazla doğrulama kodu istediniz, lütfen 1 saat sonra tekrar deneyin');
+  if (!test) {
+    const [{ n: phoneCount }] = await db('otp_codes').where({ phone }).andWhere('created_at', '>', hourAgo).count({ n: '*' });
+    if (Number(phoneCount) >= OTP.perPhonePerHour) {
+      throw new AppError(429, 'OTP_PHONE_LIMIT', 'Bu numaraya çok fazla kod gönderildi, lütfen 1 saat sonra tekrar deneyin');
+    }
+    if (ip) {
+      const [{ n: ipCount }] = await db('otp_codes').where({ ip }).andWhere('created_at', '>', hourAgo).count({ n: '*' });
+      if (Number(ipCount) >= OTP.perIpPerHour) {
+        throw new AppError(429, 'OTP_IP_LIMIT', 'Çok fazla doğrulama kodu istediniz, lütfen 1 saat sonra tekrar deneyin');
+      }
     }
   }
 
-  // 3) Önceki açık kodları geçersiz kıl, yenisini kaydet
   const now = new Date();
-  const code = randomDigits(OTP.length);
+  const code = test ? config.testOtp.code : randomDigits(OTP.length);
   await db('otp_codes')
     .where({ phone, purpose, subject_ref: subjectRef })
     .whereNull('consumed_at')
@@ -87,7 +91,11 @@ async function sendOtp({ phone, purpose, subjectRef = null, ip = null, vars = {}
     created_at: now,
   });
 
-  // 4) Gönder. SMS başarısızsa kayıt silinir ki bekleme süresi/sınır boşa harcanmasın.
+  if (test) {
+    logger.info({ purpose }, 'Test numarası: SMS gönderilmedi, sabit kod kullanıldı');
+    return { maskedPhone: maskTrMobile(phone), expiresIn: OTP.ttlSec, resendIn: 0 };
+  }
+
   try {
     const { smsLogId } = await sms.sendTemplate(template, phone, { ...vars, code }, { applicationId, kind: 'otp' });
     await db('otp_codes').where({ id: otpId }).update({ sms_log_id: smsLogId });
@@ -99,18 +107,12 @@ async function sendOtp({ phone, purpose, subjectRef = null, ip = null, vars = {}
   return { maskedPhone: maskTrMobile(phone), expiresIn: OTP.ttlSec, resendIn: OTP.resendSec };
 }
 
-/**
- * Kodu doğrular. Başarılıysa kod tüketilir (bir daha kullanılamaz).
- * Hatalıysa AppError fırlatır: OTP_INVALID (kalan hak ile), OTP_EXPIRED, OTP_LOCKED.
- */
 async function verifyOtp({ phone, purpose, subjectRef = null, code }) {
   const input = String(code ?? '').replace(/\D/g, '');
   if (input.length !== OTP.length) {
     throw new AppError(422, 'OTP_INVALID', `Doğrulama kodu ${OTP.length} haneli olmalı`);
   }
 
-  // Not: Hata transaction içinde fırlatılırsa deneme sayacı artışı da geri alınır.
-  // Bu yüzden transaction sadece sonucu döndürür, hatalar commit'ten sonra fırlatılır.
   const result = await db.transaction(async (trx) => {
     const otp = await trx('otp_codes')
       .where({ phone, purpose, subject_ref: subjectRef })

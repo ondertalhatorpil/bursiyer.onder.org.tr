@@ -1,24 +1,85 @@
+import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { CircleCheckBig, Copy } from 'lucide-react';
-import { useState } from 'react';
-import { Alert, Badge, Button, Card, CardBody, CardHeader, PageSpinner } from '../../../components/ui';
+import clsx from 'clsx';
+import { PageSpinner } from '../../../components/ui';
 import DocumentCard from '../documents/DocumentCard';
 import IbanStep from '../iban/IbanStep';
 import { documentsApi } from '../../../api/endpoints';
 import { APPLICATION_KEY, useApplication } from '../../../hooks/useApplication';
 import { formatDateTime } from '../../../lib/format';
-import { STATUS_TONES } from '../../../config';
 
 const EXPLAIN = {
   submitted: 'Başvurunuz alındı ve değerlendirme sırasına girdi.',
   in_review: 'Başvurunuz ilgili birim ve Genel Merkez tarafından inceleniyor.',
   revision_requested: 'Bazı belgelerinizin yeniden yüklenmesi gerekiyor. Aşağıda işaretlenen belgeleri güncelleyin.',
   rejected: 'Başvurunuz değerlendirme sonucunda olumlu sonuçlanmadı.',
-  approved: 'Tebrikler, başvurunuz onaylandı. Burs ödemesi için aşağıdan IBAN bilgilerinizi girin.',
+  approved: 'Tebrikler, başvurunuz onaylandı. Burs ödemesi için IBAN bilgilerinizi girin.',
   iban_pending: 'Başvurunuz onaylandı. IBAN bilgileriniz kontrol ediliyor.',
   finalized: 'Bursiyer kaydınız kesinleşti.',
 };
+
+/** Süreç adımları ve her statünün bu çizgideki yeri */
+const STAGES = ['Başvuru alındı', 'İnceleme', 'Sonuç', 'IBAN', 'Kesinleşti'];
+const STAGE_OF = {
+  submitted: 0, in_review: 1, revision_requested: 1, rejected: 2, approved: 3, iban_pending: 3, finalized: 4,
+};
+
+/** Açıklamanın solundaki çizgi rengi */
+const TONE = {
+  rejected: 'border-accent-600 text-accent-700',
+  revision_requested: 'border-amber-500 text-amber-800',
+  approved: 'border-emerald-600 text-emerald-800',
+  iban_pending: 'border-emerald-600 text-emerald-800',
+  finalized: 'border-emerald-600 text-emerald-800',
+};
+
+function Progress({ status }) {
+  const current = STAGE_OF[status] ?? 0;
+  const done = status === 'finalized';
+  const problem = status === 'rejected' || status === 'revision_requested';
+
+  return (
+    <ol className="grid grid-cols-5 gap-1.5 sm:gap-2" aria-label="Başvuru süreci">
+      {STAGES.map((label, i) => {
+        const past = i < current || (done && i === current);
+        const active = i === current && !done;
+        return (
+          <li key={label} className="min-w-0">
+            <span
+              className={clsx(
+                'block h-1 rounded-full transition-colors',
+                past && 'bg-brand-700',
+                active && (problem ? 'bg-accent-600' : 'bg-brand-400'),
+                !past && !active && 'bg-slate-200',
+              )}
+              aria-hidden
+            />
+            <span
+              className={clsx(
+                'mt-2 block truncate text-[11px] font-medium sm:text-xs',
+                active ? (problem ? 'text-accent-700' : 'text-slate-900') : past ? 'text-slate-600' : 'text-slate-400',
+              )}
+              aria-current={active ? 'step' : undefined}
+            >
+              {label}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
+
+/** Başlık + ince çizgi (diğer sayfalardaki bölüm başlığıyla aynı) */
+function SectionTitle({ children }) {
+  return (
+    <div className="flex items-center gap-4">
+      <h2 className="shrink-0 text-xs font-bold uppercase tracking-[0.15em] text-slate-500">{children}</h2>
+      <span className="h-px flex-1 bg-slate-200" aria-hidden />
+    </div>
+  );
+}
 
 /** Gönderilmiş başvurunun durumu (ve gönderimden hemen sonra başarı mesajı) */
 export default function StatusPage() {
@@ -31,6 +92,7 @@ export default function StatusPage() {
 
   if (!application) return <PageSpinner />;
   const justSubmitted = state?.submitted || qc.getQueryData(['submitResult']);
+  const pending = ['submitted', 'in_review', 'revision_requested'].includes(application.status);
 
   const copy = async () => {
     await navigator.clipboard?.writeText(application.trackingNo);
@@ -39,55 +101,78 @@ export default function StatusPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="mx-auto max-w-2xl space-y-12">
+      {/* Gönderimden hemen sonra */}
       {justSubmitted && (
-        <div className="rounded-[var(--radius-card)] bg-emerald-600 px-6 py-8 text-center text-white sm:px-10">
-          <CircleCheckBig className="mx-auto size-12" aria-hidden />
-          <h1 className="mt-4 text-2xl font-extrabold !text-white">{justSubmitted.message.title}</h1>
-          <p className="mx-auto mt-3 max-w-xl whitespace-pre-line text-sm leading-relaxed text-emerald-50">
+        <section>
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Başvurunuz alındı</p>
+          <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{justSubmitted.message.title}</h1>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-slate-600">
             {justSubmitted.message.body.replace(/Başvuru Takip Numaranız: \S+\n?/, '')}
           </p>
-        </div>
+        </section>
       )}
 
+      {/* Durum */}
+      <section className="space-y-8">
+        {!justSubmitted && (
+          <header>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-brand-700">{application.program?.title}</p>
+            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">Başvuru Durumu</h1>
+          </header>
+        )}
+
+        <Progress status={application.status} />
+
+        <div>
+          <p className="text-xs font-medium text-slate-500">Başvuru takip numaranız</p>
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+            <p className="text-3xl font-bold tracking-wide text-slate-900 tabular-nums sm:text-4xl">{application.trackingNo}</p>
+            <button type="button" onClick={copy} className="text-sm font-semibold text-brand-700 underline-offset-4 hover:underline">
+              {copied ? 'Kopyalandı' : 'Kopyala'}
+            </button>
+          </div>
+        </div>
+
+        <dl className="divide-y divide-slate-200 border-y border-slate-200 text-sm">
+          <div className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">Durum</dt>
+            <dd className="font-semibold text-slate-900">{application.statusLabel}</dd>
+          </div>
+          <div className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">Kategori</dt>
+            <dd className="font-semibold text-slate-900">{application.categoryLabel}</dd>
+          </div>
+          <div className="flex justify-between gap-4 py-3">
+            <dt className="text-slate-500">Gönderim tarihi</dt>
+            <dd className="font-semibold text-slate-900 tabular-nums">{formatDateTime(application.submittedAt)}</dd>
+          </div>
+        </dl>
+
+        <p
+          className={clsx('border-l-2 pl-4 text-sm leading-relaxed', TONE[application.status] || 'border-brand-700 text-slate-700')}
+          role={application.status === 'rejected' ? 'alert' : 'status'}
+        >
+          {EXPLAIN[application.status]}
+          {pending && ' Değerlendirme sonucu SMS ile bildirilecektir.'}
+        </p>
+      </section>
+
+      {/* Adım 8: IBAN */}
       {['approved', 'iban_pending', 'finalized'].includes(application.status) && <IbanStep />}
 
-      <Card>
-        <CardHeader
-          title="Başvuru Durumu"
-          description={application.program?.title}
-          actions={<Badge tone={STATUS_TONES[application.status]} dot>{application.statusLabel}</Badge>}
-        />
-        <CardBody className="space-y-5">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-slate-50 p-4">
-            <div>
-              <p className="text-sm text-slate-500">Başvuru Takip Numaranız</p>
-              <p className="mt-0.5 text-2xl font-extrabold tracking-wide text-brand-900 tabular-nums">{application.trackingNo}</p>
-            </div>
-            <Button variant="secondary" size="sm" icon={Copy} onClick={copy}>{copied ? 'Kopyalandı' : 'Kopyala'}</Button>
-          </div>
-          <dl className="grid gap-4 text-sm sm:grid-cols-2">
-            <div><dt className="text-slate-500">Kategori</dt><dd className="mt-0.5 font-semibold">{application.categoryLabel}</dd></div>
-            <div><dt className="text-slate-500">Gönderim Tarihi</dt><dd className="mt-0.5 font-semibold">{formatDateTime(application.submittedAt)}</dd></div>
-          </dl>
-          <Alert variant={application.status === 'rejected' ? 'error' : revision ? 'warning' : ['approved', 'finalized'].includes(application.status) ? 'success' : 'info'}>
-            {EXPLAIN[application.status]}
-            {['submitted', 'in_review', 'revision_requested'].includes(application.status) && ' Değerlendirme sonucu SMS ile bildirilecektir.'}
-          </Alert>
-        </CardBody>
-      </Card>
-
+      {/* Revize istenen belgeler */}
       {revision && (
-        <Card>
-          <CardHeader title="Güncellenmesi istenen belgeler" />
-          <CardBody className="space-y-4">
-            {docs.isLoading && <PageSpinner />}
+        <section className="space-y-5">
+          <SectionTitle>Güncellenmesi istenen belgeler</SectionTitle>
+          {docs.isLoading && <PageSpinner />}
+          <div className="space-y-4">
             {docs.data?.items.filter((i) => i.upload?.reviewStatus === 'revision_requested' || i.editable).map((item) => (
               <DocumentCard key={item.code} item={item} canRemove={false}
                 onChange={(list) => { qc.setQueryData(['documents'], list); qc.invalidateQueries({ queryKey: APPLICATION_KEY }); }} />
             ))}
-          </CardBody>
-        </Card>
+          </div>
+        </section>
       )}
     </div>
   );
