@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router';
-import Container from '../../components/layout/Container';
-import { Card, CardBody, CardHeader } from '../../components/ui';
+import clsx from 'clsx';
 import { OtpVerify } from '../../components/auth';
 import LoginForm from './LoginForm';
 import { authApi } from '../../api/endpoints';
@@ -13,6 +12,7 @@ export default function LoginPage() {
   const location = useLocation();
   const setSession = useSetSession();
   const [flow, setFlow] = useState(null);
+  const step = flow ? 2 : 1;
 
   const start = async (idNumber) => setFlow(await authApi.loginStart(idNumber));
 
@@ -23,28 +23,59 @@ export default function LoginPage() {
   };
 
   return (
-    <Container size="sm">
-      <div className="mb-6 text-center sm:mb-8">
-        <h1 className="text-2xl font-extrabold sm:text-3xl">Başvuruma Devam Et</h1>
-        <p className="mt-2 text-slate-600">Yarım kalan başvurunuza devam edin veya başvurunuzun durumunu görün.</p>
-      </div>
-      <Card>
-        <CardHeader
-          title={flow ? 'SMS ile doğrulayın' : 'Giriş yapın'}
-          description={flow ? 'Kayıtlı telefonunuza gelen kodu girin.' : 'Kimlik numaranızı girin, kayıtlı telefonunuza kod gönderelim.'}
-        />
-        <CardBody>
+    <section className="flex flex-1 items-center justify-center px-6 py-12">
+      <div className="w-full max-w-sm">
+        {/* Adım göstergesi */}
+        <div className="flex items-center gap-2" aria-label={`Adım ${step} / 2`}>
+          {[1, 2].map((s) => (
+            <span
+              key={s}
+              className={clsx('h-1 flex-1 rounded-full transition-colors duration-300', s <= step ? 'bg-brand-700' : 'bg-slate-200')}
+            />
+          ))}
+        </div>
+        <p className="mt-3 text-xs font-medium text-slate-500">
+          Adım {step} / 2 · {flow ? 'SMS doğrulama' : 'Kimlik numarası'}
+        </p>
+
+        {/* Başlık */}
+        <h1 className="mt-8 text-3xl font-bold tracking-tight text-slate-900">
+          {flow ? 'Kodu girin' : 'Başvuruma devam et'}
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-500">
+          {flow
+            ? 'Kayıtlı telefonunuza gönderilen 6 haneli kodu girin.'
+            : 'Kimlik numaranızı girin, başvurunuzda kayıtlı telefona doğrulama kodu gönderelim.'}
+        </p>
+
+        {/* Form */}
+        <div className="mt-8">
           {flow ? (
-            <OtpVerify info={flow} onVerify={verify} onResend={() => authApi.loginResend(flow.loginToken)} onBack={() => setFlow(null)} submitLabel="Giriş Yap" />
+            <OtpVerify
+              info={flow}
+              onVerify={verify}
+              onResend={() => authApi.loginResend(flow.loginToken)}
+              onBack={() => setFlow(null)}
+              submitLabel="Giriş Yap"
+            />
           ) : (
             <LoginForm onSubmit={start} />
           )}
-        </CardBody>
-      </Card>
-      <p className="mt-6 text-center text-sm text-slate-600">
-        Henüz başvurunuz yok mu?{' '}
-        <Link to="/kayit" className="font-semibold text-brand-700 hover:underline">Yeni başvuru oluşturun</Link>
-      </p>
-    </Container>
+        </div>
+
+        {/* Yeni başvuru */}
+        <div className="mt-10 flex items-center gap-4 text-xs text-slate-400">
+          <span className="h-px flex-1 bg-slate-200" aria-hidden />
+          veya
+          <span className="h-px flex-1 bg-slate-200" aria-hidden />
+        </div>
+        <Link
+          to="/kayit"
+          className="mt-6 block text-center text-sm font-semibold text-brand-700 underline-offset-4 hover:underline"
+        >
+          Yeni başvuru oluşturun
+        </Link>
+      </div>
+    </section>
   );
 }

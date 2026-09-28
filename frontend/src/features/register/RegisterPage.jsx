@@ -46,32 +46,26 @@ export default function RegisterPage() {
   const resend = () => authApi.registerResend(flow.registrationToken);
 
   return (
-    <Container size="lg">
-      <div className="mx-auto max-w-3xl">
+    <Container size="xl">
+      <div className={flow ? 'mx-auto max-w-xl' : 'mx-auto max-w-6xl'}>
         <StepHeading step={flow ? 2 : 1} title={flow ? 'Telefon Doğrulama' : 'Kişisel Bilgiler'} />
-        <Card>
-          {flow ? (
-            <>
-              <CardHeader title="SMS ile doğrulayın" description="Telefonunuza gelen 6 haneli kodu girin." />
-              <CardBody>
-                <OtpVerify
-                  info={flow}
-                  onVerify={verify}
-                  onResend={resend}
-                  onBack={() => setFlow(null)}
-                  submitLabel="Doğrula ve Başvuruya Devam Et"
-                />
-              </CardBody>
-            </>
-          ) : (
-            <>
-              <CardHeader title="Kişisel bilgileriniz" description="Bilgilerinizi kimlik kartınızdaki gibi eksiksiz yazın." />
-              <CardBody>
-                <PersonalInfoForm defaultValues={values} onSubmit={start} />
-              </CardBody>
-            </>
-          )}
-        </Card>
+
+        {flow ? (
+          <Card>
+            <CardHeader title="SMS ile doğrulayın" description="Telefonunuza gelen 6 haneli kodu girin." />
+            <CardBody>
+              <OtpVerify
+                info={flow}
+                onVerify={verify}
+                onResend={resend}
+                onBack={() => setFlow(null)}
+                submitLabel="Doğrula ve Başvuruya Devam Et"
+              />
+            </CardBody>
+          </Card>
+        ) : (
+          <PersonalInfoForm defaultValues={values} onSubmit={start} />
+        )}
       </div>
     </Container>
   );

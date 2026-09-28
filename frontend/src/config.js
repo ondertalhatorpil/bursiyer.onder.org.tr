@@ -1,3 +1,14 @@
+import { BookOpen, CircleHelp, House, Info, LayoutGrid } from 'lucide-react';
+
+/** Üst menü: ikon + etiket + adres (http ile başlayan veya mailto: dış bağlantıdır) */
+export const NAV = [
+  { icon: House, label: 'Anasayfa', to: '/' },
+  { icon: BookOpen, label: 'Yeni Başvuru', to: '/kayit' },
+  { icon: LayoutGrid, label: 'Başvurum', to: '/basvuru' },
+  { icon: CircleHelp, label: 'Yardım', to: 'mailto:burs@onder.org.tr' },
+  { icon: Info, label: 'ÖNDER Hakkında', to: 'https://onder.org.tr' },
+];
+
 /** Sitede tekrar eden kurumsal bilgiler */
 export const SITE = {
   orgName: 'ÖNDER İmam Hatipliler Derneği',
@@ -6,8 +17,18 @@ export const SITE = {
   website: 'https://onder.org.tr',
   // Destek iletişim bilgileri (gerekirse güncelleyin)
   supportEmail: 'burs@onder.org.tr',
-  logoSrc: '/logo.png',
+  logoSrc: '/onder-logo.svg',
+  heroImage: '/hero.webp',
+  social: {
+    instagram: 'https://instagram.com/',
+    x: 'https://x.com/',
+    facebook: 'https://facebook.com/',
+    youtube: 'https://youtube.com/',
+    whatsapp: '',
+  },
 };
+
+
 
 export const CATEGORIES = [
   { value: 'lise', label: 'Lise Bursu', description: 'İmam hatip lisesi öğrencileri' },

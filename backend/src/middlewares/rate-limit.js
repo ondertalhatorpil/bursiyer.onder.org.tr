@@ -20,15 +20,17 @@ const apiLimiter = rateLimit({
   message: json('Çok fazla istek gönderdiniz, lütfen biraz bekleyin'),
 });
 
-// OTP gönderme: IP başına saatte 10
+const { normalizeTrMobile } = require('../lib/phone');
 const otpSendLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
   limit: 10,
   standardHeaders: 'draft-8',
   legacyHeaders: false,
-  skip,
+  skip: (req) => config.isTest || config.testOtp.phones.includes(normalizeTrMobile(req.body?.phone)),
   message: json('Çok fazla doğrulama kodu istediniz, lütfen daha sonra tekrar deneyin'),
 });
+
+
 
 // Giriş denemeleri (admin şifre, OTP doğrulama): IP başına 15 dakikada 20
 const authLimiter = rateLimit({

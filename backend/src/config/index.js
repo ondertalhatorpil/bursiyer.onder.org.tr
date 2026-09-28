@@ -42,6 +42,11 @@ const schema = z.object({
 
   UPLOAD_DIR: z.string().default('./storage/uploads'),
 
+  // Test numaraları (virgülle): bu numaralara SMS gitmez, kod her zaman TEST_OTP_CODE olur,
+  // bekleme süresi ve saatlik sınır uygulanmaz. Admin girişinde (2FA) GEÇERLİ DEĞİLDİR.
+  TEST_OTP_PHONES: z.string().default(''),
+  TEST_OTP_CODE: z.string().regex(/^\d{6}$/, '6 haneli olmalı').default('123456'),
+
   // Cloudflare Turnstile gizli anahtarı. Boşsa captcha kontrolü yapılmaz (geliştirme).
   TURNSTILE_SECRET: z.string().default(''),
   // Aday oturumu: hareketsizlik ve mutlak süre (dakika)
@@ -96,6 +101,10 @@ module.exports = {
       : null,
   },
   uploadDir: env.UPLOAD_DIR,
+  testOtp: {
+    phones: env.TEST_OTP_PHONES.split(',').map((p) => require('../lib/phone').normalizeTrMobile(p)).filter(Boolean),
+    code: env.TEST_OTP_CODE,
+  },
   turnstileSecret: env.TURNSTILE_SECRET,
   session: {
     cookieName: 'bk_sid',

@@ -74,7 +74,6 @@ const CHANNELS = [
   },
   {
     category: 'universite', code: 'uni_wonder', name: 'WONDER', sort: 3,
-    description: 'WONDER burs kontenjanı kapsamındaki lisans başvurusudur; ek alt soru açılmadan doğrudan eğitim bilgilerine geçilir.',
   },
   {
     category: 'universite', code: 'uni_egitime_destek', name: 'Eğitime Destek Üniversite Bursu (Genel Merkez)', sort: 4,
