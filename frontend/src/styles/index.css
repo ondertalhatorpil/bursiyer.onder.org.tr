@@ -1,0 +1,88 @@
+/*
+ * Tema: renkler src/theme.css dosyasındaki --brand ve --accent değişkenlerinden üretilir.
+ * Renk değiştirmek için sadece o dosyayı düzenleyin.
+ * brand-700 = ana renk (butonlar); açık tonlar beyazla, koyu tonlar siyahla karıştırılarak elde edilir.
+ */
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "../theme.css";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: color-mix(in oklab, var(--brand) 6%, white);
+  --color-brand-100: color-mix(in oklab, var(--brand) 13%, white);
+  --color-brand-200: color-mix(in oklab, var(--brand) 26%, white);
+  --color-brand-300: color-mix(in oklab, var(--brand) 45%, white);
+  --color-brand-400: color-mix(in oklab, var(--brand) 68%, white);
+  --color-brand-500: color-mix(in oklab, var(--brand) 86%, white);
+  --color-brand-600: color-mix(in oklab, var(--brand) 94%, white);
+  --color-brand-700: var(--brand);
+  --color-brand-800: color-mix(in oklab, var(--brand) 82%, black);
+  --color-brand-900: color-mix(in oklab, var(--brand) 62%, black);
+
+  --color-accent-50: color-mix(in oklab, var(--accent) 6%, white);
+  --color-accent-100: color-mix(in oklab, var(--accent) 14%, white);
+  --color-accent-500: color-mix(in oklab, var(--accent) 90%, white);
+  --color-accent-600: var(--accent);
+  --color-accent-700: color-mix(in oklab, var(--accent) 80%, black);
+
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-slate-50 font-sans text-slate-800 antialiased;
+  }
+  h1, h2, h3 {
+    @apply text-brand-900 tracking-tight;
+  }
+  /* Klavye ile gezinmede belirgin odak */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+}
+
+/* ------------------------------------------------------------
+ * Açılış animasyonları (anasayfa). Hareketi azaltma tercihi olan kullanıcıda kapalı.
+ * ------------------------------------------------------------ */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); filter: blur(4px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-24px, 18px) scale(1.08); }
+}
+@keyframes draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes shine {
+  from { transform: translateX(-120%) skewX(-20deg); }
+  to { transform: translateX(260%) skewX(-20deg); }
+}
+
+@layer utilities {
+  .anim-pop { animation: pop 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+  .anim-rise { animation: rise 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: var(--delay, 0ms); }
+  .anim-drift { animation: drift 14s ease-in-out infinite; }
+  .anim-draw { stroke-dasharray: 1; animation: draw 1.8s cubic-bezier(0.6, 0, 0.2, 1) both; animation-delay: var(--delay, 0ms); }
+  .anim-shine::after {
+    content: ""; position: absolute; inset: 0; width: 40%;
+    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.55), transparent);
+    animation: shine 1.2s ease-out 1.4s both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-pop, .anim-rise, .anim-drift, .anim-draw, .anim-shine::after { animation: none !important; }
+  .anim-draw { stroke-dasharray: none; }
+}

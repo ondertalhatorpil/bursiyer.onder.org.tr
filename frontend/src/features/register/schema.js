@@ -1,0 +1,34 @@
+import { z } from 'zod';
+import { isValidDate, isValidIdNumber, isValidMobile, isYkn } from '../../lib/validation';
+
+const name = (label) => z.string().trim()
+  .min(2, `${label} en az 2 karakter olmalı`)
+  .max(64, `${label} en fazla 64 karakter olabilir`)
+  .regex(/^[\p{L}\s.'-]+$/u, `${label} sadece harf içerebilir`);
+
+export const registerSchema = z.object({
+  firstName: name('Ad'),
+  lastName: name('Soyad'),
+  idNumber: z.string().refine(isValidIdNumber, 'Geçerli bir T.C. Kimlik No veya Yabancı Kimlik No girin'),
+  nationality: z.string().trim().max(64).optional(),
+  birthDate: z.string().refine(isValidDate, 'Geçerli bir doğum tarihi girin (GG/AA/YYYY)'),
+  phone: z.string().refine(isValidMobile, 'Geçerli bir cep telefonu girin: 0 (5XX) XXX XX XX'),
+  email: z.email('Geçerli bir e-posta adresi girin'),
+  consents: z.object({
+    kvkk: z.literal(true, { error: 'KVKK Aydınlatma Metni ve Açık Rıza Beyanı onaylanmalıdır' }),
+    sharing: z.literal(true, { error: 'Paylaşım rızası onaylanmalıdır' }),
+  }),
+}).superRefine((v, ctx) => {
+  if (isYkn(v.idNumber) && !v.nationality) {
+    ctx.addIssue({ code: 'custom', path: ['nationality'], message: 'Uyruğunuzu yazın' });
+  }
+});
+
+export const REGISTER_FIELDS = [
+  'firstName', 'lastName', 'idNumber', 'nationality', 'birthDate', 'phone', 'email', 'consents.kvkk', 'consents.sharing',
+];
+
+export const registerDefaults = {
+  firstName: '', lastName: '', idNumber: '', nationality: '', birthDate: '', phone: '', email: '',
+  consents: { kvkk: false, sharing: false },
+};

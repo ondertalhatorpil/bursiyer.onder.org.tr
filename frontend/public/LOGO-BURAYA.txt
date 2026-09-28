@@ -1,0 +1,3 @@
+Kurumsal logoyu bu klasöre "logo.png" adıyla koyun (şeffaf arka planlı, yüksekliği en az 96px önerilir).
+İsterseniz sekme simgesi için "favicon.png" (kare, 64x64 veya 128x128) de ekleyin.
+logo.png yokken üst menüde "ÖNDER" yazısı gösterilir.

@@ -1,0 +1,15 @@
+/*
+ * ============================================================
+ *  TEMA AYARLARI  (sistemin renkleri buradan değiştirilir)
+ * ============================================================
+ *  --brand   : ana kurumsal renk. Butonlar, başlıklar, menüler, rozetler
+ *              ve tüm açık/koyu tonlar bu renkten otomatik üretilir.
+ *  --accent  : vurgu rengi (hata mesajları, zorunlu alan yıldızı, küçük üst başlıklar).
+ *              Ana renkle aynı kalabilir.
+ *
+ *  Değiştirdikten sonra sayfayı yenilemeniz yeterli; başka dosyaya dokunmayın.
+ */
+:root {
+  --brand: #d12a2c;
+  --accent: #d12a2c;
+}
