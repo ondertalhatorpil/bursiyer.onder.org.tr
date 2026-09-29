@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router';
-import { FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
+import { Award, FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
 import StatusBadge from '../shared/StatusBadge';
 import { formatDateTime } from '../../../lib/format';
 
@@ -80,6 +80,11 @@ export default function ApplicationsTable({ items }) {
 /** İnceleyicinin dikkat etmesi gereken işaretler (ikon + metin, sadece renge dayanmaz) */
 function Signals({ a }) {
   const items = [];
+  if (a.status === 'finalized') {
+    items.push(a.qualified
+      ? { icon: Award, text: 'Nitelikli bursiyer', cls: 'text-brand-700' }
+      : { icon: Award, text: 'Normal bursiyer', cls: 'text-slate-500' });
+  }
   if (a.isMinor) items.push({ icon: UserRound, text: '18 yaş altı', cls: 'text-slate-600' });
   if (a.revisionDocs) items.push({ icon: FileWarning, text: `${a.revisionDocs} belge revizede`, cls: 'text-accent-700' });
   for (const f of a.flags) items.push({ icon: TriangleAlert, text: f.label, cls: 'text-amber-700' });

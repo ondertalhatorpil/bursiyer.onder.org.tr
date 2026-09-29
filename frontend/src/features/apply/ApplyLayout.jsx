@@ -15,37 +15,31 @@ export default function ApplyLayout() {
 
   if (isLoading) return <PageSpinner />;
   if (error) {
-    return (
-      <Container size="md">
-        <Alert variant="error" title="Başvuru bilgileri alınamadı" action={<Button onClick={() => refetch()}>Tekrar dene</Button>}>
-          {error.message}
-        </Alert>
-      </Container>
-    );
+    if (onStatusPage) {
+  return (
+    <section className="flex flex-1 flex-col pb-12">
+      <Container size="md" className="my-auto w-full"><Outlet /></Container>
+    </section>
+  );
+}
   }
 
   const onStatusPage = pathname.startsWith('/basvuru/durum');
   if (application.status !== 'draft' && !onStatusPage) return <Navigate to="/basvuru/durum" replace />;
   if (application.status === 'draft' && onStatusPage) return <Navigate to="/basvuru" replace />;
   if (onStatusPage) return <Container size="md"><Outlet /></Container>;
-
   return (
-    <Container size="xl">
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-sm font-medium text-slate-500">{application.program?.title}</p>
-          <h1 className="mt-1 text-2xl font-extrabold sm:text-3xl">Burs Başvurusu</h1>
+    <section className="flex flex-1 flex-col">
+      <Container size="xl" className="my-auto w-full">
+        <div className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-8 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-14">
+          <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start">
+            <StepNav application={application} />
+          </aside>
+          <div className="min-w-0">
+            <Outlet />
+          </div>
         </div>
-        <Badge tone={STATUS_TONES[application.status]} dot>{application.statusLabel}</Badge>
-      </div>
-      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[260px_minmax(0,1fr)] lg:gap-8">
-        <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start">
-          <StepNav application={application} />
-        </aside>
-        <div className="min-w-0">
-          <Outlet />
-        </div>
-      </div>
-    </Container>
+      </Container>
+    </section>
   );
 }

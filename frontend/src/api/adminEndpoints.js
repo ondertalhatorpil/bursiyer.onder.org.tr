@@ -33,6 +33,7 @@ export const adminApi = {
   setStatus: (id, body) => guard(api.post(`/admin/applications/${id}/status`, body)),
   addNote: (id, body) => guard(api.post(`/admin/applications/${id}/notes`, body)),
   setReference: (id, verified) => guard(api.post(`/admin/applications/${id}/reference`, { verified })),
+  setQualified: (id, qualified) => guard(api.post(`/admin/applications/${id}/qualified`, { qualified })),
   ibanFileUrl: (id, accountId) => `/api/admin/applications/${id}/iban/${accountId}/file`,
   reviewIban: (id, body) => guard(api.post(`/admin/applications/${id}/iban/review`, body)),
   paymentsExportUrl: () => '/api/admin/applications/payments-export',

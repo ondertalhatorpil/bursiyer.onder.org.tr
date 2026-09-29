@@ -59,6 +59,16 @@ async function setReference(req, res) {
   res.json({ application: await svc.detail(req.admin, id) });
 }
 
+async function setQualified(req, res) {
+  const { id } = req.valid.params;
+  const { qualified } = req.valid.body;
+  const app = await svc.setQualified(req.admin, id, qualified);
+  await audit(req, qualified ? 'application.qualified_set' : 'application.qualified_unset', {
+    targetType: 'application', meta: { id, trackingNo: app.tracking_no },
+  });
+  res.json({ application: await svc.detail(req.admin, id) });
+}
+
 /** Filtrelere uyan başvuruları Excel olarak indirir */
 async function exportXlsx(req, res) {
   const rows = await svc.exportRows(req.admin, req.valid.query);
@@ -86,6 +96,7 @@ async function exportXlsx(req, res) {
     { header: 'Sınıf', key: 'grade', width: 12 },
     { header: '18 Yaş Altı', key: 'minor', width: 10 },
     { header: 'Referans Teyidi', key: 'reference', width: 14 },
+    { header: 'Burs Türü', key: 'scholarshipType', width: 12 },
     { header: 'İşaretler', key: 'flagText', width: 30 },
     { header: 'Gönderim', key: 'submittedAt', width: 18 },
   ];
@@ -96,6 +107,7 @@ async function exportXlsx(req, res) {
       grade: GRADE_LABELS[r.grade] || '',
       minor: r.isMinor ? 'Evet' : 'Hayır',
       reference: r.referenceVerified ? 'Teyitli' : '',
+      scholarshipType: r.status === 'finalized' ? (r.qualified ? 'Nitelikli' : 'Normal') : '',
       flagText: r.flags.map((f) => f.label).join(', '),
       submittedAt: r.submittedAt ? new Date(r.submittedAt).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }) : '',
     });
@@ -152,6 +164,7 @@ async function paymentsExport(req, res) {
     { header: 'Kimlik No', key: 'idNumber', width: 14 },
     { header: 'Telefon', key: 'phone', width: 18 },
     { header: 'Kategori', key: 'category', width: 18 },
+    { header: 'Burs Türü', key: 'scholarshipType', width: 12 },
     { header: 'Kanal / Birim', key: 'channel', width: 30 },
     { header: 'Hesap Sahibi', key: 'holderName', width: 26 },
     { header: 'IBAN', key: 'iban', width: 36 },
@@ -176,4 +189,4 @@ async function paymentsExport(req, res) {
   res.end();
 }
 
-module.exports = { list, detail, file, reviewDocument, setStatus, addNote, setReference, exportXlsx, ibanFile, reviewIban, paymentsExport };
+module.exports = { list, detail, file, reviewDocument, setStatus, addNote, setReference, setQualified, exportXlsx, ibanFile, reviewIban, paymentsExport };

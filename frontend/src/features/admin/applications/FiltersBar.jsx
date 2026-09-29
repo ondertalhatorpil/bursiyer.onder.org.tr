@@ -52,6 +52,9 @@ export default function FiltersBar({ filters, setFilter, reset, activeCount }) {
           options={FLAG_FILTERS} onChange={(e) => setFilter({ flag: e.target.value })} />
         <FilterSelect aria-label="Yaş" value={filters.minor} placeholder="Tüm yaşlar"
           options={[{ value: '1', label: '18 yaş altı' }, { value: '0', label: '18 yaş ve üstü' }]} onChange={(e) => setFilter({ minor: e.target.value })} />
+        <FilterSelect aria-label="Burs türü" value={filters.qualified} placeholder="Tüm burs türleri"
+          title="Sadece kesinleşmiş bursiyerler" options={[{ value: '1', label: 'Nitelikli bursiyer' }, { value: '0', label: 'Normal bursiyer' }]}
+          onChange={(e) => setFilter({ qualified: e.target.value })} />
         <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-6">
           {(activeCount > 0 || filters.q) && (
             <Button variant="ghost" size="sm" icon={X} onClick={() => { setQ(''); reset(); }}>Temizle</Button>

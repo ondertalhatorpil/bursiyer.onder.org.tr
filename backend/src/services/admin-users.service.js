@@ -221,6 +221,8 @@ const ACTION_LABELS = {
   'application.status': 'Statü değiştirdi',
   'application.note': 'Not ekledi',
   'application.reference': 'Referans işaretledi',
+  'application.qualified_set': 'Nitelikli bursiyer olarak işaretledi',
+  'application.qualified_unset': 'Nitelikli bursiyer işaretini kaldırdı',
   'document.view': 'Belge açtı',
   'document.review': 'Belge değerlendirdi',
   'export.xlsx': 'Excel indirdi',

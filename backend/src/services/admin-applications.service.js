@@ -54,6 +54,8 @@ function applyFilters(q, f) {
   if (f.cityId) q.where('e.city_id', f.cityId);
   if (f.flag) q.whereRaw('JSON_CONTAINS(a.flags, ?)', [JSON.stringify(f.flag)]);
   if (f.minor !== undefined) q.where('a.is_minor', f.minor);
+  // Burs türü yalnızca kesinleşmiş bursiyerler için anlamlı
+  if (f.qualified !== undefined) q.where({ 'a.status': 'finalized', 'a.is_qualified': f.qualified });
 
   const term = f.q?.trim();
   if (term) {
@@ -93,6 +95,7 @@ function listRow(r, admin) {
     revisionDocs: Number(r.revision_docs || 0),
     isMinor: !!r.is_minor,
     referenceVerified: !!r.reference_verified_at,
+    qualified: !!r.is_qualified,
     submittedAt: r.submitted_at,
     createdAt: r.created_at,
   };
@@ -100,7 +103,7 @@ function listRow(r, admin) {
 
 const LIST_COLUMNS = [
   'a.id', 'a.public_id', 'a.tracking_no', 'a.category', 'a.status', 'a.flags', 'a.is_minor', 'a.submitted_at',
-  'a.created_at', 'a.reference_verified_at', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone', 'p.email',
+  'a.created_at', 'a.reference_verified_at', 'a.is_qualified', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone', 'p.email',
   'p.birth_date', 'ch.name as channel_name', 'su.name as sub_unit_name', 'c.name as city_name',
   's.name as school_name', 'e.school_other', 'u.name as university_name', 'e.university_other', 'e.university_type',
   'e.faculty', 'e.department', 'e.grade',
@@ -184,7 +187,7 @@ async function detail(admin, publicId) {
   const fullId = admin.can('view_full_id');
   const idNumber = decrypt(applicant.id_number_enc);
 
-  const [{ channel, sub, fields }, guardian, education, documents, notes, history, smsLogs, consents, refAdmin, program] = await Promise.all([
+  const [{ channel, sub, fields }, guardian, education, documents, notes, history, smsLogs, consents, refAdmin, qualifiedAdmin, program] = await Promise.all([
     resolveChannelFields(app),
     db('guardians').where({ application_id: app.id }).first(),
     db('education as e')
@@ -211,6 +214,7 @@ async function detail(admin, publicId) {
       .where('c.applicant_id', applicant.id).orderBy('c.accepted_at')
       .select('t.type', 't.title', 't.version', 'c.accepted_at', 'c.guardian_id'),
     app.reference_verified_by ? db('admin_users').where({ id: app.reference_verified_by }).first('full_name') : null,
+    app.qualified_by ? db('admin_users').where({ id: app.qualified_by }).first('full_name') : null,
     db('programs').where({ id: app.program_id }).first(),
   ]);
 
@@ -235,6 +239,12 @@ async function detail(admin, publicId) {
       verified: !!app.reference_verified_at,
       verifiedAt: app.reference_verified_at,
       verifiedBy: refAdmin?.full_name || null,
+    },
+    qualified: {
+      value: !!app.is_qualified,
+      changedAt: app.qualified_at,
+      changedBy: qualifiedAdmin?.full_name || null,
+      editable: app.status === 'finalized',
     },
     applicant: {
       firstName: applicant.first_name,
@@ -368,6 +378,20 @@ async function addNote(admin, publicId, { kind, body }) {
   await db('application_notes').insert({ application_id: app.id, admin_user_id: admin.id, kind, body, created_at: new Date() });
 }
 
+/** Nitelikli bursiyer işareti. Sadece kesinleşmiş bursiyerlerde; kaldırılıp yeniden konabilir. */
+async function setQualified(admin, publicId, qualified) {
+  const app = await findScoped(admin, publicId);
+  if (app.status !== 'finalized') {
+    throw new AppError(409, 'NOT_FINALIZED', 'Nitelikli bursiyer işareti yalnızca kaydı kesinleşmiş bursiyerlere konabilir');
+  }
+  await db('applications').where({ id: app.id }).update({
+    is_qualified: qualified,
+    qualified_at: new Date(),
+    qualified_by: admin.id,
+  });
+  return app;
+}
+
 async function setReference(admin, publicId, verified) {
   const app = await findScoped(admin, publicId);
   await db('applications').where({ id: app.id }).update({
@@ -437,7 +461,7 @@ async function paymentRows(admin, programId) {
     .leftJoin('education as e', 'e.application_id', 'a.id')
     .leftJoin('channels as ch', 'ch.id', 'a.channel_id')
     .leftJoin('sub_units as su', 'su.id', 'a.sub_unit_id')
-    .select('a.tracking_no', 'a.category', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone',
+    .select('a.tracking_no', 'a.category', 'a.is_qualified', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone',
       'b.iban_enc', 'b.bank_code_raw', 'k.name as bank_name', 'b.holder_name', 'b.verified_at',
       'ch.name as channel_name', 'su.name as sub_unit_name')
     .orderBy(['p.last_name', 'p.first_name']);
@@ -449,6 +473,7 @@ async function paymentRows(admin, programId) {
     idNumber: decrypt(r.id_number_enc),
     phone: formatTrMobile(r.phone),
     category: CATEGORY_LABELS[r.category] || '',
+    scholarshipType: r.is_qualified ? 'Nitelikli' : 'Normal',
     channel: [r.channel_name, r.sub_unit_name].filter(Boolean).join(' · '),
     holderName: r.holder_name,
     iban: formatIban(decrypt(r.iban_enc)),
@@ -459,5 +484,5 @@ async function paymentRows(admin, programId) {
 
 module.exports = {
   paymentRows, findScoped,
-  FLAG_LABELS, list, detail, getDocumentForAdmin, reviewDocument, setStatus, addNote, setReference, dashboard, exportRows,
+  FLAG_LABELS, list, detail, getDocumentForAdmin, reviewDocument, setStatus, addNote, setReference, setQualified, dashboard, exportRows,
 };

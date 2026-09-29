@@ -181,3 +181,57 @@ describe('Adım 8', () => {
     await k.get('/api/admin/applications/payments-export').expect(403);
   });
 });
+
+describe('Nitelikli bursiyer', () => {
+  const listOf = async (query) => (await gm.get(`/api/admin/applications?status=finalized${query}`).expect(200)).body.items;
+
+  test('sadece kesinleşmişte işaretlenir; kaldırılır, yeniden konur; filtre ve exportlarda görünür', async () => {
+    const { agent, id, trackingNo } = await approvedApplication();
+    await gm.post(`/api/admin/applications/${id}/qualified`).send({ qualified: true }).expect(409);
+    await sendIban(agent).expect(201);
+    await gm.post(`/api/admin/applications/${id}/qualified`).send({ qualified: true }).expect(409);
+    await gm.post(`/api/admin/applications/${id}/iban/review`).send({ decision: 'accepted' }).expect(200);
+
+    let d = await gm.get(`/api/admin/applications/${id}`).expect(200);
+    expect(d.body.application.qualified).toMatchObject({ value: false, editable: true });
+    await gm.post(`/api/admin/applications/${id}/qualified`).send({ qualified: 'evet' }).expect(422);
+
+    d = await gm.post(`/api/admin/applications/${id}/qualified`).send({ qualified: true }).expect(200);
+    expect(d.body.application.qualified).toMatchObject({ value: true, changedBy: 'gm_reviewer Kullanıcı' });
+    expect((await listOf('&qualified=1')).map((i) => i.id)).toEqual([id]);
+    expect(await listOf('&qualified=0')).toHaveLength(0);
+    expect((await listOf(''))[0].qualified).toBe(true);
+
+    const xlsx = async (url, sheet) => {
+      const x = await gm.get(url).buffer(true)
+        .parse((r, cb) => { const c = []; r.on('data', (b) => c.push(b)); r.on('end', () => cb(null, Buffer.concat(c))); }).expect(200);
+      return XLSX.utils.sheet_to_json(XLSX.read(x.body).Sheets[sheet]);
+    };
+    expect((await xlsx('/api/admin/applications/payments-export', 'Ödeme Listesi'))[0]).toMatchObject({ 'Takip No': trackingNo, 'Burs Türü': 'Nitelikli' });
+    expect((await xlsx('/api/admin/applications/export?status=finalized', 'Başvurular'))[0]['Burs Türü']).toBe('Nitelikli');
+
+    d = await gm.post(`/api/admin/applications/${id}/qualified`).send({ qualified: false }).expect(200);
+    expect(d.body.application.qualified.value).toBe(false);
+    expect(await listOf('&qualified=1')).toHaveLength(0);
+    await gm.post(`/api/admin/applications/${id}/qualified`).send({ qualified: true }).expect(200);
+
+    const logs = await db('audit_logs').whereIn('action', ['application.qualified_set', 'application.qualified_unset']).orderBy('id');
+    expect(logs.map((l) => l.action)).toEqual(['application.qualified_set', 'application.qualified_unset', 'application.qualified_set']);
+
+    // Aday bu bilgiyi hiçbir yerde görmez
+    const me = await agent.get('/api/application').expect(200);
+    expect(JSON.stringify(me.body)).not.toMatch(/qualif|nitelikli/i);
+    const ib = await agent.get('/api/iban').expect(200);
+    expect(JSON.stringify(ib.body)).not.toMatch(/qualif|nitelikli/i);
+  });
+
+  test('yetki: karar yetkisi olmayan işaretleyemez', async () => {
+    const { agent, id } = await approvedApplication();
+    await sendIban(agent).expect(201);
+    await gm.post(`/api/admin/applications/${id}/iban/review`).send({ decision: 'accepted' }).expect(200);
+    await createAdmin('k@onder.org.tr', 'coordinator', { phone: '905550000010' });
+    await db('admin_scopes').insert({ admin_user_id: (await db('admin_users').where({ email: 'k@onder.org.tr' }).first()).id, category: 'universite' });
+    const k = await adminAgent('k@onder.org.tr');
+    await k.post(`/api/admin/applications/${id}/qualified`).send({ qualified: true }).expect(403);
+  });
+});

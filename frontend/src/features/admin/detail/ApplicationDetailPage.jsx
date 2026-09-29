@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router';
-import { ArrowLeft, CircleCheck, CircleX, TriangleAlert } from 'lucide-react';
+import { ArrowLeft, Award, CircleCheck, CircleX, TriangleAlert } from 'lucide-react';
 import { Alert, Badge, PageSpinner } from '../../../components/ui';
 import StatusBadge from '../shared/StatusBadge';
 import InfoSection from './InfoSection';
@@ -10,6 +10,7 @@ import NotesPanel from './NotesPanel';
 import HistoryTimeline from './HistoryTimeline';
 import ReferenceToggle from './ReferenceToggle';
 import IbanReview from './IbanReview';
+import QualifiedToggle from './QualifiedToggle';
 import { adminApi } from '../../../api/adminEndpoints';
 import { can, useAdminSession } from '../../../hooks/useAdmin';
 import { formatDate, formatDateTime } from '../../../lib/format';
@@ -50,6 +51,7 @@ export default function ApplicationDetailPage() {
             <h1 className="text-2xl font-extrabold">{p.firstName} {p.lastName}</h1>
             <StatusBadge status={app.status} label={app.statusLabel} />
             {app.isMinor && <Badge>18 yaş altı</Badge>}
+            {app.status === 'finalized' && app.qualified.value && <Badge tone="brand"><Award className="size-3.5" aria-hidden />Nitelikli bursiyer</Badge>}
           </div>
           <p className="mt-1 text-sm text-slate-600">
             <span className="font-mono font-semibold text-slate-800">{app.trackingNo || 'Takip no yok (taslak)'}</span>
@@ -137,6 +139,7 @@ export default function ApplicationDetailPage() {
         </div>
 
         <aside className="min-w-0 space-y-5">
+          {app.qualified.editable && <QualifiedToggle app={app} canWrite={can(admin, 'decide')} />}
           <ReferenceToggle app={app} canWrite={canReview} />
           <NotesPanel app={app} canWrite={canReview} />
           <HistoryTimeline history={app.history} />

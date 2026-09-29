@@ -47,12 +47,12 @@ export default function RegisterPage() {
   const resend = () => authApi.registerResend(flow.registrationToken);
 
   return (
-    <Container size="xl">
-      <div className={flow ? 'mx-auto max-w-md' : 'mx-auto max-w-6xl'}>
-        <StepHeading step={flow ? 2 : 1} title={flow ? 'Telefon Doğrulama' : 'Kişisel Bilgiler'} />
+    <section className="flex flex-1 flex-col py-8 sm:py-12">
+      <Container size="xl" className="my-auto w-full">
+        <div className={flow ? 'mx-auto max-w-md' : 'mx-auto max-w-6xl'}>
+          <StepHeading step={flow ? 2 : 1} title={flow ? 'Telefon Doğrulama' : 'Kişisel Bilgiler'} />
 
-        {flow ? (
-          <div className="mt-8">
+          {flow ? (
             <OtpVerify
               info={flow}
               onVerify={verify}
@@ -60,11 +60,11 @@ export default function RegisterPage() {
               onBack={() => setFlow(null)}
               submitLabel="Doğrula ve Devam Et"
             />
-          </div>
-        ) : (
-          <PersonalInfoForm defaultValues={values} onSubmit={start} />
-        )}
-      </div>
-    </Container>
+          ) : (
+            <PersonalInfoForm defaultValues={values} onSubmit={start} />
+          )}
+        </div>
+      </Container>
+    </section>
   );
 }

@@ -73,7 +73,7 @@ const ADMIN_ROLES = [
 exports.seed = async (knex) => {
   await knex('programs').insert({
     name: '2026-2027',
-    title: '2026-2027 ÖNDER Çift Kanatlı Nesil Burs Programı',
+    title: '',
     tracking_prefix: 'OND-2026',
     is_open: false,
   }).onConflict('name').ignore();

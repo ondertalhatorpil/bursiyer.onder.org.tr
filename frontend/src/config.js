@@ -12,7 +12,7 @@ export const NAV = [
 /** Sitede tekrar eden kurumsal bilgiler */
 export const SITE = {
   orgName: 'ÖNDER İmam Hatipliler Derneği',
-  shortName: 'ÖNDER',
+  shortName: '',
   programTitle: 'Çift Kanatlı Nesil Burs Programı',
   website: 'https://onder.org.tr',
   // Destek iletişim bilgileri (gerekirse güncelleyin)

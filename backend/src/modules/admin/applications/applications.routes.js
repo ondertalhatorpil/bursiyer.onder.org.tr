@@ -8,6 +8,7 @@
  *   POST  /:id/status                        statü değiştir
  *   POST  /:id/notes                         iç not
  *   POST  /:id/reference                     referans teyidi
+ *   POST  /:id/qualified                     nitelikli bursiyer işareti (sadece kesinleşmiş)
  *   GET   /payments-export                   ödeme listesi (kesinleşmiş bursiyerler, tam IBAN)
  *   GET   /:id/iban/:accountId/file          IBAN hesap belgesi
  *   POST  /:id/iban/review                   IBAN kontrolü: uygun (kesinleşir) / red (aday yeniden girer)
@@ -31,5 +32,6 @@ router.post('/:id/notes', requirePermission('review'), validate({ params: schema
 router.get('/:id/iban/:accountId/file', validate({ params: schema.ibanParams }), c.ibanFile);
 router.post('/:id/iban/review', requirePermission('decide'), validate({ params: schema.appParams, body: schema.ibanReview }), c.reviewIban);
 router.post('/:id/reference', requirePermission('review'), validate({ params: schema.appParams, body: schema.reference }), c.setReference);
+router.post('/:id/qualified', requirePermission('decide'), validate({ params: schema.appParams, body: schema.qualified }), c.setQualified);
 
 module.exports = router;
