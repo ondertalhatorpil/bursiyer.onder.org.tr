@@ -11,6 +11,7 @@ import HistoryTimeline from './HistoryTimeline';
 import ReferenceToggle from './ReferenceToggle';
 import IbanReview from './IbanReview';
 import QualifiedToggle from './QualifiedToggle';
+import SponsorsPanel from './SponsorsPanel';
 import { adminApi } from '../../../api/adminEndpoints';
 import { can, useAdminSession } from '../../../hooks/useAdmin';
 import { formatDate, formatDateTime } from '../../../lib/format';
@@ -140,6 +141,7 @@ export default function ApplicationDetailPage() {
 
         <aside className="min-w-0 space-y-5">
           {app.qualified.editable && <QualifiedToggle app={app} canWrite={can(admin, 'decide')} />}
+          {app.sponsors.editable && <SponsorsPanel app={app} canWrite={canReview} />}
           <ReferenceToggle app={app} canWrite={canReview} />
           <NotesPanel app={app} canWrite={canReview} />
           <HistoryTimeline history={app.history} />

@@ -5,6 +5,7 @@ const { audit } = require('../../../services/audit.service');
 const { notFound } = require('../../../lib/errors');
 const { GRADE_LABELS } = require('./labels');
 const ibanSvc = require('../../../services/iban.service');
+const sponsorSvc = require('../../../services/sponsor.service');
 
 async function list(req, res) {
   res.json(await svc.list(req.admin, req.valid.query));
@@ -69,6 +70,16 @@ async function setQualified(req, res) {
   res.json({ application: await svc.detail(req.admin, id) });
 }
 
+async function setSponsors(req, res) {
+  const { id } = req.valid.params;
+  const app = await svc.findScoped(req.admin, id);
+  const { added, removed } = await sponsorSvc.setForApplication(req.admin, app, req.valid.body.sponsorIds);
+  if (added.length || removed.length) {
+    await audit(req, 'application.sponsors', { targetType: 'application', meta: { id, trackingNo: app.tracking_no, added, removed } });
+  }
+  res.json({ application: await svc.detail(req.admin, id) });
+}
+
 /** Filtrelere uyan başvuruları Excel olarak indirir */
 async function exportXlsx(req, res) {
   const rows = await svc.exportRows(req.admin, req.valid.query);
@@ -97,6 +108,7 @@ async function exportXlsx(req, res) {
     { header: '18 Yaş Altı', key: 'minor', width: 10 },
     { header: 'Referans Teyidi', key: 'reference', width: 14 },
     { header: 'Burs Türü', key: 'scholarshipType', width: 12 },
+    { header: 'Burs Veren', key: 'sponsorText', width: 30 },
     { header: 'İşaretler', key: 'flagText', width: 30 },
     { header: 'Gönderim', key: 'submittedAt', width: 18 },
   ];
@@ -108,6 +120,7 @@ async function exportXlsx(req, res) {
       minor: r.isMinor ? 'Evet' : 'Hayır',
       reference: r.referenceVerified ? 'Teyitli' : '',
       scholarshipType: r.status === 'finalized' ? (r.qualified ? 'Nitelikli' : 'Normal') : '',
+      sponsorText: r.sponsorLabel || '',
       flagText: r.flags.map((f) => f.label).join(', '),
       submittedAt: r.submittedAt ? new Date(r.submittedAt).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }) : '',
     });
@@ -165,6 +178,7 @@ async function paymentsExport(req, res) {
     { header: 'Telefon', key: 'phone', width: 18 },
     { header: 'Kategori', key: 'category', width: 18 },
     { header: 'Burs Türü', key: 'scholarshipType', width: 12 },
+    { header: 'Burs Veren', key: 'sponsor', width: 30 },
     { header: 'Kanal / Birim', key: 'channel', width: 30 },
     { header: 'Hesap Sahibi', key: 'holderName', width: 26 },
     { header: 'IBAN', key: 'iban', width: 36 },
@@ -189,4 +203,4 @@ async function paymentsExport(req, res) {
   res.end();
 }
 
-module.exports = { list, detail, file, reviewDocument, setStatus, addNote, setReference, setQualified, exportXlsx, ibanFile, reviewIban, paymentsExport };
+module.exports = { list, detail, file, reviewDocument, setStatus, addNote, setReference, setQualified, setSponsors, exportXlsx, ibanFile, reviewIban, paymentsExport };

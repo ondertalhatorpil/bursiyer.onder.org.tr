@@ -1,11 +1,10 @@
 import { Link, useNavigate } from 'react-router';
-import { Award, FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
+import { Award, Building2, FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
 import StatusBadge from '../shared/StatusBadge';
 import { formatDateTime } from '../../../lib/format';
 
 /**
- * Başvuru tablosu. Masaüstünde tablo, mobilde kart listesi.
- * Satıra tıklayınca detaya gider (klavye için takip no bir link).
+ * Başvuru tablosu. Masaüstünde tablo (sabit yükseklik, tek satır), mobilde kart listesi.
  */
 export default function ApplicationsTable({ items }) {
   const navigate = useNavigate();
@@ -13,62 +12,122 @@ export default function ApplicationsTable({ items }) {
 
   return (
     <>
-      <div className="hidden overflow-x-auto rounded-2xl bg-white ring-1 ring-slate-200 lg:block">
+      {/* Masaüstü Tablo Görünümü */}
+      <div className="hidden overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/80 lg:block">
         <table className="w-full text-left text-sm">
-          <thead className="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-slate-200 bg-slate-50/75 text-xs font-semibold tracking-wider text-slate-500 uppercase">
             <tr>
-              <th className="px-4 py-3">Takip No</th>
-              <th className="px-4 py-3">Aday</th>
-              <th className="px-4 py-3">Kategori / Kanal</th>
-              <th className="px-4 py-3">Okul / Şehir</th>
-              <th className="px-4 py-3">Statü</th>
-              <th className="px-4 py-3">Kontrol</th>
-              <th className="px-4 py-3">Gönderim</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5">Takip No</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5">Aday</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5">Kategori / Kanal</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5">Okul / Şehir</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5">Statü</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5">Kontrol / İşaretler</th>
+              <th scope="col" className="whitespace-nowrap px-4 py-3.5 text-right">Gönderim Tarihi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {items.map((a) => (
-              <tr key={a.id} onClick={() => go(a.id)} className="cursor-pointer align-top hover:bg-brand-50/50">
-                <td className="whitespace-nowrap px-4 py-3">
-                  <Link to={`/admin/basvurular/${a.id}`} onClick={(e) => e.stopPropagation()} className="font-mono font-semibold text-brand-700 hover:underline">
+              <tr
+                key={a.id}
+                onClick={() => go(a.id)}
+                className="group h-14 cursor-pointer transition-colors duration-150 hover:bg-brand-50/40"
+              >
+                {/* Takip No */}
+                <td className="whitespace-nowrap px-4 py-3 align-middle">
+                  <Link
+                    to={`/admin/basvurular/${a.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="font-mono text-xs font-bold text-brand-700 hover:text-brand-800 hover:underline"
+                  >
                     {a.trackingNo || '—'}
                   </Link>
                 </td>
-                <td className="px-4 py-3">
-                  <p className="font-semibold text-slate-900">{a.fullName}</p>
-                  <p className="font-mono text-xs text-slate-500">{a.idNumber}</p>
+
+                {/* Aday */}
+                <td className="whitespace-nowrap px-4 py-3 align-middle">
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-slate-900 group-hover:text-brand-950">{a.fullName}</span>
+                    <span className="font-mono text-xs text-slate-400">({a.idNumber})</span>
+                  </div>
                 </td>
-                <td className="px-4 py-3">
-                  <p className="text-slate-900">{a.categoryLabel || '—'}</p>
-                  <p className="text-xs text-slate-500">{[a.channel, a.subUnit].filter(Boolean).join(' · ')}</p>
+
+                {/* Kategori / Kanal */}
+                <td className="whitespace-nowrap px-4 py-3 align-middle">
+                  <div className="flex items-center gap-1.5 text-xs">
+                    <span className="font-medium text-slate-800">{a.categoryLabel || '—'}</span>
+                    {[a.channel, a.subUnit].filter(Boolean).length > 0 && (
+                      <span className="text-slate-400">
+                        · {[a.channel, a.subUnit].filter(Boolean).join(' / ')}
+                      </span>
+                    )}
+                  </div>
                 </td>
-                <td className="max-w-64 px-4 py-3">
-                  <p className="truncate text-slate-900" title={a.institution}>{a.institution || '—'}</p>
-                  <p className="text-xs text-slate-500">{a.city}</p>
+
+                {/* Okul / Şehir */}
+                <td className="max-w-xs whitespace-nowrap px-4 py-3 align-middle">
+                  <div className="flex items-center gap-1.5 truncate text-xs" title={`${a.institution || ''} ${a.city ? `(${a.city})` : ''}`}>
+                    <span className="truncate font-medium text-slate-800">{a.institution || '—'}</span>
+                    {a.city && <span className="shrink-0 text-slate-400">· {a.city}</span>}
+                  </div>
                 </td>
-                <td className="px-4 py-3"><StatusBadge status={a.status} label={a.statusLabel} /></td>
-                <td className="px-4 py-3"><Signals a={a} /></td>
-                <td className="whitespace-nowrap px-4 py-3 text-slate-600">{formatDateTime(a.submittedAt || a.createdAt)}</td>
+
+                {/* Statü */}
+                <td className="whitespace-nowrap px-4 py-3 align-middle">
+                  <StatusBadge status={a.status} label={a.statusLabel} />
+                </td>
+
+                {/* Kontrol / İşaretler */}
+                <td className="whitespace-nowrap px-4 py-3 align-middle">
+                  <Signals a={a} />
+                </td>
+
+                {/* Gönderim Tarihi */}
+                <td className="whitespace-nowrap px-4 py-3 text-right text-xs font-medium text-slate-500 align-middle">
+                  {formatDateTime(a.submittedAt || a.createdAt)}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
+      {/* Mobil Kart Görünümü */}
       <ul className="space-y-3 lg:hidden">
         {items.map((a) => (
           <li key={a.id}>
-            <Link to={`/admin/basvurular/${a.id}`} className="block rounded-2xl bg-white p-4 ring-1 ring-slate-200">
-              <div className="flex items-start justify-between gap-3">
+            <Link
+              to={`/admin/basvurular/${a.id}`}
+              className="block rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200 transition-all hover:border-brand-300 hover:ring-brand-200 active:bg-slate-50"
+            >
+              <div className="flex items-start justify-between gap-3 border-b border-slate-100 pb-3">
                 <div className="min-w-0">
                   <p className="font-semibold text-slate-900">{a.fullName}</p>
-                  <p className="font-mono text-xs text-slate-500">{a.trackingNo} · {a.idNumber}</p>
+                  <p className="mt-0.5 font-mono text-xs text-slate-500">
+                    <span className="font-semibold text-brand-700">{a.trackingNo}</span> · {a.idNumber}
+                  </p>
                 </div>
                 <StatusBadge status={a.status} label={a.statusLabel} />
               </div>
-              <p className="mt-2 text-sm text-slate-700">{[a.categoryLabel, a.channel, a.subUnit].filter(Boolean).join(' · ')}</p>
-              <p className="truncate text-sm text-slate-500">{[a.institution, a.city].filter(Boolean).join(' · ')}</p>
-              <div className="mt-2"><Signals a={a} /></div>
+
+              <div className="mt-3 space-y-1 text-xs">
+                <div className="flex items-center justify-between text-slate-700">
+                  <span className="text-slate-400">Kategori:</span>
+                  <span className="font-medium">{[a.categoryLabel, a.channel, a.subUnit].filter(Boolean).join(' · ')}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-700">
+                  <span className="text-slate-400">Okul / Şehir:</span>
+                  <span className="truncate font-medium">{[a.institution, a.city].filter(Boolean).join(' · ')}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-700 pt-1">
+                  <span className="text-slate-400">Gönderim:</span>
+                  <span className="text-slate-500">{formatDateTime(a.submittedAt || a.createdAt)}</span>
+                </div>
+              </div>
+
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <Signals a={a} />
+              </div>
             </Link>
           </li>
         ))}
@@ -77,24 +136,52 @@ export default function ApplicationsTable({ items }) {
   );
 }
 
-/** İnceleyicinin dikkat etmesi gereken işaretler (ikon + metin, sadece renge dayanmaz) */
+/** İnceleyicinin dikkat etmesi gereken işaretler (Masaüstünde tek satırda kalır) */
 function Signals({ a }) {
   const items = [];
+
   if (a.status === 'finalized') {
-    items.push(a.qualified
-      ? { icon: Award, text: 'Nitelikli bursiyer', cls: 'text-brand-700' }
-      : { icon: Award, text: 'Normal bursiyer', cls: 'text-slate-500' });
+    items.push(
+      a.qualified
+        ? { icon: Award, text: 'Nitelikli bursiyer', cls: 'text-brand-700 bg-brand-50 ring-brand-200' }
+        : { icon: Award, text: 'Normal bursiyer', cls: 'text-slate-600 bg-slate-100 ring-slate-200' }
+    );
+    if (a.sponsorLabel) {
+      items.push({ icon: Building2, text: a.sponsorLabel, cls: 'text-slate-700 bg-slate-100 ring-slate-200' });
+    }
   }
-  if (a.isMinor) items.push({ icon: UserRound, text: '18 yaş altı', cls: 'text-slate-600' });
-  if (a.revisionDocs) items.push({ icon: FileWarning, text: `${a.revisionDocs} belge revizede`, cls: 'text-accent-700' });
-  for (const f of a.flags) items.push({ icon: TriangleAlert, text: f.label, cls: 'text-amber-700' });
-  if (a.referenceVerified) items.push({ icon: ShieldCheck, text: 'Referans kontrol edildi', cls: 'text-emerald-700' });
-  if (!items.length) return <span className="text-xs text-slate-400">—</span>;
+
+  if (a.isMinor) {
+    items.push({ icon: UserRound, text: '18 yaş altı', cls: 'text-slate-700 bg-slate-100 ring-slate-200' });
+  }
+
+  if (a.revisionDocs) {
+    items.push({ icon: FileWarning, text: `${a.revisionDocs} belge revizede`, cls: 'text-accent-700 bg-accent-50 ring-accent-200' });
+  }
+
+  if (Array.isArray(a.flags)) {
+    a.flags.forEach((f) => {
+      items.push({ icon: TriangleAlert, text: f.label, cls: 'text-amber-800 bg-amber-50 ring-amber-200' });
+    });
+  }
+
+  if (a.referenceVerified) {
+    items.push({ icon: ShieldCheck, text: 'Referans onaylı', cls: 'text-emerald-800 bg-emerald-50 ring-emerald-200' });
+  }
+
+  if (!items.length) {
+    return <span className="text-xs text-slate-400">—</span>;
+  }
+
   return (
-    <ul className="flex flex-wrap gap-x-3 gap-y-1 lg:flex-col">
-      {items.map((i) => (
-        <li key={i.text} className={`flex items-center gap-1 text-xs font-medium ${i.cls}`}>
-          <i.icon className="size-3.5 shrink-0" aria-hidden />{i.text}
+    <ul className="flex items-center gap-1.5 whitespace-nowrap">
+      {items.map((i, idx) => (
+        <li
+          key={`${i.text}-${idx}`}
+          className={`inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${i.cls}`}
+        >
+          <i.icon className="size-3.5 shrink-0" aria-hidden />
+          <span>{i.text}</span>
         </li>
       ))}
     </ul>

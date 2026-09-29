@@ -14,6 +14,7 @@ const filters = z.object({
   cityId: id.optional(),
   flag: z.enum(['birth_year_out_of_range', 'school_not_in_list']).optional(),
   minor: z.enum(['0', '1']).optional().transform((v) => (v === undefined ? undefined : v === '1')),
+  sponsor: z.union([z.literal('gm'), z.string().regex(/^\d+$/)]).optional(),
   qualified: z.enum(['0', '1']).optional().transform((v) => (v === undefined ? undefined : v === '1')),
   q: z.string().trim().max(100).optional(),
   page: z.coerce.number().int().min(1).default(1),
@@ -40,6 +41,7 @@ const note = z.object({
 });
 
 const reference = z.object({ verified: z.boolean() });
+const sponsors = z.object({ sponsorIds: z.array(z.number().int().positive()).max(20, 'En fazla 20 firma') });
 const qualified = z.object({ qualified: z.boolean({ error: 'Geçersiz değer' }) });
 
 const ibanParams = z.object({ id: z.uuid(), accountId: id });
@@ -49,4 +51,4 @@ const ibanReview = z.object({
 });
 const payments = z.object({ programId: id.optional() });
 
-module.exports = { filters, appParams, docParams, status, documentReview, note, reference, qualified, ibanParams, ibanReview, payments };
+module.exports = { filters, appParams, docParams, status, documentReview, note, reference, qualified, sponsors, ibanParams, ibanReview, payments };

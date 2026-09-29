@@ -15,6 +15,7 @@ const { changeStatus, canTransition, STATUS_LABELS, TRANSITIONS } = require('./s
 const { CATEGORY_LABELS } = require('./application.service');
 const sms = require('./sms');
 const iban = require('./iban.service');
+const sponsors = require('./sponsor.service');
 
 const FLAG_LABELS = {
   birth_year_out_of_range: 'Doğum yılı şart dışında',
@@ -56,6 +57,7 @@ function applyFilters(q, f) {
   if (f.minor !== undefined) q.where('a.is_minor', f.minor);
   // Burs türü yalnızca kesinleşmiş bursiyerler için anlamlı
   if (f.qualified !== undefined) q.where({ 'a.status': 'finalized', 'a.is_qualified': f.qualified });
+  sponsors.applySponsorFilter(q, f.sponsor);
 
   const term = f.q?.trim();
   if (term) {
@@ -76,7 +78,14 @@ function institution(row) {
   return row.school_name || row.school_other || row.university_name || row.university_other || null;
 }
 
-function listRow(r, admin) {
+/** Kesinleşmiş bursiyerde burs veren: firma adları veya Genel Merkez; diğer statülerde boş */
+function sponsorLabel(r, names) {
+  if (r.status !== 'finalized') return null;
+  const list = names.get(Number(r.id)) || [];
+  return list.length ? list.join(', ') : sponsors.GENEL_MERKEZ;
+}
+
+function listRow(r, admin, names = new Map()) {
   const idNumber = decrypt(r.id_number_enc);
   return {
     id: r.public_id,
@@ -96,6 +105,7 @@ function listRow(r, admin) {
     isMinor: !!r.is_minor,
     referenceVerified: !!r.reference_verified_at,
     qualified: !!r.is_qualified,
+    sponsorLabel: sponsorLabel(r, names),
     submittedAt: r.submitted_at,
     createdAt: r.created_at,
   };
@@ -130,7 +140,7 @@ async function list(admin, f) {
     .offset((f.page - 1) * f.pageSize);
 
   return {
-    items: rows.map((r) => listRow(r, admin)),
+    items: await withSponsorNames(rows, (r, names) => listRow(r, admin, names)),
     page: f.page,
     pageSize: f.pageSize,
     total: Number(total),
@@ -240,6 +250,7 @@ async function detail(admin, publicId) {
       verifiedAt: app.reference_verified_at,
       verifiedBy: refAdmin?.full_name || null,
     },
+    sponsors: await sponsors.detailFor(app),
     qualified: {
       value: !!app.is_qualified,
       changedAt: app.qualified_at,
@@ -451,7 +462,13 @@ async function exportRows(admin, f) {
   const programId = await resolveProgramId(f.programId);
   const q = applyFilters(applyScope(baseQuery().where('a.program_id', programId), admin), f);
   const rows = await withDocCounts(q.select(LIST_COLUMNS)).orderByRaw('a.submitted_at IS NULL, a.submitted_at ASC');
-  return rows.map((r) => ({ ...listRow(r, admin), phone: formatTrMobile(r.phone), email: r.email, birthDate: r.birth_date, universityType: r.university_type, faculty: r.faculty, department: r.department, grade: r.grade }));
+  return withSponsorNames(rows, (r, names) => ({ ...listRow(r, admin, names), phone: formatTrMobile(r.phone), email: r.email, birthDate: r.birth_date, universityType: r.university_type, faculty: r.faculty, department: r.department, grade: r.grade }));
+}
+
+async function withSponsorNames(rows, fn) {
+  const ids = rows.filter((r) => r.status === 'finalized').map((r) => Number(r.id));
+  const names = await sponsors.namesByApplication(ids);
+  return rows.map((r) => fn(r, names));
 }
 
 /** Ödeme listesi (kesinleşmiş bursiyerler, tam IBAN). Kapsamla sınırlı. */
@@ -461,19 +478,20 @@ async function paymentRows(admin, programId) {
     .leftJoin('education as e', 'e.application_id', 'a.id')
     .leftJoin('channels as ch', 'ch.id', 'a.channel_id')
     .leftJoin('sub_units as su', 'su.id', 'a.sub_unit_id')
-    .select('a.tracking_no', 'a.category', 'a.is_qualified', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone',
+    .select('a.id', 'a.status', 'a.tracking_no', 'a.category', 'a.is_qualified', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone',
       'b.iban_enc', 'b.bank_code_raw', 'k.name as bank_name', 'b.holder_name', 'b.verified_at',
       'ch.name as channel_name', 'su.name as sub_unit_name')
     .orderBy(['p.last_name', 'p.first_name']);
   const rows = await applyScope(q, admin);
   const { formatIban } = require('../lib/iban');
-  return rows.map((r) => ({
+  return withSponsorNames(rows, (r, names) => ({
     trackingNo: r.tracking_no,
     fullName: `${r.first_name} ${r.last_name}`,
     idNumber: decrypt(r.id_number_enc),
     phone: formatTrMobile(r.phone),
     category: CATEGORY_LABELS[r.category] || '',
     scholarshipType: r.is_qualified ? 'Nitelikli' : 'Normal',
+    sponsor: sponsorLabel(r, names),
     channel: [r.channel_name, r.sub_unit_name].filter(Boolean).join(' · '),
     holderName: r.holder_name,
     iban: formatIban(decrypt(r.iban_enc)),

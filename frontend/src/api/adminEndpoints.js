@@ -33,10 +33,26 @@ export const adminApi = {
   setStatus: (id, body) => guard(api.post(`/admin/applications/${id}/status`, body)),
   addNote: (id, body) => guard(api.post(`/admin/applications/${id}/notes`, body)),
   setReference: (id, verified) => guard(api.post(`/admin/applications/${id}/reference`, { verified })),
+  setSponsors: (id, sponsorIds) => guard(api.put(`/admin/applications/${id}/sponsors`, { sponsorIds })),
   setQualified: (id, qualified) => guard(api.post(`/admin/applications/${id}/qualified`, { qualified })),
   ibanFileUrl: (id, accountId) => `/api/admin/applications/${id}/iban/${accountId}/file`,
   reviewIban: (id, body) => guard(api.post(`/admin/applications/${id}/iban/review`, body)),
   paymentsExportUrl: () => '/api/admin/applications/payments-export',
+};
+
+/** Burs veren firmalar (liste herkes; yönetim manage_settings) */
+export const sponsorsApi = {
+  list: () => guard(api.get('/admin/sponsors')),
+  create: (body) => guard(api.post('/admin/sponsors', body)),
+  update: (id, body) => guard(request(`/admin/sponsors/${id}`, { method: 'PATCH', body })),
+  remove: (id) => guard(api.del(`/admin/sponsors/${id}`)),
+  uploadLogo: (id, file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    return guard(api.upload(`/admin/sponsors/${id}/logo`, fd));
+  },
+  removeLogo: (id) => guard(api.del(`/admin/sponsors/${id}/logo`)),
+  logoUrl: (id, version) => `/api/admin/sponsors/${id}/logo?v=${version || 0}`,
 };
 
 /** Aşama 9: ayarlar (manage_settings) */

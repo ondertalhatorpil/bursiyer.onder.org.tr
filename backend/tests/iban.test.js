@@ -61,6 +61,8 @@ beforeEach(async () => {
   await db('audit_logs').del();
   await db('admin_scopes').del();
   await db('application_notes').del();
+  await db('application_sponsors').del();
+  await db('sponsors').del();
   await db('admin_users').del();
   await openProgram();
   outbox.length = 0;
@@ -71,6 +73,8 @@ afterAll(async () => {
   await resetApplications();
   await db('bank_accounts').del();
   await db('audit_logs').del();
+  await db('application_sponsors').del();
+  await db('sponsors').del();
   await db('admin_users').del();
   await db.destroy();
   fs.rmSync(process.env.UPLOAD_DIR, { recursive: true, force: true });
@@ -233,5 +237,109 @@ describe('Nitelikli bursiyer', () => {
     await db('admin_scopes').insert({ admin_user_id: (await db('admin_users').where({ email: 'k@onder.org.tr' }).first()).id, category: 'universite' });
     const k = await adminAgent('k@onder.org.tr');
     await k.post(`/api/admin/applications/${id}/qualified`).send({ qualified: true }).expect(403);
+  });
+});
+
+describe('Burs veren firmalar', () => {
+  const finalized = async (over) => {
+    const a = await approvedApplication(over);
+    await sendIban(a.agent, over?.iban ? { iban: over.iban } : undefined).expect(201);
+    await gm.post(`/api/admin/applications/${a.id}/iban/review`).send({ decision: 'accepted' }).expect(200);
+    await db('otp_codes').del();
+    return a;
+  };
+  let sa;
+  beforeEach(async () => {
+    await createAdmin('sa@onder.org.tr', 'super_admin', { phone: '905550000011' });
+    sa = await adminAgent('sa@onder.org.tr');
+  });
+
+  test('firma yönetimi: sadece süper admin; doğrulama, logo, silme kuralları', async () => {
+    await gm.post('/api/admin/sponsors').send({ name: 'Yetkisiz Firma' }).expect(403);
+    await sa.post('/api/admin/sponsors').send({ name: 'A' }).expect(422);
+    await sa.post('/api/admin/sponsors').send({ name: 'Ters Tarih', startedAt: '2026-09-01', endedAt: '2026-01-01' }).expect(422);
+    await sa.post('/api/admin/sponsors').send({ name: 'Kötü Mail', contactEmail: 'mail' }).expect(422);
+
+    const r = await sa.post('/api/admin/sponsors').send({
+      name: 'Örnek Holding', startedAt: '2025-09-01', contactName: 'Ayşe Kaya', contactPhone: '0212 000 00 00',
+      contactEmail: 'ayse@ornek.com', website: 'https://ornek.com', notes: 'Yıllık protokol',
+    }).expect(201);
+    expect(r.body.items[0]).toMatchObject({ name: 'Örnek Holding', isActive: true, hasLogo: false, studentCount: 0, contactName: 'Ayşe Kaya' });
+    await sa.post('/api/admin/sponsors').send({ name: 'Örnek Holding' }).expect(422);
+
+    const id = r.body.id;
+    await gm.get('/api/admin/sponsors').expect(200); // herkes listeyi görür (atama için)
+    await sa.post(`/api/admin/sponsors/${id}/logo`).attach('file', pdf('logo'), 'logo.pdf').expect(422);
+    const l = await sa.post(`/api/admin/sponsors/${id}/logo`).attach('file', PNG, 'logo.png').expect(200);
+    expect(l.body.items[0].hasLogo).toBe(true);
+    const img = await gm.get(`/api/admin/sponsors/${id}/logo`).expect(200);
+    expect(img.headers['content-type']).toBe('image/png');
+    await sa.delete(`/api/admin/sponsors/${id}/logo`).expect(200);
+    await gm.get(`/api/admin/sponsors/${id}/logo`).expect(404);
+
+    const u = await sa.patch(`/api/admin/sponsors/${id}`).send({ isActive: false, endedAt: '2026-06-30' }).expect(200);
+    expect(u.body.items[0]).toMatchObject({ isActive: false, endedAt: expect.anything() });
+    await sa.delete(`/api/admin/sponsors/${id}`).expect(200);
+    expect((await sa.get('/api/admin/sponsors').expect(200)).body.items).toHaveLength(0);
+  });
+
+  test('bursiyere firma atama: 0 firma = Genel Merkez, çoklu firma, filtre, export, silme koruması', async () => {
+    const s1 = (await sa.post('/api/admin/sponsors').send({ name: 'Alfa A.Ş.' }).expect(201)).body.id;
+    const s2 = (await sa.post('/api/admin/sponsors').send({ name: 'Beta Ltd.' }).expect(201)).body.id;
+    const s3 = (await sa.post('/api/admin/sponsors').send({ name: 'Gama Vakfı', isActive: false }).expect(201)).body.id;
+
+    const pending = await approvedApplication();
+    await gm.put(`/api/admin/applications/${pending.id}/sponsors`).send({ sponsorIds: [s1] }).expect(409);
+    await db('otp_codes').del();
+
+    const { id, trackingNo } = await finalized({ idNumber: '10000000214', phone: '05321112299', iban: makeIban('00062', '0000999988887777') });
+    let d = await gm.get(`/api/admin/applications/${id}`).expect(200);
+    expect(d.body.application.sponsors).toMatchObject({ editable: true, items: [], label: 'Genel Merkez' });
+
+    await gm.put(`/api/admin/applications/${id}/sponsors`).send({ sponsorIds: [s3] }).expect(422); // pasif
+    await gm.put(`/api/admin/applications/${id}/sponsors`).send({ sponsorIds: [99999] }).expect(422);
+    d = await gm.put(`/api/admin/applications/${id}/sponsors`).send({ sponsorIds: [s2, s1, s1] }).expect(200);
+    expect(d.body.application.sponsors.items.map((x) => x.name)).toEqual(['Alfa A.Ş.', 'Beta Ltd.']);
+    expect(d.body.application.sponsors.label).toBe('Alfa A.Ş., Beta Ltd.');
+    expect(d.body.application.sponsors.items[0].assignedBy).toBe('gm_reviewer Kullanıcı');
+
+    const list = async (q) => (await gm.get(`/api/admin/applications?status=finalized${q}`).expect(200)).body.items;
+    expect((await list(''))[0].sponsorLabel).toBe('Alfa A.Ş., Beta Ltd.');
+    expect((await list(`&sponsor=${s1}`)).map((i) => i.id)).toEqual([id]);
+    expect(await list(`&sponsor=${s3}`)).toHaveLength(0);
+    expect(await list('&sponsor=gm')).toHaveLength(0);
+    expect((await sa.get('/api/admin/sponsors').expect(200)).body.items.find((x) => x.id === s1).studentCount).toBe(1);
+
+    const xlsx = async (url, sheet) => {
+      const x = await gm.get(url).buffer(true)
+        .parse((r, cb) => { const c = []; r.on('data', (b) => c.push(b)); r.on('end', () => cb(null, Buffer.concat(c))); }).expect(200);
+      return XLSX.utils.sheet_to_json(XLSX.read(x.body).Sheets[sheet]);
+    };
+    expect((await xlsx('/api/admin/applications/payments-export', 'Ödeme Listesi'))[0]).toMatchObject({ 'Takip No': trackingNo, 'Burs Veren': 'Alfa A.Ş., Beta Ltd.' });
+    expect((await xlsx('/api/admin/applications/export?status=finalized', 'Başvurular'))[0]['Burs Veren']).toBe('Alfa A.Ş., Beta Ltd.');
+
+    // Atanmış firma silinemez; pasife alınınca mevcut atama kalır
+    await sa.delete(`/api/admin/sponsors/${s1}`).expect(409);
+    await sa.patch(`/api/admin/sponsors/${s1}`).send({ isActive: false }).expect(200);
+    d = await gm.put(`/api/admin/applications/${id}/sponsors`).send({ sponsorIds: [s1] }).expect(200);
+    expect(d.body.application.sponsors.items).toMatchObject([{ name: 'Alfa A.Ş.', isActive: false }]);
+
+    // Tümünü kaldır -> Genel Merkez
+    d = await gm.put(`/api/admin/applications/${id}/sponsors`).send({ sponsorIds: [] }).expect(200);
+    expect(d.body.application.sponsors.label).toBe('Genel Merkez');
+    expect((await list('&sponsor=gm')).map((i) => i.id)).toEqual([id]);
+    const logs = await db('audit_logs').where({ action: 'application.sponsors' });
+    expect(logs).toHaveLength(3);
+
+    // Koordinatör kapsamındaki bursiyere atayabilir, firma ekleyemez
+    await createAdmin('k2@onder.org.tr', 'coordinator', { phone: '905550000012' });
+    await db('admin_scopes').insert({ admin_user_id: (await db('admin_users').where({ email: 'k2@onder.org.tr' }).first()).id, category: 'universite' });
+    const k = await adminAgent('k2@onder.org.tr');
+    await k.put(`/api/admin/applications/${id}/sponsors`).send({ sponsorIds: [s2] }).expect(200);
+    await k.post('/api/admin/sponsors').send({ name: 'Koordinatör Firması' }).expect(403);
+
+    // Aday görmez
+    const me = await pending.agent.get('/api/application').expect(200);
+    expect(JSON.stringify(me.body)).not.toMatch(/sponsor|Alfa/i);
   });
 });

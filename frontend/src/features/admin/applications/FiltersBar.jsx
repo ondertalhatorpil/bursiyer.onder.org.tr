@@ -6,12 +6,14 @@ import CitySelect from '../../../components/lookups/CitySelect';
 import { useChannels } from '../../../hooks/useLookups';
 import { CATEGORIES } from '../../../config';
 import { FLAG_FILTERS, STATUS_FILTERS } from '../shared/constants';
+import { useSponsors } from '../sponsors/useSponsors';
 
 /** Arama + filtreler (tek satır; mobilde açılır panel) */
 export default function FiltersBar({ filters, setFilter, reset, activeCount }) {
   const [q, setQ] = useState(filters.q);
   const [open, setOpen] = useState(false);
   const { data: channels = [] } = useChannels(filters.category);
+  const { data: sponsors = [] } = useSponsors();
   const channel = channels.find((c) => String(c.id) === filters.channelId);
 
   // Yazmayı bitirince ara (300 ms)
@@ -55,6 +57,10 @@ export default function FiltersBar({ filters, setFilter, reset, activeCount }) {
         <FilterSelect aria-label="Burs türü" value={filters.qualified} placeholder="Tüm burs türleri"
           title="Sadece kesinleşmiş bursiyerler" options={[{ value: '1', label: 'Nitelikli bursiyer' }, { value: '0', label: 'Normal bursiyer' }]}
           onChange={(e) => setFilter({ qualified: e.target.value })} />
+        <FilterSelect aria-label="Burs veren" value={filters.sponsor} placeholder="Tüm burs verenler"
+          title="Sadece kesinleşmiş bursiyerler"
+          options={[{ value: 'gm', label: 'Genel Merkez' }, ...sponsors.map((s) => ({ value: String(s.id), label: s.isActive ? s.name : `${s.name} (pasif)` }))]}
+          onChange={(e) => setFilter({ sponsor: e.target.value })} />
         <div className="flex items-center gap-3 sm:col-span-2 lg:col-span-6">
           {(activeCount > 0 || filters.q) && (
             <Button variant="ghost" size="sm" icon={X} onClick={() => { setQ(''); reset(); }}>Temizle</Button>

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router';
 import { useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { FileStack, History, KeyRound, LayoutDashboard, LogOut, Menu, Settings, Users, X } from 'lucide-react';
+import { Building2, FileStack, History, KeyRound, LayoutDashboard, LogOut, Menu, Settings, Users, X } from 'lucide-react';
 import Logo from '../../../components/layout/Logo';
 import { Button } from '../../../components/ui';
 import { adminAuthApi } from '../../../api/adminEndpoints';
@@ -11,6 +11,7 @@ import { ADMIN_KEY, can, useAdminSession } from '../../../hooks/useAdmin';
 const NAV = [
   { to: '/admin', label: 'Genel Bakış', icon: LayoutDashboard, end: true },
   { to: '/admin/basvurular', label: 'Başvurular', icon: FileStack },
+  { to: '/admin/firmalar', label: 'Burs Veren Firmalar', icon: Building2, permission: 'manage_settings' },
   { to: '/admin/ayarlar', label: 'Ayarlar', icon: Settings, permission: 'manage_settings' },
   { to: '/admin/kullanicilar', label: 'Kullanıcılar', icon: Users, permission: 'manage_users' },
   { to: '/admin/islem-kayitlari', label: 'İşlem kayıtları', icon: History, permission: 'manage_users' },

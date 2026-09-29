@@ -37,6 +37,7 @@ import ErrorPage from './pages/ErrorPage';
  *   /admin/basvurular           liste (filtreler adres çubuğunda)
  *   /admin/basvurular/:id       detay ve değerlendirme
  *   /admin/ayarlar/...          dönem, onay metinleri, ekran metinleri, SMS (manage_settings)
+ *   /admin/firmalar             burs veren firmalar (manage_settings)
  *   /admin/kullanicilar         kullanıcılar ve yetki alanları (manage_users)
  *   /admin/islem-kayitlari      işlem kayıtları (manage_users)
  */
@@ -59,6 +60,7 @@ export const router = createBrowserRouter([
               {
                 element: <RequirePermission permission="manage_settings" />,
                 children: [
+                  { path: 'firmalar', lazy: () => import('./features/admin/sponsors/SponsorsPage').then((m) => ({ Component: m.default })) },
                   {
                     path: 'ayarlar',
                     lazy: () => import('./features/admin/settings/SettingsLayout').then((m) => ({ Component: m.default })),

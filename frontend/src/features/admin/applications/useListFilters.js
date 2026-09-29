@@ -1,7 +1,7 @@
 import { useSearchParams } from 'react-router';
 import { SUBMITTED_STATUSES } from '../shared/constants';
 
-const KEYS = ['q', 'status', 'category', 'channelId', 'subUnitId', 'cityId', 'flag', 'minor', 'qualified', 'page'];
+const KEYS = ['q', 'status', 'category', 'channelId', 'subUnitId', 'cityId', 'flag', 'minor', 'qualified', 'sponsor', 'page'];
 
 /**
  * Liste filtreleri adres çubuğunda tutulur (sayfa yenilenince / link paylaşılınca kaybolmaz).
