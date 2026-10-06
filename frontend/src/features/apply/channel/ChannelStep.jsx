@@ -29,7 +29,7 @@ export default function ChannelStep() {
   const guardianPending = application.guardianRequired && !application.guardian?.verified;
   const goNextOrWait = (app) => {
     if (app.guardianRequired && !app.guardian?.verified) {
-      setNotice('Bilgileriniz kaydedildi. Devam etmek için aşağıdan veli onayını tamamlayın.');
+      setNotice('Bilgileriniz kaydedildi. Devam etmek için aşağıdan veli onayını tamamlayınız.');
       document.getElementById('veli')?.scrollIntoView({ behavior: 'smooth' });
     } else {
       navigate('/basvuru/egitim');
@@ -50,7 +50,7 @@ export default function ChannelStep() {
 
   const acceptRequirements = async () => {
     if (application.requirementsAcceptedAt) return goNextOrWait(application);
-    if (!reqChecked) return setError('Devam etmek için başvuru şartlarını onaylayın');
+    if (!reqChecked) return setError('Devam etmek için başvuru şartlarını onaylayınız');
     setSaving(true);
     setError(null);
     try {
@@ -72,11 +72,13 @@ export default function ChannelStep() {
       step={4}
       title={grad ? 'Başvuru Şartları' : 'Başvuru Kanalı'}
       description={grad
-        ? `${application.categoryLabel} başvuru şartlarını okuyup onaylayın.`
-        : 'Hangi kanal üzerinden başvurduğunuzu seçin. Seçiminize göre ek bilgiler istenecektir.'}
+        ? 'Lütfen burs programına ait akademik ve idari başvuru şartlarını dikkatlice inceleyiniz.'
+        : application.category === 'lise'
+          ? 'Lütfen başvurunuzu gerçekleştirdiğiniz ilgili kurumu veya kontenjan türünü seçiniz.'
+          : 'Lütfen başvurunuzu gerçekleştirdiğiniz kanalı seçiniz. Seçiminize göre ek bilgiler istenecektir.'}
       footer={grad ? (
         <StepActions step={4} onNext={birthWarning ? () => goNextOrWait(application) : acceptRequirements} loading={saving}
-          nextLabel={application.requirementsAcceptedAt || birthWarning ? 'Devam Et' : 'Onaylıyorum ve Devam Et'} />
+          nextLabel={application.requirementsAcceptedAt || birthWarning ? 'Devam Et' : 'Onayla ve Devam Et'} />
       ) : (
         <StepActions step={4} form={FORM_ID} loading={saving} hint={guardianPending ? 'Veli onayı da gerekli' : undefined} />
       )}

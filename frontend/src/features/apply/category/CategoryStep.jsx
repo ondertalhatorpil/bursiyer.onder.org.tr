@@ -89,7 +89,7 @@ export default function CategoryStep() {
   };
 
   const next = () => {
-    if (!value) return setError('Lütfen bir burs kategorisi seçin');
+    if (!value) return setError('Lütfen bir burs kategorisi seçiniz');
     if (changing) return setConfirmOpen(true);
     if (value === application.category) return navigate('/basvuru/kanal');
     return save();
@@ -98,8 +98,8 @@ export default function CategoryStep() {
   return (
     <StepPage
       step={3}
-      title="Burs Kategorisi"
-      description="Başvurmak istediğiniz burs kategorisini seçin. Sadece bir kategoriye başvurabilirsiniz."
+      title="Burs Kategorisi Seçimi"
+      description="Lütfen öğrenim durumunuza uygun burs kategorisini seçiniz. Başvuru süreci boyunca yalnızca tek bir kategori için müracaat yapılabilir."
       footer={<StepActions step={3} onNext={next} loading={saving} />}
     >
       {error && <Alert variant="error">{error}</Alert>}
@@ -109,18 +109,19 @@ export default function CategoryStep() {
       <Modal
         open={confirmOpen}
         onClose={() => setConfirmOpen(false)}
-        title="Kategori değiştirilsin mi?"
+        title="Kategori Değişikliği Onayı"
         size="sm"
         footer={(
           <>
-            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>Vazgeç</Button>
-            <Button variant="danger" loading={saving} onClick={save}>Evet, değiştir</Button>
+            <Button variant="secondary" onClick={() => setConfirmOpen(false)}>İptal</Button>
+            <Button variant="danger" loading={saving} onClick={save}>Evet, Değiştir</Button>
           </>
         )}
       >
         <p className="text-sm leading-relaxed text-slate-700">
-          Kategoriyi değiştirirseniz başvuru kanalı, eğitim bilgileri ve yüklediğiniz belgeler silinir;
-          bu adımları yeni kategoriye göre tekrar doldurmanız gerekir. Veli bilgileriniz korunur.
+          Burs kategorisini değiştirmeniz durumunda; seçmiş olduğunuz başvuru kanalı, eğitim bilgileriniz ve
+          yüklediğiniz belgeler sıfırlanacaktır. Bu adımları yeni kategoriye uygun olarak yeniden doldurmanız
+          gerekecektir. Varsa kaydedilen veli/iletişim bilgileriniz muhafaza edilecektir.
         </p>
       </Modal>
     </StepPage>

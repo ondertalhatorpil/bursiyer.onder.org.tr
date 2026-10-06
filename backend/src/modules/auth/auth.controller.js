@@ -28,7 +28,7 @@ function openToken(type, tokenStr) {
     data = null;
   }
   if (!data || data.t !== type || typeof data.exp !== 'number' || data.exp < Date.now()) {
-    throw new AppError(400, 'FLOW_EXPIRED', 'İşlem süresi doldu, lütfen baştan başlayın');
+    throw new AppError(400, 'FLOW_EXPIRED', 'İşlem süresi doldu, lütfen baştan başlayınız');
   }
   return data;
 }
@@ -45,11 +45,11 @@ async function registerStart(req, res) {
 
   const [kvkk, sharing] = await Promise.all([svc.getActiveConsentText('kvkk'), svc.getActiveConsentText('sharing')]);
   if (!kvkk || !sharing) {
-    throw new AppError(503, 'CONSENT_TEXT_MISSING', 'Başvuru metinleri henüz yayınlanmadı, lütfen daha sonra tekrar deneyin');
+    throw new AppError(503, 'CONSENT_TEXT_MISSING', 'Başvuru metinleri henüz yayınlanmadı, lütfen daha sonra tekrar deneyiniz');
   }
 
   if (await svc.findApplicantByIdNumber(v.idNumber.value)) {
-    throw new AppError(409, 'ALREADY_REGISTERED', 'Bu kimlik numarasıyla kayıt zaten var, lütfen giriş yapın');
+    throw new AppError(409, 'ALREADY_REGISTERED', 'Bu kimlik numarasıyla kayıt zaten var, lütfen giriş yapınız');
   }
 
   const reg = {
@@ -99,7 +99,7 @@ async function registerVerify(req, res) {
   });
 
   const program = await svc.requireOpenProgram();
-  if (program.id !== data.programId) throw badRequest('Başvuru dönemi değişti, lütfen baştan başlayın');
+  if (program.id !== data.programId) throw badRequest('Başvuru dönemi değişti, lütfen baştan başlayınız');
 
   const { applicantId } = await svc.createRegistration({
     reg: data.reg,
@@ -135,7 +135,7 @@ async function loginStart(req, res) {
 async function loadLoginApplicant(tokenStr) {
   const data = openToken('login', tokenStr);
   const applicant = await db('applicants').where({ id: data.applicantId }).first();
-  if (!applicant) throw new AppError(400, 'FLOW_EXPIRED', 'İşlem süresi doldu, lütfen baştan başlayın');
+  if (!applicant) throw new AppError(400, 'FLOW_EXPIRED', 'İşlem süresi doldu, lütfen baştan başlayınız');
   return applicant;
 }
 

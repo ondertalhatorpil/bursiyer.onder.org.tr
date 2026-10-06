@@ -43,7 +43,9 @@ async function submittedApplication(over = {}) {
   await agent.put('/api/application/channel').send({ channelId: ch.uni_wonder }).expect(200);
   await agent.put('/api/application/education').send({ cityId: 34, universityId: uni.id, faculty: 'Fen Fakültesi', department: 'Biyoloji', grade: '3' }).expect(200);
   await agent.post('/api/documents/ogrenci_belgesi').attach('file', pdf('Ogrenci'), 'ogrenci.pdf').expect(201);
-  await agent.post('/api/documents/transkript').attach('file', pdf('Transkript'), 'transkript.pdf').expect(201);
+  { const r = await agent.post('/api/documents/transkript').attach('file', pdf('Transkript'), 'transkript.pdf');
+    if (r.status !== 201) { const dbx = require('../src/db/knex'); console.log('DBG', r.status, JSON.stringify(r.body), JSON.stringify(await dbx('education').orderBy('updated_at','desc').first('grade','application_id')), JSON.stringify(await dbx('applications').orderBy('id','desc').first('id','category','program_id'))); }
+    expect(r.status).toBe(201); }
   await agent.post('/api/documents/adli_sicil').field('consent', 'true').attach('file', pdf('Adli'), 'adli.pdf').expect(201);
   const res = await agent.post('/api/application/submit').send({ confirm: true }).expect(200);
   await db('otp_codes').del();
@@ -53,7 +55,7 @@ async function submittedApplication(over = {}) {
 beforeAll(async () => {
   ch = Object.fromEntries((await db('channels').select('id', 'code')).map((c) => [c.code, c.id]));
   roles = Object.fromEntries((await db('admin_roles').select('id', 'code')).map((r) => [r.code, r.id]));
-  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').ignore();
+  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').merge({ is_active: true }); // seed listede olmayanları pasife alır
   uni = await db('universities').where({ name: 'Test Devlet Üniversitesi' }).first();
 });
 beforeEach(async () => {
@@ -128,7 +130,7 @@ describe('liste, arama, kapsam', () => {
     res = await gm.get('/api/admin/applications?status=submitted').expect(200);
     expect(res.body.items).toHaveLength(1);
     expect(res.body.items[0]).toMatchObject({
-      trackingNo, fullName: 'Ahmet Yılmaz', idNumber: '10000000146', categoryLabel: 'Üniversite Bursu',
+      trackingNo, fullName: 'Ahmet Yılmaz', idNumber: '10000000146', categoryLabel: 'Lisans Bursu',
       channel: 'WONDER', institution: 'Test Devlet Üniversitesi', city: 'İstanbul', statusLabel: 'Başvuru Tamamlandı',
     });
 
@@ -276,7 +278,7 @@ describe('export ve dashboard', () => {
     const { body } = await gm.get('/api/admin/dashboard').expect(200);
     expect(body.totalSubmitted).toBe(1);
     expect(body.status.find((s) => s.code === 'submitted').count).toBe(1);
-    expect(body.byCategory).toEqual([{ code: 'universite', label: 'Üniversite Bursu', count: 1 }]);
+    expect(body.byCategory).toEqual([{ code: 'universite', label: 'Lisans Bursu', count: 1 }]);
     expect(body.daily).toHaveLength(1);
     const programs = await gm.get('/api/admin/programs').expect(200);
     expect(programs.body[0].name).toBe('2026-2027');

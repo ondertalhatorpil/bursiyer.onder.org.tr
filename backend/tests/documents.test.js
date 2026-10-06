@@ -30,7 +30,7 @@ let ch; let uni;
 
 beforeAll(async () => {
   ch = Object.fromEntries((await db('channels').select('id', 'code')).map((c) => [c.code, c.id]));
-  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').ignore();
+  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').merge({ is_active: true }); // seed listede olmayanları pasife alır
   uni = await db('universities').where({ name: 'Test Devlet Üniversitesi' }).first();
 });
 beforeEach(async () => {

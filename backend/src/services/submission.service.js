@@ -76,7 +76,7 @@ async function submit(applicantId) {
 
   const missing = await findMissing(applicantId, detail, documents);
   if (missing.length) {
-    throw new AppError(422, 'APPLICATION_INCOMPLETE', 'Başvurunuzda eksikler var, lütfen tamamlayın', { missing });
+    throw new AppError(422, 'APPLICATION_INCOMPLETE', 'Başvurunuzda eksikler var, lütfen tamamlayınız', { missing });
   }
 
   const program = await db('programs').where({ id: app.program_id }).first();
@@ -116,7 +116,9 @@ async function submit(applicantId) {
     trackingNo,
     message: {
       title: block?.title || 'Başvurunuz alınmıştır.',
-      body: (block?.body || 'Başvuru Takip Numaranız: {tracking_no}').replace(/\{tracking_no\}/g, trackingNo),
+      body: (block?.body || 'Başvuru Takip Numaranız: {tracking_no}')
+        .replace(/\{tracking_no\}/g, trackingNo)
+        .replace(/\{program_name\}/g, program.name),
     },
     application: await app$.getApplicationDetail(applicantId),
   };

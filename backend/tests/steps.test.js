@@ -20,7 +20,7 @@ beforeAll(async () => {
   await db('universities').insert([
     { name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' },
     { name: 'Test Vakıf Üniversitesi', city_id: 34, type: 'vakif' },
-  ]).onConflict('name').ignore();
+  ]).onConflict('name').merge({ is_active: true }); // seed listede olmayanları pasife alır
   uni = {
     devlet: await db('universities').where({ name: 'Test Devlet Üniversitesi' }).first(),
     vakif: await db('universities').where({ name: 'Test Vakıf Üniversitesi' }).first(),
@@ -84,21 +84,40 @@ describe('Adım 4: kanal', () => {
     const agent = await registerApplicant();
     await agent.put('/api/application/category').send({ category: 'lise' });
     const res = await agent.put('/api/application/channel').send({
-      channelId: ch.lise_spor, fields: { school_id: normalSchool.id, sport_branch: 'Güreş' },
+      channelId: ch.lise_spor, fields: { school_id: normalSchool.id, sport_branch: 'Güreş', grade: '10' },
     });
     expect(res.status).toBe(422);
     await agent.put('/api/application/channel').send({
-      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Güreş' },
+      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Güreş', grade: '10' },
     }).expect(200);
   });
 
-  test('Uluslararası AİHL: uyruk boşsa adayın uyruğu gelir', async () => {
+  test('Uluslararası AİHL: uyruk boşsa adayın uyruğu gelir, sınıf zorunlu', async () => {
     const agent = await registerApplicant();
     await agent.put('/api/application/category').send({ category: 'lise' });
-    const res = await agent.put('/api/application/channel').send({
+    const noGrade = await agent.put('/api/application/channel').send({
       channelId: ch.lise_uluslararasi, fields: { school_id: intlSchool.id },
+    });
+    expect(Object.keys(noGrade.body.error.details)).toEqual(['fields.grade']);
+    const res = await agent.put('/api/application/channel').send({
+      channelId: ch.lise_uluslararasi, fields: { school_id: intlSchool.id, grade: '9' },
     }).expect(200);
-    expect(res.body.application.channel.fields.nationality).toBe('T.C.');
+    expect(res.body.application.channel.fields.nationality).toBe('Türkiye');
+  });
+
+  test('Teşkilat / Anadolu: okul seçilen ilden olmalı', async () => {
+    const agent = await registerApplicant();
+    await agent.put('/api/application/category').send({ category: 'lise' });
+    const base = { region: 'anadolu', city_id: 6, reference_name: 'X Y', grade: '11' };
+    const wrong = await agent.put('/api/application/channel').send({
+      channelId: ch.lise_teskilat, fields: { ...base, school_id: normalSchool.id }, // İstanbul'daki okul
+    });
+    expect(wrong.status).toBe(422);
+    expect(wrong.body.error.details['fields.school_id']).toBeDefined();
+    const ankaraSchool = await db('schools').where({ city_id: 6, is_active: true }).first();
+    await agent.put('/api/application/channel').send({
+      channelId: ch.lise_teskilat, fields: { ...base, school_id: ankaraSchool.id },
+    }).expect(200);
   });
 
   test('Üniversite: alt birim zorunlu, yurt seçimi kontrol edilir', async () => {
@@ -231,15 +250,22 @@ describe('Adım 5: eğitim', () => {
     expect(res.body.application.currentStep).toBe(6);
   });
 
-  test('lise + spor: okul Adım 4\'ten kilitli gelir', async () => {
+  test('lise + spor: okul ve sınıf Adım 4\'ten kilitli gelir', async () => {
     const agent = await registerApplicant();
     await agent.put('/api/application/category').send({ category: 'lise' });
     await agent.put('/api/application/channel').send({
-      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Judo' },
+      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Judo', grade: '10' },
     }).expect(200);
     const res = await agent.put('/api/application/education').send({ schoolId: normalSchool.id, grade: '11' }).expect(200);
     expect(res.body.application.education.schoolId).toBe(sportsSchool.id);
     expect(res.body.application.education.cityId).toBe(sportsSchool.city_id);
+    expect(res.body.application.education.grade).toBe('10');
+
+    // Aynı kanalda sınıf değişince eğitim bilgisi sıfırlanır
+    const changed = await agent.put('/api/application/channel').send({
+      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Judo', grade: '11' },
+    }).expect(200);
+    expect(changed.body.educationCleared).toBe(true);
   });
 
   test('lise + "Diğer" okul: serbest metin, işaretlenir', async () => {
@@ -259,27 +285,23 @@ describe('Adım 5: eğitim', () => {
     await agent.put('/api/application/channel').send({ channelId: ch.lise_egitim_destek, fields: { reference_name: 'R K' } });
     await agent.put('/api/application/education').send({ cityId: 34, districtId: istDistrict.id, schoolId: normalSchool.id, grade: '9' }).expect(200);
     const res = await agent.put('/api/application/channel').send({
-      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Judo' },
+      channelId: ch.lise_spor, fields: { school_id: sportsSchool.id, sport_branch: 'Judo', grade: '10' },
     }).expect(200);
     expect(res.body.educationCleared).toBe(true);
     expect(res.body.application.education).toBeNull();
   });
 
-  test('üniversite: tür listeden gelir; vakıfta kayıt yenileme sorusu zorunlu', async () => {
+  test('üniversite: tür listeden gelir', async () => {
     const agent = await registerApplicant();
     await agent.put('/api/application/category').send({ category: 'universite' });
     await agent.put('/api/application/channel').send({ channelId: ch.uni_wonder });
 
     const base = { cityId: 34, faculty: 'Mühendislik Fakültesi', department: 'Bilgisayar Mühendisliği', grade: '2' };
-    const vakifMissing = await agent.put('/api/application/education').send({ ...base, universityId: uni.vakif.id });
-    expect(vakifMissing.status).toBe(422);
-    expect(vakifMissing.body.error.details.fallRegistration).toBeDefined();
+    const vakif = await agent.put('/api/application/education').send({ ...base, universityId: uni.vakif.id }).expect(200);
+    expect(vakif.body.application.education).toMatchObject({ universityType: 'vakif', universityName: 'Test Vakıf Üniversitesi' });
 
-    const ok = await agent.put('/api/application/education').send({ ...base, universityId: uni.vakif.id, fallRegistration: 'completed' }).expect(200);
-    expect(ok.body.application.education).toMatchObject({ universityType: 'vakif', fallRegistration: 'completed', universityName: 'Test Vakıf Üniversitesi' });
-
-    const devlet = await agent.put('/api/application/education').send({ ...base, universityId: uni.devlet.id, fallRegistration: 'completed' }).expect(200);
-    expect(devlet.body.application.education).toMatchObject({ universityType: 'devlet', fallRegistration: null });
+    const devlet = await agent.put('/api/application/education').send({ ...base, universityId: uni.devlet.id }).expect(200);
+    expect(devlet.body.application.education).toMatchObject({ universityType: 'devlet' });
   });
 
   test('üniversite "Diğer": tür adaydan alınır; eksik alanlar', async () => {
@@ -288,6 +310,27 @@ describe('Adım 5: eğitim', () => {
     await agent.put('/api/application/channel').send({ channelId: ch.uni_wonder });
     const missing = await agent.put('/api/application/education').send({ cityId: 34, universityOther: 'Yeni Üniversite' });
     expect(Object.keys(missing.body.error.details).sort()).toEqual(['department', 'faculty', 'grade', 'universityType']);
+  });
+
+  test('üniversite: listesi olan üniversitede fakülte ve bölüm listeden seçilir', async () => {
+    const agent = await registerApplicant();
+    await agent.put('/api/application/category').send({ category: 'universite' });
+    await agent.put('/api/application/channel').send({ channelId: ch.uni_wonder });
+    const agu = await db('universities').where({ name: 'Abdullah Gül Üniversitesi' }).first();
+    const base = { cityId: 38, universityId: agu.id, grade: '2' };
+
+    const wrong = await agent.put('/api/application/education')
+      .send({ ...base, faculty: 'Mühendislik Fakültesi', department: 'Psikoloji' });
+    expect(wrong.status).toBe(422);
+    expect(Object.keys(wrong.body.error.details)).toEqual(['department']);
+
+    const unknown = await agent.put('/api/application/education')
+      .send({ ...base, faculty: 'Olmayan Fakülte', department: 'Bilgisayar Mühendisliği' });
+    expect(Object.keys(unknown.body.error.details).sort()).toEqual(['department', 'faculty']);
+
+    const ok = await agent.put('/api/application/education')
+      .send({ ...base, faculty: 'Mühendislik Fakültesi', department: 'Bilgisayar Mühendisliği' }).expect(200);
+    expect(ok.body.application.education).toMatchObject({ faculty: 'Mühendislik Fakültesi', department: 'Bilgisayar Mühendisliği' });
   });
 
   test('yüksek lisans: sınıf otomatik', async () => {

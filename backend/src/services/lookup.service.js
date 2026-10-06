@@ -16,16 +16,18 @@ async function checkRefs(refs, labels = {}) {
     if (ref.type === 'school') {
       const school = await db('schools').where({ id: ref.id, is_active: true }).first();
       const filterOk = school && Object.entries(ref.filter || {}).every(([k, v]) => Boolean(school[k]) === v);
-      if (!filterOk) errors[ref.key] = `${label(ref.key)}: listeden geçerli bir okul seçin`;
+      if (!filterOk || (ref.cityId && school.city_id !== ref.cityId)) {
+        errors[ref.key] = `${label(ref.key)}: listeden geçerli bir okul seçiniz`;
+      }
     } else if (ref.type === 'district') {
       const d = await db('districts').where({ id: ref.id }).first();
-      if (!d || (ref.cityId && d.city_id !== ref.cityId)) errors[ref.key] = `${label(ref.key)}: geçerli bir ilçe seçin`;
+      if (!d || (ref.cityId && d.city_id !== ref.cityId)) errors[ref.key] = `${label(ref.key)}: geçerli bir ilçe seçiniz`;
     } else if (ref.type === 'city') {
       const c = await db('cities').where({ id: ref.id }).first();
-      if (!c || (ref.excludeCityIds || []).includes(c.id)) errors[ref.key] = `${label(ref.key)}: geçerli bir il seçin`;
+      if (!c || (ref.excludeCityIds || []).includes(c.id)) errors[ref.key] = `${label(ref.key)}: geçerli bir il seçiniz`;
     } else if (ref.type === 'dormitory') {
       const y = await db('dormitories').where({ id: ref.id, is_active: true }).first();
-      if (!y) errors[ref.key] = `${label(ref.key)}: geçerli bir yurt seçin`;
+      if (!y) errors[ref.key] = `${label(ref.key)}: geçerli bir yurt seçiniz`;
     }
   }
   return errors;

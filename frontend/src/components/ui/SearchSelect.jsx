@@ -14,7 +14,7 @@ const norm = (s) => String(s).toLocaleLowerCase('tr-TR')
  * footer:  listenin altına sabit öğe (ör. "Listede yok, elle yazacağım")
  */
 export default function SearchSelect({
-  id, options = [], value, onChange, placeholder = 'Seçin', searchPlaceholder = 'Aramak için yazın…',
+  id, options = [], value, onChange, placeholder = 'Seçiniz', searchPlaceholder = 'Aramak için yazınız…',
   invalid, disabled, loading, emptyText = 'Sonuç bulunamadı', footer,
 }) {
   const [open, setOpen] = useState(false);

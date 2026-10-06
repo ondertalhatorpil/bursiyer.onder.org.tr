@@ -2,11 +2,23 @@ import { useState } from 'react';
 import { ArrowRight, Calendar, Clock, LogIn, ShieldCheck } from 'lucide-react';
 import Logo from '../../components/layout/Logo';
 import { Alert, Button } from '../../components/ui';
-import { formatDateTime } from '../../lib/format';
+import { formatLongDateTime } from '../../lib/format';
 import { SITE } from '../../config';
 
 /** Gecikmeli giriş animasyonu için */
 const d = (ms) => ({ '--delay': `${ms}ms` });
+
+/** "Son Başvuru Tarihi: 31 Ekim 2026 | Saat: 23.59" */
+function DateLine({ label, iso }) {
+  const { date, time } = formatLongDateTime(iso);
+  return (
+    <span>
+      {label}: <strong className="font-semibold text-slate-900">{date}</strong>
+      <span className="mx-1.5 text-slate-300" aria-hidden>|</span>
+      Saat: <strong className="font-semibold text-slate-900 tabular-nums">{time}</strong>
+    </span>
+  );
+}
 
 /** Anasayfa: tam ekran, solda kurumsal kırmızı alan (görselli), sağda başvuru butonları */
 export default function Hero({ program }) {
@@ -42,7 +54,7 @@ export default function Hero({ program }) {
           </h1>
           <div className="anim-rise mt-8 h-px w-16 bg-white/50" style={d(400)} aria-hidden />
           <p className="anim-rise mt-8 max-w-md text-base leading-relaxed text-white/80 lg:text-lg" style={d(500)}>
-            Lise, lisans ve lisansüstü öğrencilerine yönelik burs destek programı.
+            Lise, lisans ve lisansüstü kademelerinde öğrenim gören öğrencilere yönelik burs ve eğitim desteği programı.
           </p>
         </div>
       </aside>
@@ -56,32 +68,30 @@ export default function Hero({ program }) {
         <div className="flex flex-1 items-center py-10">
           <div className="w-full max-w-md md:mr-auto">
             <p className="anim-rise text-xs font-semibold uppercase tracking-[0.2em] text-brand-700" style={d(300)}>
-              {open ? 'Başvurular açık' : 'Başvurular kapalı'}
+              {open ? `${program?.name ? `${program.name} Dönemi ` : ''}Başvuruları Başladı` : 'Başvurular kapalı'}
             </p>
             <h2 className="anim-rise mt-3 text-3xl font-bold tracking-tight text-slate-900" style={d(400)}>
-              Burs başvurunuzu çevrim içi tamamlayın
+              Online Burs Başvuru Portalı
             </h2>
             <p className="anim-rise mt-3 text-sm leading-relaxed text-slate-500" style={d(500)}>
-              Başvurunuzu birkaç adımda sistem üzerinden güvenle yapabilir, daha sonra kaldığınız yerden devam edebilirsiniz.
+              Başvurunuzu adımları takip ederek güvenli bir şekilde tamamlayabilir; taslak bilgilerinizi kaydederek dilediğiniz zaman kaldığınız yerden devam edebilirsiniz.
             </p>
 
             {(open && program?.closesAt) || showOpensAt ? (
               <p className="anim-rise mt-6 flex items-center gap-2 text-sm text-slate-600" style={d(600)}>
                 <Calendar className="size-4 shrink-0 text-slate-400" aria-hidden />
-                {open
-                  ? <>Son başvuru: <strong className="font-semibold text-slate-900">{formatDateTime(program.closesAt)}</strong></>
-                  : <>Başlangıç: <strong className="font-semibold text-slate-900">{formatDateTime(program.opensAt)}</strong></>}
+                <DateLine label={open ? 'Son Başvuru Tarihi' : 'Başlangıç Tarihi'} iso={open ? program.closesAt : program.opensAt} />
               </p>
             ) : null}
 
             <div className="anim-rise mt-8 flex flex-col gap-3" style={d(700)}>
               {open && (
                 <Button to="/kayit" size="lg" iconRight={ArrowRight} className="w-full justify-center">
-                  Yeni Başvuru Yap
+                  Yeni Başvuru Başlat
                 </Button>
               )}
               <Button to="/giris" size="lg" variant="secondary" icon={LogIn} className="w-full justify-center">
-                Başvuruma Devam Et
+                Mevcut Başvuruya Devam Et
               </Button>
             </div>
 

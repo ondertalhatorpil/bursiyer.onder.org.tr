@@ -7,7 +7,7 @@ import { applyApiErrors } from '../../lib/form-errors';
 import { isValidIdNumber } from '../../lib/validation';
 
 const schema = z.object({
-  idNumber: z.string().refine(isValidIdNumber, 'Geçerli bir T.C. Kimlik No veya Yabancı Kimlik No girin'),
+  idNumber: z.string().refine(isValidIdNumber, 'Geçerli bir T.C. Kimlik No veya Yabancı Kimlik No giriniz'),
 });
 
 /** Giriş: kimlik numarası -> kayıtlı telefona kod */

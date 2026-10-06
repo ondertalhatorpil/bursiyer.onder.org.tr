@@ -164,16 +164,22 @@ async function setForApplication(admin, app, sponsorIds) {
   return { added, removed };
 }
 
-/** Liste / export satırları için: başvuru id -> firma adları */
-async function namesByApplication(applicationIds) {
+/** Liste / export satırları için: başvuru id -> firmalar [{ id, name, hasLogo, logoVersion }] */
+async function byApplication(applicationIds) {
   if (!applicationIds.length) return new Map();
   const rows = await db('application_sponsors as x').join('sponsors as s', 's.id', 'x.sponsor_id')
-    .whereIn('x.application_id', applicationIds).orderBy('s.name').select('x.application_id', 's.name');
+    .whereIn('x.application_id', applicationIds).orderBy('s.name')
+    .select('x.application_id', 's.id', 's.name', 's.logo_key', 's.updated_at');
   const map = new Map();
   for (const r of rows) {
     const key = Number(r.application_id);
     if (!map.has(key)) map.set(key, []);
-    map.get(key).push(r.name);
+    map.get(key).push({
+      id: r.id,
+      name: r.name,
+      hasLogo: !!r.logo_key,
+      logoVersion: r.logo_key ? new Date(r.updated_at).getTime() : null,
+    });
   }
   return map;
 }
@@ -189,5 +195,5 @@ function applySponsorFilter(q, sponsor) {
 
 module.exports = {
   GENEL_MERKEZ, list, get, create, update, remove, setLogo, removeLogo, getLogo,
-  detailFor, setForApplication, namesByApplication, applySponsorFilter,
+  detailFor, setForApplication, byApplication, applySponsorFilter,
 };

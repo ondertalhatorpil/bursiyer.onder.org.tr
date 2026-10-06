@@ -1,902 +1,794 @@
 [
  {
-  "name": "Abant İzzet Baysal Üniversitesi",
-  "city": "Bolu",
-  "type": "devlet"
- },
- {
   "name": "Abdullah Gül Üniversitesi",
-  "city": "Kayseri",
-  "type": "devlet"
- },
- {
-  "name": "Adana Bilim ve Teknoloji Üniversitesi",
-  "city": "Adana",
-  "type": "devlet"
- },
- {
-  "name": "Adıyaman Üniversitesi",
-  "city": "Adıyaman",
-  "type": "devlet"
- },
- {
-  "name": "Adnan Menderes Üniversitesi",
-  "city": "Aydın",
-  "type": "devlet"
- },
- {
-  "name": "Afyon Kocatepe Üniversitesi",
-  "city": "Afyonkarahisar",
-  "type": "devlet"
- },
- {
-  "name": "Ağrı İbrahim Çeçen Üniversitesi",
-  "city": "Ağrı",
-  "type": "devlet"
- },
- {
-  "name": "Ahi Evran Üniversitesi",
-  "city": "Kırşehir",
-  "type": "devlet"
- },
- {
-  "name": "Akdeniz Üniversitesi",
-  "city": "Antalya",
-  "type": "devlet"
- },
- {
-  "name": "Aksaray Üniversitesi",
-  "city": "Aksaray",
-  "type": "devlet"
- },
- {
-  "name": "Alanya Alaaddin Keykubat Üniversitesi",
-  "city": "Antalya",
-  "type": "devlet"
- },
- {
-  "name": "Amasya Üniversitesi",
-  "city": "Amasya",
-  "type": "devlet"
- },
- {
-  "name": "Anadolu Üniversitesi",
-  "city": "Eskişehir",
-  "type": "devlet"
- },
- {
-  "name": "Ankara Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Ankara Sosyal Bilimler Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Ardahan Üniversitesi",
-  "city": "Ardahan",
-  "type": "devlet"
- },
- {
-  "name": "Artvin Çoruh Üniversitesi",
-  "city": "Artvin",
-  "type": "devlet"
- },
- {
-  "name": "Atatürk Üniversitesi",
-  "city": "Erzurum",
-  "type": "devlet"
- },
- {
-  "name": "Balıkesir Üniversitesi",
-  "city": "Balıkesir",
-  "type": "devlet"
- },
- {
-  "name": "Bandırma Onyedi Eylül Üniversitesi",
-  "city": "Balıkesir",
-  "type": "devlet"
- },
- {
-  "name": "Bartın Üniversitesi",
-  "city": "Bartın",
-  "type": "devlet"
- },
- {
-  "name": "Batman Üniversitesi",
-  "city": "Batman",
-  "type": "devlet"
- },
- {
-  "name": "Bayburt Üniversitesi",
-  "city": "Bayburt",
-  "type": "devlet"
- },
- {
-  "name": "Bilecik Şeyh Edebali Üniversitesi",
-  "city": "Bilecik",
-  "type": "devlet"
- },
- {
-  "name": "Bingöl Üniversitesi",
-  "city": "Bingöl",
-  "type": "devlet"
- },
- {
-  "name": "Bitlis Eren Üniversitesi",
-  "city": "Bitlis",
-  "type": "devlet"
- },
- {
-  "name": "Boğaziçi Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Bozok Üniversitesi",
-  "city": "Yozgat",
-  "type": "devlet"
- },
- {
-  "name": "Bursa Teknik Üniversitesi",
-  "city": "Bursa",
-  "type": "devlet"
- },
- {
-  "name": "Celal Bayar Üniversitesi",
-  "city": "Manisa",
-  "type": "devlet"
- },
- {
-  "name": "Cumhuriyet Üniversitesi",
-  "city": "Sivas",
-  "type": "devlet"
- },
- {
-  "name": "Çanakkale Onsekiz Mart Üniversitesi",
-  "city": "Çanakkale",
-  "type": "devlet"
- },
- {
-  "name": "Çankırı Karatekin Üniversitesi",
-  "city": "Çankırı",
-  "type": "devlet"
- },
- {
-  "name": "Çukurova Üniversitesi",
-  "city": "Adana",
-  "type": "devlet"
- },
- {
-  "name": "Deniz Harp Okulu",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Dicle Üniversitesi",
-  "city": "Diyarbakır",
-  "type": "devlet"
- },
- {
-  "name": "Dokuz Eylül Üniversitesi",
-  "city": "İzmir",
-  "type": "devlet"
- },
- {
-  "name": "Dumlupınar Üniversitesi",
-  "city": "Kütahya",
-  "type": "devlet"
- },
- {
-  "name": "Düzce Üniversitesi",
-  "city": "Düzce",
-  "type": "devlet"
- },
- {
-  "name": "Ege Üniversitesi",
-  "city": "İzmir",
-  "type": "devlet"
- },
- {
-  "name": "Erzincan Üniversitesi",
-  "city": "Erzincan",
-  "type": "devlet"
- },
- {
-  "name": "Erzurum Teknik Üniversitesi",
-  "city": "Erzurum",
-  "type": "devlet"
- },
- {
-  "name": "Eskişehir Osmangazi Üniversitesi",
-  "city": "Eskişehir",
-  "type": "devlet"
- },
- {
-  "name": "Fırat Üniversitesi",
-  "city": "Elazığ",
-  "type": "devlet"
- },
- {
-  "name": "Galatasaray Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Gazi Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Gaziantep Üniversitesi",
-  "city": "Gaziantep",
-  "type": "devlet"
- },
- {
-  "name": "Gaziosmanpaşa Üniversitesi",
-  "city": "Tokat",
-  "type": "devlet"
- },
- {
-  "name": "Gebze Teknik Üniversitesi",
-  "city": "Kocaeli",
-  "type": "devlet"
- },
- {
-  "name": "Giresun Üniversitesi",
-  "city": "Giresun",
-  "type": "devlet"
- },
- {
-  "name": "Gümüşhane Üniversitesi",
-  "city": "Gümüşhane",
-  "type": "devlet"
- },
- {
-  "name": "Hacettepe Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Hakkari Üniversitesi",
-  "city": "Hakkari",
-  "type": "devlet"
- },
- {
-  "name": "Harran Üniversitesi",
-  "city": "Şanlıurfa",
-  "type": "devlet"
- },
- {
-  "name": "Hava Harp Okulu",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Hitit Üniversitesi",
-  "city": "Çorum",
-  "type": "devlet"
- },
- {
-  "name": "Iğdır Üniversitesi",
-  "city": "Iğdır",
-  "type": "devlet"
- },
- {
-  "name": "İnönü Üniversitesi",
-  "city": "Malatya",
-  "type": "devlet"
- },
- {
-  "name": "İskenderun Teknik Üniversitesi",
-  "city": "Hatay",
-  "type": "devlet"
- },
- {
-  "name": "İstanbul Medeniyet Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "İstanbul Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "İstanbul Teknik Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "İzmir Bakırçay Üniversitesi",
-  "city": "İzmir",
-  "type": "devlet"
- },
- {
-  "name": "İzmir Demokrasi Üniversitesi",
-  "city": "İzmir",
-  "type": "devlet"
- },
- {
-  "name": "İzmir Kâtip Çelebi Üniversitesi",
-  "city": "İzmir",
-  "type": "devlet"
- },
- {
-  "name": "İzmir Yüksek Teknoloji Enstitüsü",
-  "city": "İzmir",
-  "type": "devlet"
- },
- {
-  "name": "Kafkas Üniversitesi",
-  "city": "Kars",
-  "type": "devlet"
- },
- {
-  "name": "Kahramanmaraş Sütçü İmam Üniversitesi",
-  "city": "Kahramanmaraş",
-  "type": "devlet"
- },
- {
-  "name": "Karabük Üniversitesi",
-  "city": "Karabük",
-  "type": "devlet"
- },
- {
-  "name": "Karadeniz Teknik Üniversitesi",
-  "city": "Trabzon",
-  "type": "devlet"
- },
- {
-  "name": "Karamanoğlu Mehmetbey Üniversitesi",
-  "city": "Karaman",
-  "type": "devlet"
- },
- {
-  "name": "Kara Harp Okulu",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Kastamonu Üniversitesi",
-  "city": "Kastamonu",
-  "type": "devlet"
- },
- {
-  "name": "Kırıkkale Üniversitesi",
-  "city": "Kırıkkale",
-  "type": "devlet"
- },
- {
-  "name": "Kırklareli Üniversitesi",
-  "city": "Kırklareli",
-  "type": "devlet"
- },
- {
-  "name": "Kilis 7 Aralık Üniversitesi",
-  "city": "Kilis",
-  "type": "devlet"
- },
- {
-  "name": "Kocaeli Üniversitesi",
-  "city": "Kocaeli",
-  "type": "devlet"
- },
- {
-  "name": "Necmettin Erbakan Üniversitesi",
-  "city": "Konya",
-  "type": "devlet"
- },
- {
-  "name": "Mardin Artuklu Üniversitesi",
-  "city": "Mardin",
-  "type": "devlet"
- },
- {
-  "name": "Marmara Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Mehmet Akif Ersoy Üniversitesi",
-  "city": "Burdur",
-  "type": "devlet"
- },
- {
-  "name": "Mersin Üniversitesi",
-  "city": "Mersin",
-  "type": "devlet"
- },
- {
-  "name": "Mimar Sinan Güzel Sanatlar Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Muğla Sıtkı Koçman Üniversitesi",
-  "city": "Muğla",
-  "type": "devlet"
- },
- {
-  "name": "Milli Savunma Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Mustafa Kemal Üniversitesi",
-  "city": "Hatay",
-  "type": "devlet"
- },
- {
-  "name": "Muş Alparslan Üniversitesi",
-  "city": "Muş",
-  "type": "devlet"
- },
- {
-  "name": "Namık Kemal Üniversitesi",
-  "city": "Tekirdağ",
-  "type": "devlet"
- },
- {
-  "name": "Nevşehir Hacı Bektaş Veli Üniversitesi",
-  "city": "Nevşehir",
-  "type": "devlet"
- },
- {
-  "name": "Niğde Üniversitesi",
-  "city": "Niğde",
-  "type": "devlet"
- },
- {
-  "name": "Ondokuz Mayıs Üniversitesi",
-  "city": "Samsun",
-  "type": "devlet"
- },
- {
-  "name": "Ordu Üniversitesi",
-  "city": "Ordu",
-  "type": "devlet"
- },
- {
-  "name": "Orta Doğu Teknik Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Osmaniye Korkut Ata Üniversitesi",
-  "city": "Osmaniye",
-  "type": "devlet"
- },
- {
-  "name": "Pamukkale Üniversitesi",
-  "city": "Denizli",
-  "type": "devlet"
- },
- {
-  "name": "Polis Akademisi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Recep Tayyip Erdoğan Üniversitesi",
-  "city": "Rize",
-  "type": "devlet"
- },
- {
-  "name": "Sahil Güvenlik Akademisi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Sakarya Üniversitesi",
-  "city": "Sakarya",
-  "type": "devlet"
- },
- {
-  "name": "Selçuk Üniversitesi",
-  "city": "Konya",
-  "type": "devlet"
- },
- {
-  "name": "Siirt Üniversitesi",
-  "city": "Siirt",
-  "type": "devlet"
- },
- {
-  "name": "Sinop Üniversitesi",
-  "city": "Sinop",
-  "type": "devlet"
- },
- {
-  "name": "Süleyman Demirel Üniversitesi",
-  "city": "Isparta",
-  "type": "devlet"
- },
- {
-  "name": "Şırnak Üniversitesi",
-  "city": "Şırnak",
-  "type": "devlet"
- },
- {
-  "name": "Trakya Üniversitesi",
-  "city": "Edirne",
-  "type": "devlet"
- },
- {
-  "name": "Tunceli Üniversitesi",
-  "city": "Tunceli",
-  "type": "devlet"
- },
- {
-  "name": "Türk Alman Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Sağlık Bilimleri Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Türkiye Uluslararası İslam, Bilim ve Teknoloji Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Uludağ Üniversitesi",
-  "city": "Bursa",
-  "type": "devlet"
- },
- {
-  "name": "Uşak Üniversitesi",
-  "city": "Uşak",
-  "type": "devlet"
- },
- {
-  "name": "Yalova Üniversitesi",
-  "city": "Yalova",
-  "type": "devlet"
- },
- {
-  "name": "Yıldız Teknik Üniversitesi",
-  "city": "İstanbul",
-  "type": "devlet"
- },
- {
-  "name": "Yıldırım Beyazıt Üniversitesi",
-  "city": "Ankara",
-  "type": "devlet"
- },
- {
-  "name": "Yüzüncü Yıl Üniversitesi",
-  "city": "Van",
-  "type": "devlet"
- },
- {
-  "name": "Bülent Ecevit Üniversitesi",
-  "city": "Zonguldak",
   "type": "devlet"
  },
  {
   "name": "Acıbadem Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Akev Üniversitesi",
-  "city": "Antalya",
-  "type": "vakif"
+  "name": "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Adıyaman Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Afyon Kocatepe Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Afyonkarahisar Sağlık Bilimleri Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ağrı İbrahim Çeçen Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Akdeniz Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Aksaray Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Alanya Alaaddin Keykubat Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Alanya Hamdullah Emin Paşa Üniversitesi",
-  "city": "Antalya",
   "type": "vakif"
  },
  {
-  "name": "Anka Teknoloji Üniversitesi",
-  "city": "Ankara",
+  "name": "Altınbaş Üniversitesi",
   "type": "vakif"
+ },
+ {
+  "name": "Amasya Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Anadolu Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ankara Bilim Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Ankara Hacı Bayram Veli Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ankara Medipol Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Ankara Sosyal Bilimler Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ankara Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ankara Yıldırım Beyazıt Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Antalya Akev Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Antalya Bilim Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Ardahan Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Artvin Çoruh Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Atatürk Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Atılım Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
  },
  {
   "name": "Avrasya Üniversitesi",
-  "city": "Trabzon",
   "type": "vakif"
+ },
+ {
+  "name": "Aydın Adnan Menderes Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Bahçeşehir Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "Balıkesir Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Bandırma Onyedi Eylül Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Bartın Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Başkent Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
  },
  {
+  "name": "Batman Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Bayburt Üniversitesi",
+  "type": "devlet"
+ },
+ {
   "name": "Beykent Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "Beykoz Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Bezmiâlem Vakıf Üniversitesi",
-  "city": "İstanbul",
+  "name": "Bezm-i Alem Vakıf Üniversitesi",
   "type": "vakif"
+ },
+ {
+  "name": "Bilecik Şeyh Edebali Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Bilkent Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
+ },
+ {
+  "name": "Bingöl Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Biruni Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Çankaya Üniversitesi",
-  "city": "Ankara",
-  "type": "vakif"
+  "name": "Bitlis Eren Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Boğaziçi Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Bolu Abant İzzet Baysal Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Burdur Mehmet Akif Ersoy Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Bursa Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Bursa Uludağ Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Çağ Üniversitesi",
-  "city": "Mersin",
   "type": "vakif"
+ },
+ {
+  "name": "Çanakkale Onsekiz Mart Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Çankaya Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Çankırı Karatekin Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Çukurova Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Demiroğlu Bilim Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Dicle Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Doğuş Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Fatih Sultan Mehmet Üniversitesi",
-  "city": "İstanbul",
+  "name": "Dokuz Eylül Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Düzce Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ege Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Erciyes Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Erzincan Binali Yıldırım Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Erzurum Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Eskişehir Osmangazi Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Eskişehir Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Fatih Sultan Mehmet Vakıf Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "Fenerbahçe Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Gedik Üniversitesi",
-  "city": "İstanbul",
-  "type": "vakif"
+  "name": "Fırat Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Galatasaray Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Gazi Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Gaziantep İslam Bilim ve Teknoloji Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Gaziantep Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Gebze Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Giresun Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Gümüşhane Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Hacettepe Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Hakkari Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Haliç Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "Harran Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Hasan Kalyoncu Üniversitesi",
-  "city": "Gaziantep",
   "type": "vakif"
+ },
+ {
+  "name": "Hatay Mustafa Kemal Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Hitit Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Iğdır Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Isparta Uygulamalı Bilimler Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Işık Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "İbn-u Haldun Üniversitesi",
-  "city": "İstanbul",
+  "name": "İbn Haldun Üniversitesi",
   "type": "vakif"
+ },
+ {
+  "name": "İnönü Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "İskenderun Teknik Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "İstanbul 29 Mayıs Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "İstanbul Arel Üniversitesi",
-  "city": "İstanbul",
+  "type": "vakif"
+ },
+ {
+  "name": "İstanbul Atlas Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "İstanbul Aydın Üniversitesi",
-  "city": "İstanbul",
+  "type": "vakif"
+ },
+ {
+  "name": "İstanbul Ayvansaray Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "İstanbul Bilgi Üniversitesi",
-  "city": "İstanbul",
-  "type": "vakif"
- },
- {
-  "name": "İstanbul Bilim Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "İstanbul Esenyurt Üniversitesi",
-  "city": "İstanbul",
+  "type": "vakif"
+ },
+ {
+  "name": "İstanbul Galata Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "İstanbul Gedik Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "İstanbul Gelişim Üniversitesi",
-  "city": "İstanbul",
-  "type": "vakif"
- },
- {
-  "name": "İstanbul Kemerburgaz Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "İstanbul Kent Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "İstanbul Kültür Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
+  "name": "İstanbul Medeniyet Üniversitesi",
+  "type": "devlet"
+ },
+ {
   "name": "İstanbul Medipol Üniversitesi",
-  "city": "İstanbul",
+  "type": "vakif"
+ },
+ {
+  "name": "İstanbul Okan Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "İstanbul Rumeli Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "İstanbul Sabahattin Zaim Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "İstanbul Şehir Üniversitesi",
-  "city": "İstanbul",
+  "name": "İstanbul Sağlık ve Teknoloji Üniversitesi",
   "type": "vakif"
+ },
+ {
+  "name": "İstanbul Teknik Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "İstanbul Ticaret Üniversitesi",
-  "city": "İstanbul",
+  "type": "vakif"
+ },
+ {
+  "name": "İstanbul Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "İstanbul Üniversitesi-Cerrahpaşa",
+  "type": "devlet"
+ },
+ {
+  "name": "İstanbul Yeni Yüzyıl Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "İstinye Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "İzmir Bakırçay Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "İzmir Demokrasi Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "İzmir Ekonomi Üniversitesi",
-  "city": "İzmir",
   "type": "vakif"
+ },
+ {
+  "name": "İzmir Katip Çelebi Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "İzmir Tınaztepe Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "İzmir Yüksek Teknoloji Enstitüsü",
+  "type": "devlet"
  },
  {
   "name": "Kadir Has Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Karatay Üniversitesi",
-  "city": "Konya",
+  "name": "Kafkas Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kahramanmaraş İstiklal Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kahramanmaraş Sütçü İmam Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kapadokya Üniversitesi",
   "type": "vakif"
+ },
+ {
+  "name": "Karabük Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Karadeniz Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Karamanoğlu Mehmetbey Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kastamonu Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kayseri Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kırıkkale Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kırklareli Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kırşehir Ahi Evran Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kilis 7 Aralık Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kocaeli Sağlık ve Teknoloji Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Kocaeli Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Koç Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Konya Gıda Tarım Üniversitesi",
-  "city": "Konya",
+  "name": "Konya Gıda ve Tarım Üniversitesi",
   "type": "vakif"
+ },
+ {
+  "name": "Konya Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "KTO Karatay Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Kütahya Dumlupınar Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Kütahya Sağlık Bilimleri Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Lokman Hekim Üniversitesi",
+  "type": "vakif"
+ },
+ {
+  "name": "Malatya Turgut Özal Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Maltepe Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "Manisa Celal Bayar Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Mardin Artuklu Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Marmara Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "MEF Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
+  "name": "Mersin Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Mimar Sinan Güzel Sanatlar Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Muğla Sıtkı Koçman Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Munzur Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Muş Alparslan Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Necmettin Erbakan Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Nevşehir Hacı Bektaş Veli Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Niğde Ömer Halisdemir Üniversitesi",
+  "type": "devlet"
+ },
+ {
   "name": "Nişantaşı Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
   "name": "Nuh Naci Yazgan Üniversitesi",
-  "city": "Kayseri",
   "type": "vakif"
  },
  {
-  "name": "Okan Üniversitesi",
-  "city": "İstanbul",
+  "name": "Ondokuz Mayıs Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ordu Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Orta Doğu Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Osmaniye Korkut Ata Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Ostim Teknik Üniversitesi",
   "type": "vakif"
  },
  {
   "name": "Özyeğin Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "Pamukkale Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Piri Reis Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "Recep Tayyip Erdoğan Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Sabancı Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
+ },
+ {
+  "name": "Sağlık Bilimleri Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Sakarya Uygulamalı Bilimler Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Sakarya Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Samsun Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Sanko Üniversitesi",
-  "city": "Gaziantep",
   "type": "vakif"
+ },
+ {
+  "name": "Selçuk Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Siirt Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Sinop Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Sivas Cumhuriyet Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Süleyman Demirel Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Şırnak Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Tarsus Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "TED Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
+ },
+ {
+  "name": "Tekirdağ Namık Kemal Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "TOBB Ekonomi ve Teknoloji Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
+ },
+ {
+  "name": "Tokat Gaziosmanpaşa Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Toros Üniversitesi",
-  "city": "Mersin",
   "type": "vakif"
+ },
+ {
+  "name": "Trabzon Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Trakya Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Türk Hava Kurumu Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
+ },
+ {
+  "name": "Türk-Alman Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Ufuk Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
  },
  {
-  "name": "Uluslararası Antalya Üniversitesi",
-  "city": "Antalya",
-  "type": "vakif"
+  "name": "Uşak Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Üsküdar Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
+  "name": "Van Yüzüncü Yıl Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Yalova Üniversitesi",
+  "type": "devlet"
+ },
+ {
   "name": "Yaşar Üniversitesi",
-  "city": "İzmir",
   "type": "vakif"
  },
  {
   "name": "Yeditepe Üniversitesi",
-  "city": "İstanbul",
   "type": "vakif"
  },
  {
-  "name": "Yeni Yüzyıl Üniversitesi",
-  "city": "İstanbul",
-  "type": "vakif"
+  "name": "Yıldız Teknik Üniversitesi",
+  "type": "devlet"
+ },
+ {
+  "name": "Yozgat Bozok Üniversitesi",
+  "type": "devlet"
  },
  {
   "name": "Yüksek İhtisas Üniversitesi",
-  "city": "Ankara",
   "type": "vakif"
+ },
+ {
+  "name": "Zonguldak Bülent Ecevit Üniversitesi",
+  "type": "devlet"
  }
 ]

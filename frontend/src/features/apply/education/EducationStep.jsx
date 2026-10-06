@@ -31,10 +31,10 @@ export default function EducationStep() {
   return (
     <StepPage
       step={5}
-      title="Eğitim ve Okul Bilgileri"
+      title="Eğitim Bilgileri"
       description={application.category === 'lise'
-        ? 'Okuduğunuz liseyi ve sınıfınızı seçin.'
-        : 'Kayıtlı olduğunuz üniversite ve programı girin.'}
+        ? 'Okuduğunuz liseyi ve sınıfınızı seçiniz.'
+        : 'Kayıtlı olduğunuz üniversite ve programı giriniz.'}
       footer={<StepActions step={5} form={FORM_ID} loading={saving} />}
     >
       <Form formId={FORM_ID} application={application} onSubmit={save} />

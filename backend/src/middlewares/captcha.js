@@ -11,7 +11,7 @@ async function requireCaptcha(req, res, next) {
 
   const token = req.body?.captchaToken;
   if (!token || typeof token !== 'string') {
-    return next(new AppError(400, 'CAPTCHA_REQUIRED', 'Lütfen güvenlik doğrulamasını tamamlayın'));
+    return next(new AppError(400, 'CAPTCHA_REQUIRED', 'Lütfen güvenlik doğrulamasını tamamlayınız'));
   }
 
   try {
@@ -23,11 +23,11 @@ async function requireCaptcha(req, res, next) {
     });
     const data = await res2.json();
     if (!data.success) {
-      return next(new AppError(400, 'CAPTCHA_FAILED', 'Güvenlik doğrulaması başarısız, lütfen tekrar deneyin'));
+      return next(new AppError(400, 'CAPTCHA_FAILED', 'Güvenlik doğrulaması başarısız, lütfen tekrar deneyiniz'));
     }
   } catch (err) {
     req.log.error({ err: err.message }, 'Turnstile doğrulaması yapılamadı');
-    return next(new AppError(503, 'CAPTCHA_UNAVAILABLE', 'Güvenlik doğrulaması şu an yapılamıyor, lütfen tekrar deneyin'));
+    return next(new AppError(503, 'CAPTCHA_UNAVAILABLE', 'Güvenlik doğrulaması şu an yapılamıyor, lütfen tekrar deneyiniz'));
   }
   return next();
 }

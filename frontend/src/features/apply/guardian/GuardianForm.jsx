@@ -13,15 +13,15 @@ const ID_TYPES = [
 ];
 
 const schema = z.object({
-  fullName: z.string().trim().min(3, 'Veli / vasi adı soyadını yazın').max(128),
-  idType: z.enum(['TC', 'YKN', 'PASAPORT'], { error: 'Kimlik türünü seçin' }),
-  idNumber: z.string().trim().min(1, 'Kimlik numarasını yazın'),
-  phone: z.string().refine(isValidMobile, 'Geçerli bir cep telefonu girin'),
+  fullName: z.string().trim().min(3, 'Veli / vasi adı soyadını yazınız').max(128),
+  idType: z.enum(['TC', 'YKN', 'PASAPORT'], { error: 'Kimlik türünü seçiniz' }),
+  idNumber: z.string().trim().min(1, 'Kimlik numarasını yazınız'),
+  phone: z.string().refine(isValidMobile, 'Geçerli bir cep telefonu giriniz'),
 }).superRefine((v, ctx) => {
   if (v.idType === 'PASAPORT') {
-    if (!/^[A-Za-z0-9]{5,20}$/.test(v.idNumber)) ctx.addIssue({ code: 'custom', path: ['idNumber'], message: 'Geçerli bir pasaport numarası girin' });
+    if (!/^[A-Za-z0-9]{5,20}$/.test(v.idNumber)) ctx.addIssue({ code: 'custom', path: ['idNumber'], message: 'Geçerli bir pasaport numarası giriniz' });
   } else if (!isValidIdNumber(v.idNumber) || (v.idType === 'YKN') !== v.idNumber.startsWith('99')) {
-    ctx.addIssue({ code: 'custom', path: ['idNumber'], message: v.idType === 'TC' ? 'Geçerli bir T.C. Kimlik No girin' : 'Geçerli bir Yabancı Kimlik No girin (99 ile başlar)' });
+    ctx.addIssue({ code: 'custom', path: ['idNumber'], message: v.idType === 'TC' ? 'Geçerli bir T.C. Kimlik No giriniz' : 'Geçerli bir Yabancı Kimlik No giriniz (99 ile başlar)' });
   }
 });
 

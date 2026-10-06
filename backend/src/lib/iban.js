@@ -19,15 +19,15 @@ function mod97(iban) {
 }
 
 /**
- * @returns {{ valid: true, value: string, bankCode: string } | { valid: false, reason: string }}
+ * @returns {{ valid: true, value: string } | { valid: false, reason: string }}
  */
 function parseTrIban(input) {
   const iban = normalizeIban(input);
-  if (!iban) return { valid: false, reason: 'IBAN girin' };
-  if (!iban.startsWith('TR')) return { valid: false, reason: 'Türkiye\'deki bir banka hesabının IBAN\'ını girin (TR ile başlar)' };
+  if (!iban) return { valid: false, reason: 'IBAN giriniz' };
+  if (!iban.startsWith('TR')) return { valid: false, reason: 'Türkiye\'deki bir banka hesabının IBAN\'ını giriniz (TR ile başlar)' };
   if (!/^TR\d{24}$/.test(iban)) return { valid: false, reason: 'IBAN TR ile başlayan 26 karakter olmalı' };
-  if (mod97(iban) !== 1) return { valid: false, reason: 'IBAN hatalı, lütfen kontrol edin' };
-  return { valid: true, value: iban, bankCode: iban.slice(4, 9) };
+  if (mod97(iban) !== 1) return { valid: false, reason: 'IBAN hatalı, lütfen kontrol ediniz' };
+  return { valid: true, value: iban };
 }
 
 /** "TR120006400000112345678901" -> "TR12 0006 4000 0011 2345 6789 01" */

@@ -77,7 +77,7 @@ export default function ChannelForm({ formId, application, onSubmit }) {
       </Field>
 
       {channel?.subUnits.length > 0 && (
-        <Field label={channel.code === 'uni_onder_genclik' ? 'Proje / koordinatörlük' : 'Birim'} required error={errors.subUnitId?.message}>
+        <Field label={channel.code === 'uni_onder_genclik' ? 'Görev Alınan Proje veya Koordinatörlük' : 'Bağlı Bulunulan Komisyon / Birim'} required error={errors.subUnitId?.message}>
           <Controller control={control} name="subUnitId" render={({ field }) => (
             <RadioCardGroup
               name="subUnitId"
@@ -94,7 +94,7 @@ export default function ChannelForm({ formId, application, onSubmit }) {
 
       {definitions.length > 0 && (
         <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200 sm:p-5">
-          <DynamicFields definitions={definitions} control={control} errors={errors.fields || {}} />
+          <DynamicFields definitions={definitions} control={control} setValue={setValue} errors={errors.fields || {}} />
         </div>
       )}
     </form>

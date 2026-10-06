@@ -17,7 +17,7 @@ const apiLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip,
-  message: json('Çok fazla istek gönderdiniz, lütfen biraz bekleyin'),
+  message: json('Çok fazla istek gönderdiniz, lütfen biraz bekleyiniz'),
 });
 
 const { normalizeTrMobile } = require('../lib/phone');
@@ -27,7 +27,7 @@ const otpSendLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip: (req) => config.isTest || config.testOtp.phones.includes(normalizeTrMobile(req.body?.phone)),
-  message: json('Çok fazla doğrulama kodu istediniz, lütfen daha sonra tekrar deneyin'),
+  message: json('Çok fazla doğrulama kodu istediniz, lütfen daha sonra tekrar deneyiniz'),
 });
 
 
@@ -39,7 +39,7 @@ const authLimiter = rateLimit({
   standardHeaders: 'draft-8',
   legacyHeaders: false,
   skip,
-  message: json('Çok fazla deneme yaptınız, lütfen 15 dakika sonra tekrar deneyin'),
+  message: json('Çok fazla deneme yaptınız, lütfen 15 dakika sonra tekrar deneyiniz'),
 });
 
 module.exports = { apiLimiter, otpSendLimiter, authLimiter };

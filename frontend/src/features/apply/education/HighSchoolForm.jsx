@@ -5,23 +5,29 @@ import { Alert, Button, Field, Select, TextInput } from '../../../components/ui'
 import { CitySelect, DistrictSelect, SchoolPicker } from '../../../components/lookups';
 import { useSchools } from '../../../hooks/useLookups';
 import { applyApiErrors } from '../../../lib/form-errors';
-import { GRADES } from '../../../config';
+import { GRADES, GRADE_LABELS } from '../../../config';
 
 const ISTANBUL = 34;
 const FIELDS = ['cityId', 'districtId', 'schoolId', 'schoolOther', 'grade'];
 
 /**
- * Lise eğitim bilgileri. Kanal seçimine göre bazı alanlar kilitli gelir:
- *   Spor lisesi / Uluslararası AİHL: okul Adım 4'te seçildi
- *   Teşkilat: il, seçilen bölgeye göre sabit
+ * Lise eğitim bilgileri. Kanal seçimine göre bazı alanlar Adım 4'ten kilitli gelir:
+ *   Spor lisesi / Uluslararası AİHL / Teşkilat Anadolu: okul ve sınıf
+ *   Teşkilat İstanbul: il
  */
 export default function HighSchoolForm({ formId, application, onSubmit }) {
   const code = application.channel?.code;
   const fields = application.channel?.fields || {};
-  const lockedSchoolFilter = code === 'lise_spor' ? 'sports' : code === 'lise_uluslararasi' ? 'international' : null;
+  const lockedSchoolId = fields.school_id || null;
+  const lockedGrade = fields.grade || null;
   const lockedCityId = code === 'lise_teskilat'
     ? (fields.region === 'istanbul' ? ISTANBUL : Number(fields.city_id) || null)
     : null;
+  // Kilitli okulun adını göstermek için okulun seçildiği liste
+  const lockedSchoolParams = !lockedSchoolId ? null
+    : code === 'lise_spor' ? { type: 'sports' }
+      : code === 'lise_uluslararasi' ? { type: 'international' }
+        : { cityId: fields.city_id };
 
   const edu = application.education;
   const [other, setOther] = useState(!!edu?.schoolOther);
@@ -32,25 +38,24 @@ export default function HighSchoolForm({ formId, application, onSubmit }) {
       districtId: edu?.districtId || '',
       schoolId: edu?.schoolId || '',
       schoolOther: edu?.schoolOther || '',
-      grade: edu?.grade || '',
+      grade: lockedGrade || edu?.grade || '',
     },
   });
   const cityId = useWatch({ control, name: 'cityId' });
   const districtId = useWatch({ control, name: 'districtId' });
 
-  // Kilitli okulun adını göstermek için
-  const { data: lockedList = [] } = useSchools({ type: lockedSchoolFilter }, !!lockedSchoolFilter);
-  const lockedSchool = lockedList.find((s) => String(s.id) === String(fields.school_id));
+  const { data: lockedList = [] } = useSchools(lockedSchoolParams || {}, !!lockedSchoolParams);
+  const lockedSchool = lockedList.find((s) => String(s.id) === String(lockedSchoolId));
 
   const submit = handleSubmit(async (v) => {
-    const body = lockedSchoolFilter
-      ? { grade: v.grade }
-      : {
+    const body = {
+      ...(lockedSchoolId ? {} : {
         cityId: Number(v.cityId) || undefined,
         districtId: Number(v.districtId) || undefined,
         ...(other ? { schoolOther: v.schoolOther } : { schoolId: Number(v.schoolId) || undefined }),
-        grade: v.grade,
-      };
+      }),
+      ...(lockedGrade ? {} : { grade: v.grade }),
+    };
     try {
       await onSubmit(body);
     } catch (err) {
@@ -62,13 +67,13 @@ export default function HighSchoolForm({ formId, application, onSubmit }) {
     <form id={formId} onSubmit={submit} noValidate className="space-y-5">
       {errors.root && <Alert variant="error">{errors.root.message}</Alert>}
 
-      {lockedSchoolFilter ? (
+      {lockedSchoolId ? (
         <div className="flex items-start gap-3 rounded-xl bg-brand-50 p-4 ring-1 ring-inset ring-brand-100">
           <School className="mt-0.5 size-5 text-brand-600" aria-hidden />
           <div className="text-sm">
             <p className="font-semibold text-brand-900">{lockedSchool?.name || 'Adım 4\'te seçtiğiniz okul'}</p>
             {lockedSchool && <p className="text-brand-800">{lockedSchool.cityName} / {lockedSchool.districtName}</p>}
-            <p className="mt-1 text-xs text-brand-700">Okulunuzu değiştirmek için Adım 4'e dönün.</p>
+            <p className="mt-1 text-xs text-brand-700">Okul ve sınıf bilgisini değiştirmek için Adım 4'e dönünüz.</p>
           </div>
         </div>
       ) : (
@@ -89,7 +94,7 @@ export default function HighSchoolForm({ formId, application, onSubmit }) {
           <Field label="Okul Adı" htmlFor="schoolId" required error={errors.schoolId?.message || errors.schoolOther?.message} className="sm:col-span-2">
             {other ? (
               <div className="space-y-2">
-                <TextInput id="schoolId" placeholder="Okulunuzun tam adını yazın" invalid={!!errors.schoolOther} {...register('schoolOther')} />
+                <TextInput id="schoolId" placeholder="Okulunuzun tam adını yazınız" invalid={!!errors.schoolOther} {...register('schoolOther')} />
                 <Button variant="ghost" size="sm" onClick={() => { setOther(false); setValue('schoolOther', ''); }}>Listeden seç</Button>
               </div>
             ) : (
@@ -102,11 +107,17 @@ export default function HighSchoolForm({ formId, application, onSubmit }) {
         </div>
       )}
 
-      <Field label="Sınıf" htmlFor="grade" required error={errors.grade?.message} className="sm:max-w-xs">
-        <Controller control={control} name="grade" render={({ field }) => (
-          <Select id="grade" options={GRADES.lise} value={field.value} onChange={(e) => field.onChange(e.target.value)} invalid={!!errors.grade} />
-        )} />
-      </Field>
+      {lockedGrade ? (
+        <Field label="Sınıf" htmlFor="grade" hint="Adım 4'te seçildi" className="sm:max-w-xs">
+          <TextInput id="grade" value={GRADE_LABELS[lockedGrade] || lockedGrade} disabled readOnly />
+        </Field>
+      ) : (
+        <Field label="Sınıf" htmlFor="grade" required error={errors.grade?.message} className="sm:max-w-xs">
+          <Controller control={control} name="grade" render={({ field }) => (
+            <Select id="grade" options={GRADES.lise} value={field.value} onChange={(e) => field.onChange(e.target.value)} invalid={!!errors.grade} />
+          )} />
+        </Field>
+      )}
     </form>
   );
 }

@@ -35,7 +35,7 @@ describe('public API', () => {
   test('kanallar ek alan tanımlarıyla gelir', async () => {
     const lise = await request(app).get('/api/public/channels?category=lise').expect(200);
     expect(lise.body.map((c) => c.code)).toEqual(['lise_teskilat', 'lise_spor', 'lise_uluslararasi', 'lise_egitim_destek']);
-    expect(lise.body[0].extraFields.map((f) => f.key)).toEqual(['region', 'district_id', 'city_id', 'reference_name']);
+    expect(lise.body[0].extraFields.map((f) => f.key)).toEqual(['region', 'district_id', 'city_id', 'reference_name', 'school_id', 'grade']);
 
     const uni = await request(app).get('/api/public/channels?category=universite').expect(200);
     const gm = uni.body.find((c) => c.code === 'uni_gm_komisyonlari');
@@ -55,5 +55,21 @@ describe('public API', () => {
 
   test('yurtlar', async () => {
     expect((await request(app).get('/api/public/dormitories').expect(200)).body).toHaveLength(16);
+  });
+
+  test('ülke listesi', async () => {
+    const res = await request(app).get('/api/public/countries').expect(200);
+    expect(res.body).toEqual(expect.arrayContaining(['Türkiye', 'Azerbaycan', 'Kuzey Kıbrıs Türk Cumhuriyeti']));
+  });
+
+  test('üniversite fakülteleri bölümleriyle gelir', async () => {
+    const agu = await db('universities').where({ name: 'Abdullah Gül Üniversitesi' }).first();
+    const res = await request(app).get(`/api/public/universities/${agu.id}/faculties`).expect(200);
+    expect(res.body.map((f) => f.name)).toContain('Mühendislik Fakültesi');
+    const muh = res.body.find((f) => f.name === 'Mühendislik Fakültesi');
+    expect(muh.departments.map((d) => d.name)).toContain('Bilgisayar Mühendisliği');
+
+    const renamed = await db('universities').where({ name: 'Bursa Uludağ Üniversitesi', is_active: true }).first();
+    expect(renamed).toBeDefined();
   });
 });

@@ -10,5 +10,5 @@ export function checkTrIban(value) {
     const v = /[A-Z]/.test(ch) ? String(ch.charCodeAt(0) - 55) : ch;
     for (const d of v) r = (r * 10 + Number(d)) % 97;
   }
-  return { complete: true, valid: r === 1, bankCode: iban.slice(4, 9), value: iban };
+  return { complete: true, valid: r === 1, value: iban };
 }

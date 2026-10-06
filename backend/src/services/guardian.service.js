@@ -67,7 +67,7 @@ async function saveGuardian(applicantId, { fullName, idType, idNumber, phone }, 
 async function resend(applicantId, { ip }) {
   const { app, applicant } = await requireMinorApplication(applicantId);
   const guardian = await db('guardians').where({ application_id: app.id }).first();
-  if (!guardian) throw new AppError(409, 'STEP_ORDER', 'Önce veli bilgilerini girin');
+  if (!guardian) throw new AppError(409, 'STEP_ORDER', 'Önce veli bilgilerini giriniz');
   if (guardian.phone_verified_at) throw new AppError(409, 'ALREADY_VERIFIED', 'Veli onayı zaten alındı');
   return otp.sendOtp({
     phone: guardian.phone,
@@ -82,7 +82,7 @@ async function resend(applicantId, { ip }) {
 async function verify(applicantId, { code }, { ip, userAgent }) {
   const { app, applicant } = await requireMinorApplication(applicantId);
   const guardian = await db('guardians').where({ application_id: app.id }).first();
-  if (!guardian) throw new AppError(409, 'STEP_ORDER', 'Önce veli bilgilerini girin');
+  if (!guardian) throw new AppError(409, 'STEP_ORDER', 'Önce veli bilgilerini giriniz');
 
   const text = await app$.getActiveConsentText('guardian');
   if (!text) throw new AppError(503, 'CONSENT_TEXT_MISSING', 'Veli onay metni henüz yayınlanmadı');

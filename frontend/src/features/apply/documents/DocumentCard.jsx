@@ -26,7 +26,7 @@ export default function DocumentCard({ item, onChange, canRemove = true }) {
 
   const upload = async (file) => {
     if (needsConsent && !consent) {
-      setError('Bu belgeyi yüklemeden önce açık rıza onayını işaretleyin.');
+      setError('Bu belgeyi yüklemeden önce açık rıza onayını işaretleyiniz.');
       return;
     }
     setUploading(true);
@@ -63,12 +63,12 @@ export default function DocumentCard({ item, onChange, canRemove = true }) {
           {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
         </div>
         {up && !revision ? <Badge tone="success" dot>Yüklendi</Badge>
-          : item.required ? <Badge tone="danger">Zorunlu</Badge> : <Badge>Varsa yükleyin</Badge>}
+          : item.required ? <Badge tone="danger">Zorunlu</Badge> : <Badge>Varsa yükleyiniz</Badge>}
       </div>
 
       {revision && (
         <Alert variant="error" title="Bu belgenin yeniden yüklenmesi istendi" className="mt-4">
-          {up.reviewNote || 'Lütfen belgeyi güncelleyip tekrar yükleyin.'}
+          {up.reviewNote || 'Lütfen belgeyi güncelleyip tekrar yükleyiniz.'}
         </Alert>
       )}
 

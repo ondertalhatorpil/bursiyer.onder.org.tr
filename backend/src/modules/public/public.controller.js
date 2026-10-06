@@ -4,6 +4,7 @@
 const db = require('../../db/knex');
 const { notFound } = require('../../lib/errors');
 const { parseJson } = require('../../lib/rules');
+const { COUNTRIES } = require('../../lib/countries');
 const svc = require('../../services/application.service');
 
 async function program(req, res) {
@@ -74,6 +75,28 @@ async function universities(req, res) {
   res.json(await query);
 }
 
+async function faculties(req, res) {
+  const rows = await db('faculties as f')
+    .join('universities as u', 'u.id', 'f.university_id')
+    .leftJoin('departments as d', function joinDepartments() {
+      this.on('d.faculty_id', 'f.id').andOn('d.is_active', db.raw('1'));
+    })
+    .where({ 'f.university_id': req.valid.params.universityId, 'f.is_active': true, 'u.is_active': true })
+    .select('f.id', 'f.name', 'd.id as departmentId', 'd.name as departmentName')
+    .orderBy(['f.name', 'd.name']);
+
+  const byId = new Map();
+  for (const r of rows) {
+    if (!byId.has(r.id)) byId.set(r.id, { id: r.id, name: r.name, departments: [] });
+    if (r.departmentId) byId.get(r.id).departments.push({ id: r.departmentId, name: r.departmentName });
+  }
+  res.json([...byId.values()]);
+}
+
+function countries(req, res) {
+  res.json(COUNTRIES);
+}
+
 async function dormitories(req, res) {
   res.json(await db('dormitories').where({ is_active: true }).select('id', 'name').orderBy('sort'));
 }
@@ -98,4 +121,4 @@ async function channels(req, res) {
   })));
 }
 
-module.exports = { program, consent, content, cities, districts, schools, universities, dormitories, channels };
+module.exports = { program, consent, content, cities, districts, schools, universities, faculties, countries, dormitories, channels };

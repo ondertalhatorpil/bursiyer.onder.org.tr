@@ -16,13 +16,13 @@ afterAll(() => db.destroy());
 const codes = (ctx) => Object.fromEntries(resolveDocuments(documentTypes, ctx).map((d) => [d.code, d.required]));
 
 describe('belge matrisi', () => {
-  test('lise, 16 yaş, 10. sınıf: öğrenci belgesi + transkript', () => {
+  test('lise, 16 yaş, 10. sınıf: sadece öğrenci belgesi', () => {
     expect(codes({ category: 'lise', idType: 'TC', grade: '10', age: 16 }))
-      .toEqual({ ogrenci_belgesi: true, transkript: true });
+      .toEqual({ ogrenci_belgesi: true });
   });
 
-  test('lise hazırlık: transkript yine zorunlu', () => {
-    expect(codes({ category: 'lise', idType: 'TC', grade: 'hazirlik', age: 14 }).transkript).toBe(true);
+  test('lise hazırlık: transkript istenmez', () => {
+    expect(codes({ category: 'lise', idType: 'TC', grade: 'hazirlik', age: 14 }).transkript).toBeUndefined();
   });
 
   test('üniversite 1. sınıf, 19 yaş: transkript yok, YKS + adli sicil var', () => {
@@ -30,8 +30,8 @@ describe('belge matrisi', () => {
       .toEqual({ ogrenci_belgesi: true, yks_yerlestirme: true, adli_sicil: true });
   });
 
-  test('üniversite 1. sınıf, 17 yaş: adli sicil istenmez', () => {
-    expect(codes({ category: 'universite', idType: 'TC', grade: '1', age: 17 }).adli_sicil).toBeUndefined();
+  test('üniversite 1. sınıf, 17 yaş: adli sicil yine zorunlu', () => {
+    expect(codes({ category: 'universite', idType: 'TC', grade: '1', age: 17 }).adli_sicil).toBe(true);
   });
 
   test('üniversite 3. sınıf: transkript var, YKS yok', () => {
@@ -67,9 +67,27 @@ describe('kanal ek alanları', () => {
     expect(r.refs).toEqual([{ key: 'district_id', type: 'district', id: 412, cityId: 34 }]);
   });
 
-  test('Teşkilat / Anadolu: il zorunlu, İstanbul hariç kısıtı ref ile gelir', () => {
+  test('Teşkilat / Anadolu: il, okul ve sınıf zorunlu', () => {
     const r = validateExtraFields(fields('lise_teskilat'), { region: 'anadolu', reference_name: 'X' });
-    expect(r.errors).toEqual({ city_id: 'İl zorunludur' });
+    expect(r.errors).toEqual({ city_id: 'İl zorunludur', school_id: 'Okul Adı zorunludur', grade: 'Sınıf Seviyesi zorunludur' });
+  });
+
+  test('Teşkilat / Anadolu: okul, seçilen ile bağlı ref üretir', () => {
+    const r = validateExtraFields(fields('lise_teskilat'), {
+      region: 'anadolu', city_id: '6', reference_name: 'X', school_id: '10', grade: '10',
+    });
+    expect(r.errors).toEqual({});
+    expect(r.refs).toEqual([
+      { key: 'city_id', type: 'city', id: 6, excludeCityIds: [34] },
+      { key: 'school_id', type: 'school', id: 10, cityId: 6 },
+    ]);
+  });
+
+  test('Uluslararası AİHL: uyruk ülke listesinden seçilir', () => {
+    const ok = validateExtraFields(fields('lise_uluslararasi'), { school_id: 10, nationality: 'Azerbaycan', grade: '9' });
+    expect(ok.errors).toEqual({});
+    const bad = validateExtraFields(fields('lise_uluslararasi'), { school_id: 10, nationality: '222', grade: '9' });
+    expect(bad.errors.nationality).toMatch(/listeden/);
   });
 
   test('Teşkilat: bölge seçilmezse', () => {

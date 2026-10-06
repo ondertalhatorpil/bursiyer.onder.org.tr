@@ -31,10 +31,10 @@ export const SITE = {
 
 
 export const CATEGORIES = [
-  { value: 'lise', label: 'Lise Bursu', description: 'İmam hatip lisesi öğrencileri' },
-  { value: 'universite', label: 'Üniversite Bursu', description: 'Lisans öğrencileri' },
-  { value: 'yuksek_lisans', label: 'Yüksek Lisans Bursu', description: 'Tezli yüksek lisans öğrencileri' },
-  { value: 'doktora', label: 'Doktora Bursu', description: 'Doktora öğrencileri' },
+  { value: 'lise', label: 'Lise Bursu', description: 'Anadolu İmam Hatip Lisesi' },
+  { value: 'universite', label: 'Lisans Bursu', description: 'Üniversitelerin lisans programlarında öğrenim gören öğrenciler' },
+  { value: 'yuksek_lisans', label: 'Yüksek Lisans Bursu', description: 'Tezli yüksek lisans programlarında öğrenim gören öğrenciler' },
+  { value: 'doktora', label: 'Doktora Bursu', description: 'Doktora programlarında öğrenim gören araştırmacı ve öğrenciler' },
 ];
 
 export const APPLICATION_STEPS = [

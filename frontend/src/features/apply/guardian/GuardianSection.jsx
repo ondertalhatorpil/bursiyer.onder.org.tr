@@ -72,7 +72,7 @@ export default function GuardianSection({ application }) {
                 </button>
                 'nı okudum; çocuğumun kişisel verilerinin burs süreçleri kapsamında işlenmesine ve paylaşılmasına açık rıza veriyorum.
               </Checkbox>
-              {!consent && <p className="mt-2 pl-8 text-xs text-slate-500">Kodu girmeden önce veli onay kutusunu işaretleyin.</p>}
+              {!consent && <p className="mt-2 pl-8 text-xs text-slate-500">Kodu girmeden önce veli onay kutusunu işaretleyiniz.</p>}
             </div>
             <ConsentModal type="guardian" open={consentOpen} onClose={() => setConsentOpen(false)} onAccept={() => setConsent(true)} />
           </OtpVerify>
@@ -84,7 +84,7 @@ export default function GuardianSection({ application }) {
               </Alert>
             )}
             {guardian && !guardian.verified && (
-              <Alert variant="warning">Veli onayı henüz tamamlanmadı. Bilgileri kontrol edip kodu tekrar gönderin.</Alert>
+              <Alert variant="warning">Veli onayı henüz tamamlanmadı. Bilgileri kontrol edip kodu tekrar gönderiniz.</Alert>
             )}
             <GuardianForm
               defaultValues={guardian ? { fullName: guardian.fullName, idType: guardian.idType, idNumber: '', phone: '' } : undefined}

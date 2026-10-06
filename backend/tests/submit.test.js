@@ -17,7 +17,7 @@ const pdf = (t = 'Belge') => makePdf([`${t} metni burada yer alir`, 'Aktif Ogren
 
 beforeAll(async () => {
   ch = Object.fromEntries((await db('channels').select('id', 'code')).map((c) => [c.code, c.id]));
-  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').ignore();
+  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').merge({ is_active: true }); // seed listede olmayanları pasife alır
   uni = await db('universities').where({ name: 'Test Devlet Üniversitesi' }).first();
 });
 beforeEach(async () => {
@@ -91,8 +91,8 @@ describe('gönderim', () => {
     const res = await agent.post('/api/application/submit').send({ confirm: true }).expect(200);
 
     expect(res.body.trackingNo).toMatch(/^OND-2026-\d{5}$/);
-    expect(res.body.message.title).toBe('Başvurunuz ve Belgeleriniz Başarıyla Alınmıştır.');
-    expect(res.body.message.body).toContain(res.body.trackingNo);
+    expect(res.body.message.title).toBe('Burs Başvurunuz Başarıyla Alınmıştır');
+    expect(res.body.message.body).toMatch(/^2026-2027 Dönemi ÖNDER/); // {program_name} doldurulur
     expect(res.body.application).toMatchObject({ status: 'submitted', statusLabel: 'Başvuru Tamamlandı', editable: false });
 
     const row = await db('applications').first();
@@ -135,7 +135,6 @@ describe('gönderim', () => {
     const district = await db('districts').where({ city_id: 34, name: 'Üsküdar' }).first();
     await agent.put('/api/application/education').send({ cityId: 34, districtId: district.id, schoolOther: 'Test Lisesi', grade: '9' }).expect(200);
     await agent.post('/api/documents/ogrenci_belgesi').attach('file', pdf(), 'o.pdf').expect(201);
-    await agent.post('/api/documents/transkript').attach('file', pdf('Transkript'), 't.pdf').expect(201);
 
     let res = await agent.post('/api/application/submit').send({ confirm: true });
     expect(res.body.error.details.missing.map((m) => m.field)).toEqual(['guardian']);

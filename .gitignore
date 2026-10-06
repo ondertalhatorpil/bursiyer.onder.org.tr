@@ -1,0 +1,5 @@
+# Sunucu ayarları (şifreler, anahtarlar) asla repoya girmez; şablon: .env.example
+.env
+!.env.example
+
+.DS_Store

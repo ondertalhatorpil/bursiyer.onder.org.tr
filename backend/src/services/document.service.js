@@ -76,7 +76,7 @@ function serializeUpload(d) {
 async function listDocuments(applicantId) {
   const { app, education, ctx } = await loadContext(applicantId);
   if (!app.category || !education) {
-    return { items: [], complete: false, canUpload: false, reason: 'Önce eğitim bilgilerini tamamlayın (Adım 5)' };
+    return { items: [], complete: false, canUpload: false, reason: 'Önce eğitim bilgilerini tamamlayınız (Adım 5)' };
   }
 
   const types = await applicableTypes(ctx);
@@ -118,7 +118,7 @@ async function upload(applicantId, typeCode, file, { consent, ip, userAgent }) {
   if (!app.program_is_open && app.status === 'draft') {
     throw new AppError(403, 'APPLICATIONS_CLOSED', 'Başvuru dönemi kapanmıştır');
   }
-  if (!app.category || !education) throw new AppError(409, 'STEP_ORDER', 'Önce eğitim bilgilerini tamamlayın (Adım 5)');
+  if (!app.category || !education) throw new AppError(409, 'STEP_ORDER', 'Önce eğitim bilgilerini tamamlayınız (Adım 5)');
 
   const type = (await applicableTypes(ctx)).find((t) => t.code === typeCode);
   if (!type) throw notFound('Bu belge başvurunuz için istenmiyor');
@@ -128,7 +128,7 @@ async function upload(applicantId, typeCode, file, { consent, ip, userAgent }) {
     || (app.status === 'revision_requested' && current?.review_status === 'revision_requested');
   if (!allowed) throw new AppError(409, 'APPLICATION_LOCKED', 'Bu belge şu an değiştirilemez');
 
-  if (!file) throw validationError({ file: 'Dosya seçin' });
+  if (!file) throw validationError({ file: 'Dosya seçiniz' });
 
   // Gerçek tür, uzantıdan değil içerikten
   const detected = detectType(file.buffer);

@@ -6,7 +6,7 @@ const { unauthorized } = require('../lib/errors');
 
 async function requireApplicant(req, res, next) {
   const session = await readSession(req, 'applicant');
-  if (!session) return next(unauthorized('Oturumunuz sona erdi, lütfen tekrar giriş yapın'));
+  if (!session) return next(unauthorized('Oturumunuz sona erdi, lütfen tekrar giriş yapınız'));
   req.session = session;
   req.applicantId = session.subject_id;
   return next();

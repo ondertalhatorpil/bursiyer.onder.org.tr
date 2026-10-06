@@ -82,7 +82,7 @@ function institution(row) {
 function sponsorLabel(r, names) {
   if (r.status !== 'finalized') return null;
   const list = names.get(Number(r.id)) || [];
-  return list.length ? list.join(', ') : sponsors.GENEL_MERKEZ;
+  return list.length ? list.map((s) => s.name).join(', ') : sponsors.GENEL_MERKEZ;
 }
 
 function listRow(r, admin, names = new Map()) {
@@ -106,6 +106,8 @@ function listRow(r, admin, names = new Map()) {
     referenceVerified: !!r.reference_verified_at,
     qualified: !!r.is_qualified,
     sponsorLabel: sponsorLabel(r, names),
+    // Listede logo gösterimi için (boşsa Genel Merkez)
+    sponsors: r.status === 'finalized' ? names.get(Number(r.id)) || [] : null,
     submittedAt: r.submitted_at,
     createdAt: r.created_at,
   };
@@ -290,7 +292,6 @@ async function detail(admin, publicId) {
       faculty: education.faculty,
       department: education.department,
       grade: education.grade,
-      fallRegistration: education.fall_registration,
     } : null,
     documents: documents.map((d) => ({
       id: d.public_id,
@@ -467,7 +468,7 @@ async function exportRows(admin, f) {
 
 async function withSponsorNames(rows, fn) {
   const ids = rows.filter((r) => r.status === 'finalized').map((r) => Number(r.id));
-  const names = await sponsors.namesByApplication(ids);
+  const names = await sponsors.byApplication(ids);
   return rows.map((r) => fn(r, names));
 }
 
@@ -479,7 +480,7 @@ async function paymentRows(admin, programId) {
     .leftJoin('channels as ch', 'ch.id', 'a.channel_id')
     .leftJoin('sub_units as su', 'su.id', 'a.sub_unit_id')
     .select('a.id', 'a.status', 'a.tracking_no', 'a.category', 'a.is_qualified', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone',
-      'b.iban_enc', 'b.bank_code_raw', 'k.name as bank_name', 'b.holder_name', 'b.verified_at',
+      'b.iban_enc', 'b.holder_name', 'b.verified_at',
       'ch.name as channel_name', 'su.name as sub_unit_name')
     .orderBy(['p.last_name', 'p.first_name']);
   const rows = await applyScope(q, admin);
@@ -495,7 +496,6 @@ async function paymentRows(admin, programId) {
     channel: [r.channel_name, r.sub_unit_name].filter(Boolean).join(' · '),
     holderName: r.holder_name,
     iban: formatIban(decrypt(r.iban_enc)),
-    bank: r.bank_name || `Banka kodu ${r.bank_code_raw}`,
     verifiedAt: r.verified_at,
   }));
 }

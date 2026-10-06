@@ -6,7 +6,7 @@ import { inputClass } from './Field';
  * Native select (mobilde işletim sisteminin seçicisini açar).
  * options: [{ value, label }]
  */
-export default function Select({ options = [], placeholder = 'Seçin', invalid, className, ref, value, ...rest }) {
+export default function Select({ options = [], placeholder = 'Seçiniz', invalid, className, ref, value, ...rest }) {
   return (
     <div className="relative">
       <select

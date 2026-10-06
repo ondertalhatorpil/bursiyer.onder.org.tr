@@ -24,7 +24,7 @@ export default function MaskedInput({ mask, value, onChange, onBlur, name, inval
 /** Hazır maskeler. Telefonda baştaki 0 sabittir (\\0 = sabit karakter); kullanıcı 0 yazsa da yazmasa da aynı sonuç. */
 export const MASKS = {
   phone: { mask: '\\0 (000) 000 00 00', lazy: true, inputMode: 'tel', placeholder: '0 (5XX) XXX XX XX' },
-  idNumber: { mask: '00000000000', inputMode: 'numeric', placeholder: '11 haneli kimlik numarası' },
+  idNumber: { mask: '00000000000', inputMode: 'numeric', placeholder: '11 haneli T.C. Kimlik veya Yabancı Kimlik Numarası' },
   date: { mask: '00/00/0000', inputMode: 'numeric', placeholder: 'GG/AA/YYYY' },
   // TR sabit; kullanıcı TR yazsa da yazmasa da aynı sonuç. Yapıştırılan boşluklu / boşluksuz IBAN kabul edilir.
   iban: { mask: 'TR00 0000 0000 0000 0000 0000 00', inputMode: 'numeric', placeholder: 'TR00 0000 0000 0000 0000 0000 00' },

@@ -12,8 +12,9 @@ import { useApplicationUpdater } from '../../../hooks/useApplication';
 import { formatDate } from '../../../lib/format';
 import { GRADE_LABELS } from '../../../config';
 
-const FALL = { completed: 'Evet, tamamlandı', pending: 'Henüz değil / kayıt sürecinde' };
 const ID_TYPE = { TC: 'T.C. Kimlik No', YKN: 'Yabancı Kimlik No', PASAPORT: 'Pasaport' };
+// T.C. vatandaşlarının uyruğu kayıtta 'T.C.' olarak tutulur
+const nationalityName = (n) => (n === 'T.C.' ? 'Türkiye Cumhuriyeti' : n);
 
 /** Adım 7: tüm bilgilerin özeti, eksikler, beyan ve gönderim */
 export default function SummaryStep() {
@@ -43,7 +44,7 @@ export default function SummaryStep() {
       update(res.application);
       navigate('/basvuru/durum', { replace: true, state: { submitted: res } });
     } catch (err) {
-      setSendError(err.details?.missing ? 'Başvurunuzda eksikler var, lütfen yukarıdaki listeyi kontrol edin.' : err.message);
+      setSendError(err.details?.missing ? 'Başvurunuzda eksikler var, lütfen yukarıdaki listeyi kontrol ediniz.' : err.message);
     } finally {
       setSending(false);
     }
@@ -53,12 +54,12 @@ export default function SummaryStep() {
     <StepPage
       step={7}
       title="Özet ve Gönderim"
-      description="Bilgilerinizi kontrol edin. Gönderdikten sonra başvurunuzda değişiklik yapamazsınız."
+      description="Lütfen başvuru formunda beyan ettiğiniz bilgileri ve yüklediğiniz evrakları dikkatlice kontrol ediniz. Başvurunuzu onaylayıp gönderdikten sonra sistem üzerinden herhangi bir veri güncellemesi yapılamayacaktır."
       footer={(
         <CardFooter>
           <Button to="/basvuru/belgeler" variant="ghost">Geri</Button>
           <Button size="lg" icon={Send} loading={sending} disabled={!canSubmit || !confirm} onClick={submit}>
-            Başvuruyu İncelemeye Gönder
+            Başvuruyu Onayla ve Tamamla
           </Button>
         </CardFooter>
       )}
@@ -69,7 +70,7 @@ export default function SummaryStep() {
         ['Ad Soyad', `${applicant.firstName} ${applicant.lastName}`],
         [applicant.idType === 'YKN' ? 'Yabancı Kimlik No' : 'T.C. Kimlik No', applicant.idNumberMasked],
         ['Doğum Tarihi', formatDate(applicant.birthDate)],
-        ['Uyruk', applicant.nationality],
+        ['Uyruk', nationalityName(applicant.nationality)],
         ['Cep Telefonu', applicant.phoneMasked],
         ['E-posta', applicant.email],
       ]} />
@@ -96,10 +97,9 @@ export default function SummaryStep() {
         ['İlçe', edu.districtName],
         [app.category === 'lise' ? 'Okul' : 'Üniversite', edu.schoolName || edu.universityName],
         ['Üniversite Türü', edu.universityType ? (edu.universityType === 'vakif' ? 'Vakıf' : 'Devlet') : null],
-        [grad ? 'Enstitü' : 'Fakülte', edu.faculty],
-        [grad ? 'Program' : 'Bölüm', edu.department],
+        ['Fakülte', edu.faculty],
+        ['Bölüm', edu.department],
         ['Sınıf', GRADE_LABELS[edu.grade]],
-        ['Kayıt Yenileme', FALL[edu.fallRegistration]],
       ] : []}>
         {!edu && <p className="text-sm text-slate-500">Henüz girilmedi.</p>}
       </SummarySection>
@@ -121,8 +121,10 @@ export default function SummaryStep() {
 
       <div className="rounded-xl bg-brand-50 p-4 ring-1 ring-inset ring-brand-100 sm:p-5">
         <Checkbox id="confirm" checked={confirm} onChange={(e) => setConfirm(e.target.checked)} disabled={!canSubmit}>
-          Başvuru formunda verdiğim bilgilerin ve yüklediğim belgelerin doğru ve güncel olduğunu, gerçeğe aykırı beyan
-          halinde bursun iptal edileceğini kabul ederim.
+          Bu formda beyan ettiğim tüm bilgi ve belgelerin doğruluğunu, eksiksiz ve güncel olduğunu taahhüt ederim.
+          Gerçeğe aykırı, eksik veya yanıltıcı beyanda bulunmam durumunda burs başvurumun geçersiz sayılacağını, burs
+          tahsis edilmiş olsa dahi derhal iptal edilerek yapılan ödemelerin yasal mevzuat çerçevesinde tahsil edileceğini
+          kabul, beyan ve taahhüt ederim.
         </Checkbox>
       </div>
 

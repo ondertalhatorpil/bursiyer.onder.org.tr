@@ -17,7 +17,7 @@ CREATE DATABASE burs_kayit CHARACTER SET utf8mb4 COLLATE utf8mb4_turkish_ci;
 
 ```bash
 npm run db:migrate   # tabloları oluşturur
-npm run db:seed      # il/ilçe, okullar, yurtlar, kanallar, belge tipleri, metinler, roller
+npm run db:seed      # il/ilçe, okullar, üniversite/fakülte/bölüm, yurtlar, kanallar, belge tipleri, metinler, roller
 npm run db:reset     # geliştirmede: her şeyi silip baştan kurar
 ```
 
@@ -31,18 +31,28 @@ npm run db:seed                              # kurum koduna göre upsert
 Script ortaokulları (iho) atlar; geçersiz satırları, eşleşmeyen ilçeleri ve mükerrer kurum kodlarını raporlar.
 Spor liseleri `SPO`, uluslararası AİHL'ler `ULU` kodu (veya adı "Uluslararası" ile başlayan) ile işaretlenir.
 
+## Üniversite / fakülte / bölüm listesini güncellemek
+
+- `seeds/data/universite-fakulte-bolum.json`: üniversite (`universite`), il (`sehir`) → fakülte → bölüm
+  (başvuru formundaki seçim listeleri). Adlardaki yazım düzeltmeleri `seeds/lib/university-data.js` içindedir.
+- `seeds/data/universities.json`: aynı üniversitelerin türü (devlet/vakıf). Yeni bir üniversite eklenirse buraya da
+  türüyle eklenmeli; türü olmayan ya da ili bulunamayan üniversite olursa `07_universities` seed'i hata verir.
+- Adı değişen üniversite için `07_universities.js` içindeki `RENAMED` listesine eski → yeni ad eklenir
+  (kayıt yerinde güncellenir, bağlı başvurular korunur).
+
 ## Seed davranışı
 
 | Veri | Tekrar çalıştırınca |
 | --- | --- |
 | İl / ilçe, okullar | Güncellenir (kaynak: dosya) |
+| Üniversiteler, fakülteler, bölümler | Eksikler eklenir, dosyada olmayanlar pasife alınır (silinmez) |
 | Yurtlar, kanallar, alt birimler, belge tipleri, onay metinleri, ekran metinleri, SMS şablonları, roller, dönem | Sadece eksikse eklenir; admin panelinde yapılan değişiklikleri ezmez |
 
 ## Tablolar
 
 | Grup | Tablolar |
 | --- | --- |
-| Referans | `cities`, `districts`, `schools`, `universities`, `dormitories` |
+| Referans | `cities`, `districts`, `schools`, `universities`, `faculties`, `departments`, `dormitories` |
 | Program & içerik | `programs`, `channels`, `sub_units`, `consent_texts`, `content_blocks`, `sms_templates` |
 | Başvuru | `applicants`, `applications`, `application_details`, `guardians`, `education` |
 | Belge | `document_types`, `documents` |
@@ -57,4 +67,4 @@ Notlar:
 - Kanal alt alanları `channels.extra_fields` / `sub_units.extra_fields` tanımından gelir, değerler `application_details.data` içinde tutulur.
 - Belge gösterimi/zorunluluğu `document_types.rules` ile belirlenir (ilk eşleşen kural).
 - `consent_texts` içindeki KVKK/rıza metinlerinin gövdesi boştur; admin panelinden girilecek.
-- `universities` tablosu boş; üniversite listesi ayrıca aktarılacak.
+- Başvuruda fakülte ve bölüm ad olarak saklanır (`education.faculty` / `department`); listesi olan üniversitede listeden seçilmesi zorunludur, "Diğer" üniversitede elle yazılır.

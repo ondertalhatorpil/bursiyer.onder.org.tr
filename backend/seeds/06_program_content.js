@@ -3,48 +3,27 @@
  * Bunlar admin panelinden düzenlenir: seed sadece ilk kurulumda ekler, mevcut kaydı ezmez.
  * KVKK/rıza metinlerinin gövdesi (body) boş bırakılır; panelden girilmeden başvuru açılamaz.
  */
-const YL_SARTLAR = `Türkiye'deki üniversitelerde İlahiyat / İslami İlimler / Psikoloji / Sosyoloji / Felsefe / Eğitim başta olmak üzere Sosyal Bilimler çatısı altında yer alan tezli yüksek lisans programına kayıtlı olup normal öğrenciliğe devam etmek,
-Hali hazırda İmam Hatip Modeli yahut İmam Hatipliler üzerine tez konusu seçmek ve akademik araştırmalarda bulunmak,
-1999 yılı ve sonrasında doğmuş olmak,
-Dönem şartı:
-- Bilimsel hazırlık ve İngilizce hazırlık alanlar için 2023 ve sonrası,
-- Bilimsel hazırlık veya sadece İngilizce hazırlık alanlar için 2024 ve sonrası,
-- Doğrudan ders dönemine başlayanlar için 2025 ve sonrası yüksek lisansa kayıt yaptırmış olmak,
-Yüz kızartıcı ya da kasti bir suçtan dolayı hüküm giymemiş olmak.
-
-Önemli Not: Başvuru esnasında istenilen belgelerin PDF formatında yüklenmesi gerekmektedir.`;
-
-const DR_SARTLAR = `Türkiye'deki üniversitelerde İlahiyat / İslami İlimler / Psikoloji / Sosyoloji / Felsefe / Eğitim başta olmak üzere Sosyal Bilimler çatısı altında yer alan bir doktora programına kayıtlı olup normal öğrenciliğe devam etmek,
-Hali hazırda İmam Hatip Modeli yahut İmam Hatipliler üzerine tez konusu seçmek ve akademik araştırmalarda bulunmak,
-1991 yılı ve sonrasında doğmuş olmak,
-Dönem şartı:
-- Bilimsel hazırlık ve İngilizce hazırlık alanlar için 2021 ve sonrası,
-- Bilimsel hazırlık veya sadece İngilizce hazırlık alanlar için 2022 ve sonrası,
-- Doğrudan ders dönemine başlayanlar için 2023 ve sonrası doktora programına kayıt yaptırmış olmak,
-Yüz kızartıcı ya da kasti bir suçtan dolayı hüküm giymemiş olmak.
-
-Önemli Not: Başvuru esnasında istenilen belgelerin PDF formatında yüklenmesi gerekmektedir.`;
+const { YL_SARTLAR, DR_SARTLAR, REQUIREMENTS_LABEL, SUBMIT_SUCCESS } = require('./lib/program-texts');
 
 const CONSENT_TEXTS = [
   { type: 'kvkk', title: 'KVKK Aydınlatma Metni ve Açık Rıza Beyanı',
-    label: "KVKK Aydınlatma Metni'ni ve Açık Rıza Beyanı'nı okudum, verilerimin işlenmesini onaylıyorum." },
+    label: "KVKK Aydınlatma Metni'ni okudum, anladım ve Açık Rıza Beyanı kapsamında kişisel verilerimin işlenmesini onaylıyorum." },
   { type: 'sharing', title: 'Protokol Kurumlarıyla Paylaşım Açık Rızası',
-    label: 'Burs başvuru, değerlendirme ve finansman süreçleri kapsamında kişisel, iletişim ve eğitim bilgilerimin ÖNDER’in işbirliği yaptığı protokol kurumları, vakıflar ve sponsor kuruluşlarla paylaşılmasına açık rıza veriyorum.' },
+    label: "Burs başvuru, değerlendirme ve burs tahsis süreçlerinin yürütülmesi amacıyla; kimlik, iletişim ve eğitim bilgilerimin ÖNDER'in iş birliği içinde bulunduğu protokol kurumları, vakıflar ve sponsor kuruluşlar ile paylaşılmasına açık rıza gösteriyorum." },
   { type: 'guardian', title: 'Veli / Vasi Açık Rıza Beyanı',
     label: 'Velisi / vasisi olduğum adayın kişisel verilerinin burs süreçleri kapsamında işlenmesine ve paylaşılmasına açık rıza veriyorum.' },
   { type: 'criminal_record', title: 'Adli Sicil Kaydı - Özel Nitelikli Kişisel Veri Açık Rızası',
     label: 'Adli sicil kaydımın burs değerlendirmesi amacıyla işlenmesine açık rıza veriyorum.' },
   { type: 'requirements_yl', title: 'Yüksek Lisans Başvuru Şartları', body: YL_SARTLAR, is_active: true,
-    label: 'Başvuru şartlarını okudum, sağladığımı beyan ederim.' },
+    label: REQUIREMENTS_LABEL },
   { type: 'requirements_dr', title: 'Doktora Başvuru Şartları', body: DR_SARTLAR, is_active: true,
-    label: 'Başvuru şartlarını okudum, sağladığımı beyan ederim.' },
+    label: REQUIREMENTS_LABEL },
 ];
 
 const CONTENT_BLOCKS = [
   { key: 'applications_closed', title: 'Başvurular kapalı',
     body: 'Başvurular şu an kapalıdır. Başvuru tarihleri duyurulduğunda bu sayfadan başvurabilirsiniz.' },
-  { key: 'submit_success', title: 'Başvurunuz ve Belgeleriniz Başarıyla Alınmıştır.',
-    body: 'Başvuru Takip Numaranız: {tracking_no}\nBaşvurunuz ilgili dernek/birim koordinatörlüğü ve Genel Merkez tarafından incelemeye alınmıştır. Değerlendirme sonucunuz SMS ile tarafınıza bildirilecektir. Başvurusu onaylanan adaylardan bir sonraki adımda IBAN bilgileri talep edilecektir.' },
+  { key: 'submit_success', ...SUBMIT_SUCCESS },
   // Faz 2
   { key: 'iban_warning', title: 'ÖNEMLİ UYARI',
     body: 'Burs ödemeleri yalnızca bursiyerin kendi adına açılmış vadesiz Türk Lirası hesabına yapılabilir. Anne, baba veya üçüncü şahıslara ait IBAN numaraları sistem tarafından reddedilecektir.' },

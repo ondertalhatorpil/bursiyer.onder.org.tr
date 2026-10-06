@@ -52,7 +52,7 @@ const sendIban = (agent, { iban = makeIban(), confirm = true, file = pdf('Hesap'
 
 beforeAll(async () => {
   ch = Object.fromEntries((await db('channels').select('id', 'code')).map((c) => [c.code, c.id]));
-  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').ignore();
+  await db('universities').insert({ name: 'Test Devlet Üniversitesi', city_id: 34, type: 'devlet' }).onConflict('name').merge({ is_active: true }); // seed listede olmayanları pasife alır
   uni = await db('universities').where({ name: 'Test Devlet Üniversitesi' }).first();
 });
 beforeEach(async () => {
@@ -83,7 +83,7 @@ afterAll(async () => {
 describe('IBAN doğrulama', () => {
   test('mod-97, TR ve uzunluk kontrolü', () => {
     const iban = makeIban();
-    expect(parseTrIban(iban.replace(/(.{4})/g, '$1 ').toLowerCase())).toMatchObject({ valid: true, value: iban, bankCode: '00064' });
+    expect(parseTrIban(iban.replace(/(.{4})/g, '$1 ').toLowerCase())).toMatchObject({ valid: true, value: iban });
     expect(parseTrIban(`${iban.slice(0, -1)}${(Number(iban.at(-1)) + 1) % 10}`).valid).toBe(false);
     expect(parseTrIban('DE89370400440532013000').reason).toMatch(/TR ile başlar/);
     expect(parseTrIban('TR12').reason).toMatch(/26 karakter/);
@@ -115,7 +115,8 @@ describe('Adım 8', () => {
   test('IBAN girilir -> kontrol -> red -> yeniden giriş -> onay -> kesinleşir', async () => {
     const { agent, id, trackingNo } = await approvedApplication();
     const res = await sendIban(agent, { file: PNG, name: 'ekran.png' }).expect(201);
-    expect(res.body).toMatchObject({ status: 'iban_pending', canSubmit: false, account: { status: 'pending', bankName: 'Türkiye İş Bankası' } });
+    expect(res.body).toMatchObject({ status: 'iban_pending', canSubmit: false, account: { status: 'pending' } });
+    expect(res.body.account.bankName).toBeUndefined(); // banka tespiti yapılmaz
     expect(res.body.account.ibanMasked).toContain('*');
     await sendIban(agent).expect(409);
     await agent.get('/api/iban/file').expect(200).expect('Content-Type', 'image/png');
@@ -125,7 +126,7 @@ describe('Adım 8', () => {
     expect(d.body.application.status).toBe('iban_pending');
     expect(d.body.application.allowedTransitions).toEqual([]);
     const acc = d.body.application.bankAccounts[0];
-    expect(acc).toMatchObject({ isCurrent: true, status: 'pending', holderName: 'Ahmet Yılmaz', bankKnown: true, usedByOthers: false });
+    expect(acc).toMatchObject({ isCurrent: true, status: 'pending', holderName: 'Ahmet Yılmaz', usedByOthers: false });
     expect(acc.iban.replace(/ /g, '')).toBe(makeIban());
     await gm.get(`/api/admin/applications/${id}/iban/${acc.id}/file`).expect(200);
 
@@ -157,11 +158,12 @@ describe('Adım 8', () => {
       .parse((r, cb) => { const chunks = []; r.on('data', (c) => chunks.push(c)); r.on('end', () => cb(null, Buffer.concat(chunks))); }).expect(200);
     const rows = XLSX.utils.sheet_to_json(XLSX.read(x.body).Sheets['Ödeme Listesi']);
     expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ 'Takip No': trackingNo, 'Ad Soyad': 'Ahmet Yılmaz', Banka: 'Türkiye Garanti Bankası' });
+    expect(rows[0]).toMatchObject({ 'Takip No': trackingNo, 'Ad Soyad': 'Ahmet Yılmaz' });
+    expect(rows[0].Banka).toBeUndefined();
     expect(rows[0].IBAN.replace(/ /g, '')).toBe(second);
   });
 
-  test('aynı IBAN başka bursiyerde kullanılamaz; bilinmeyen banka kodu kabul edilir ama işaretlenir', async () => {
+  test('aynı IBAN başka bursiyerde kullanılamaz; her banka kodu kabul edilir', async () => {
     const a = await approvedApplication();
     await sendIban(a.agent).expect(201);
     await db('otp_codes').del();
@@ -170,7 +172,7 @@ describe('Adım 8', () => {
     expect(res.body.error.details.iban).toMatch(/başka bir bursiyer/);
     await sendIban(b.agent, { iban: makeIban('00777', '0000123412341234') }).expect(201);
     const d = await gm.get(`/api/admin/applications/${b.id}`).expect(200);
-    expect(d.body.application.bankAccounts[0]).toMatchObject({ bankKnown: false, bankCode: '00777' });
+    expect(d.body.application.bankAccounts[0]).not.toHaveProperty('bankCode');
   });
 
   test('yetki: koordinatör IBAN kararı veremez, ödeme listesini indiremez', async () => {

@@ -7,6 +7,8 @@
  *   GET /cities/:cityId/districts     ilçeler
  *   GET /schools?cityId&districtId&type=sports|international&q
  *   GET /universities?cityId&q
+ *   GET /universities/:universityId/faculties   fakülteler + bölümleri
+ *   GET /countries                    uyruk seçimi için ülke adları
  *   GET /dormitories
  *   GET /channels?category=lise|universite|yuksek_lisans|doktora   kanal + alt birim + ek alan tanımları
  */
@@ -29,6 +31,8 @@ router.get('/cities', c.cities);
 router.get('/cities/:cityId/districts', validate({ params: schema.cityParams }), c.districts);
 router.get('/schools', validate({ query: schema.schoolsQuery }), c.schools);
 router.get('/universities', validate({ query: schema.universitiesQuery }), c.universities);
+router.get('/universities/:universityId/faculties', validate({ params: schema.universityParams }), c.faculties);
+router.get('/countries', c.countries);
 router.get('/dormitories', c.dormitories);
 router.get('/channels', validate({ query: schema.channelsQuery }), c.channels);
 

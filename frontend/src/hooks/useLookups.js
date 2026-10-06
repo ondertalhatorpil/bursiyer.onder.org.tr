@@ -1,4 +1,4 @@
-/** Form listeleri (il, ilçe, okul, üniversite, yurt, kanal, metin). Uzun süre önbellekte kalır. */
+/** Form listeleri (il, ilçe, okul, üniversite, fakülte/bölüm, yurt, kanal, metin). Uzun süre önbellekte kalır. */
 import { useQuery } from '@tanstack/react-query';
 import { publicApi } from '../api/endpoints';
 
@@ -21,6 +21,13 @@ export const useSchools = (params, enabled = true) => useQuery({
 });
 
 export const useUniversities = () => useQuery({ queryKey: ['public', 'universities'], queryFn: () => publicApi.universities({}), ...LONG });
+export const useFaculties = (universityId) => useQuery({
+  queryKey: ['public', 'faculties', universityId],
+  queryFn: () => publicApi.faculties(universityId),
+  enabled: !!universityId,
+  ...LONG,
+});
+export const useCountries = () => useQuery({ queryKey: ['public', 'countries'], queryFn: publicApi.countries, ...LONG });
 export const useDormitories = () => useQuery({ queryKey: ['public', 'dormitories'], queryFn: publicApi.dormitories, ...LONG });
 
 export const useChannels = (category) => useQuery({

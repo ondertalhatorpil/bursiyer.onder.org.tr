@@ -11,6 +11,8 @@ export const publicApi = {
   districts: (cityId) => api.get(`/public/cities/${cityId}/districts`),
   schools: (params) => api.get(`/public/schools?${new URLSearchParams(clean(params))}`),
   universities: (params) => api.get(`/public/universities?${new URLSearchParams(clean(params))}`),
+  faculties: (universityId) => api.get(`/public/universities/${universityId}/faculties`),
+  countries: () => api.get('/public/countries'),
   dormitories: () => api.get('/public/dormitories'),
   channels: (category) => api.get(`/public/channels?category=${category}`),
 };

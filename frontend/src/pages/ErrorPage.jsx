@@ -8,7 +8,7 @@ export default function ErrorPage() {
   return (
     <Container size="sm" className="py-16">
       <Alert variant="error" title="Bir şeyler ters gitti" action={<Button onClick={() => window.location.assign('/')}>Ana sayfaya dön</Button>}>
-        {error?.message || 'Beklenmeyen bir hata oluştu. Sayfayı yenileyip tekrar deneyin.'}
+        {error?.message || 'Beklenmeyen bir hata oluştu. Sayfayı yenileyip tekrar deneyiniz.'}
       </Alert>
     </Container>
   );

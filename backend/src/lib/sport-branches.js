@@ -9,7 +9,7 @@ const SPORT_BRANCHES = [
 ];
 
 const sportBranchField = {
-  key: 'sport_branch', type: 'select', label: 'Spor Branşı', required: true, searchable: true, options: SPORT_BRANCHES,
+  key: 'sport_branch', type: 'select', label: 'Lisanslı Spor Branşı', required: true, searchable: true, options: SPORT_BRANCHES,
 };
 
 module.exports = { SPORT_BRANCHES, sportBranchField };

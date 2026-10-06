@@ -13,7 +13,7 @@ export class ApiError extends Error {
   }
 }
 
-const NETWORK_MESSAGE = 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.';
+const NETWORK_MESSAGE = 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyiniz.';
 
 export async function request(path, { method = 'GET', body, formData, signal } = {}) {
   let res;

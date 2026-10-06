@@ -15,9 +15,12 @@ export function useChannelFieldRows(application) {
 
   const districtDef = defs.find((d) => d.type === 'district');
   const { data: districts = [] } = useDistricts(districtDef?.cityId);
-  const schoolDef = defs.find((d) => d.type === 'school');
-  const filter = schoolDef ? (schoolDef.filter?.is_sports ? 'sports' : 'international') : null;
-  const { data: schools = [] } = useSchools({ type: filter }, !!filter);
+  // Okul adı: il alanına bağlıysa o ilin, değilse spor/uluslararası listesinden bulunur
+  const schoolDef = defs.find((d) => d.type === 'school' && values[d.key] !== undefined);
+  const schoolParams = !schoolDef ? null
+    : schoolDef.cityField ? { cityId: values[schoolDef.cityField] }
+      : { type: schoolDef.filter?.is_sports ? 'sports' : 'international' };
+  const { data: schools = [] } = useSchools(schoolParams || {}, !!schoolParams);
 
   return defs
     .filter((d) => values[d.key] !== undefined)

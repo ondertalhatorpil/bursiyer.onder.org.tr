@@ -20,7 +20,6 @@ import { SMS_STATUS, SMS_TEMPLATES } from '../shared/constants';
 
 const ID_TYPES = { TC: 'T.C. Kimlik No', YKN: 'Yabancı Kimlik No', PASAPORT: 'Pasaport' };
 const UNI_TYPES = { devlet: 'Devlet', vakif: 'Vakıf' };
-const FALL_REG = { completed: 'Yapıldı', pending: 'Yapılmadı / bekleniyor' };
 
 export default function ApplicationDetailPage() {
   const { id } = useParams();
@@ -107,7 +106,6 @@ export default function ApplicationDetailPage() {
               { label: 'Fakülte', value: e.faculty },
               { label: 'Bölüm / program', value: e.department },
               { label: 'Sınıf', value: GRADE_LABELS[e.grade] || e.grade },
-              { label: 'Güz dönemi kaydı', value: FALL_REG[e.fallRegistration] },
             ]} />
           )}
 

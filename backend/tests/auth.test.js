@@ -164,7 +164,7 @@ describe('Adım 3: kategori', () => {
   test('kategori seçilir, adım 4\'e geçilir', async () => {
     const { agent } = await register();
     const res = await agent.put('/api/application/category').send({ category: 'universite' }).expect(200);
-    expect(res.body.application).toMatchObject({ category: 'universite', categoryLabel: 'Üniversite Bursu', currentStep: 4 });
+    expect(res.body.application).toMatchObject({ category: 'universite', categoryLabel: 'Lisans Bursu', currentStep: 4 });
     expect(res.body.changed).toBe(false);
   });
 

@@ -3,6 +3,7 @@
  * hangi belgenin kime gösterileceğini ve kanal ek alanlarının nasıl doğrulanacağını hesaplar.
  * Saf fonksiyonlardır (DB'ye erişmez); DB kontrolleri servis katmanında yapılır.
  */
+const { COUNTRY_SET } = require('./countries');
 
 // ---------------------------------------------------------------------------
 // Belge kuralları
@@ -56,6 +57,7 @@ function isVisible(field, data) {
  * @returns {{ data: object, errors: object, refs: Array }}
  *   refs: DB'de varlığı/kısıtı kontrol edilecek referanslar
  *         [{ key, type: 'school'|'district'|'city'|'dormitory', id, filter?, cityId?, excludeCityIds? }]
+ * Alan tipleri: text | radio | select | country | city | district | school | dormitory
  */
 function validateExtraFields(fields = [], input = {}) {
   const src = input && typeof input === 'object' ? input : {};
@@ -85,6 +87,9 @@ function validateExtraFields(fields = [], input = {}) {
       const allowed = (field.options || []).map((o) => (typeof o === 'object' ? o.value : o));
       if (!allowed.includes(raw)) errors[field.key] = `${field.label} için geçersiz seçim`;
       else data[field.key] = raw;
+    } else if (field.type === 'country') {
+      if (!COUNTRY_SET.has(raw)) errors[field.key] = `${field.label}: listeden bir ülke seçiniz`;
+      else data[field.key] = raw;
     } else if (ID_TYPES.has(field.type)) {
       const id = Number(raw);
       if (!Number.isInteger(id) || id <= 0) {
@@ -97,6 +102,8 @@ function validateExtraFields(fields = [], input = {}) {
           id,
           ...(field.filter && { filter: field.filter }),
           ...(field.cityId && { cityId: field.cityId }),
+          // cityField: okul, formdaki başka bir il alanında seçilen ile ait olmalı
+          ...(field.cityField && { cityId: data[field.cityField] }),
           ...(field.excludeCityIds && { excludeCityIds: field.excludeCityIds }),
         });
       }
@@ -109,7 +116,8 @@ function validateExtraFields(fields = [], input = {}) {
 }
 
 function rank(field) {
-  return field.type === 'radio' || field.type === 'select' ? 0 : 1;
+  if (field.type === 'radio' || field.type === 'select') return 0;
+  return field.cityField ? 2 : 1; // il alanına bağlı okul, il işlendikten sonra
 }
 
 function parseJson(v) {

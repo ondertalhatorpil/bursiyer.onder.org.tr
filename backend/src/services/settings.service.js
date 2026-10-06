@@ -24,7 +24,7 @@ const CONSENT_TYPES = {
 
 const CONTENT_BLOCKS = {
   applications_closed: { usedIn: 'Açılış sayfası: başvurular kapalıyken', placeholders: [] },
-  submit_success: { usedIn: 'Başvuru gönderildikten sonra', placeholders: ['tracking_no'] },
+  submit_success: { usedIn: 'Başvuru gönderildikten sonra', placeholders: ['tracking_no', 'program_name'] },
   iban_warning: { usedIn: 'Adım 8: IBAN formunun üstündeki uyarı', placeholders: [] },
   finalize_success: { usedIn: 'IBAN onaylanıp kayıt kesinleşince aday sayfası', placeholders: [] },
 };

@@ -1,9 +1,8 @@
 import { Navigate, Outlet, useLocation } from 'react-router';
 import Container from '../../components/layout/Container';
-import { Alert, Badge, Button, PageSpinner } from '../../components/ui';
+import { Alert, Button, PageSpinner } from '../../components/ui';
 import StepNav from './shared/StepNav';
 import { useApplication } from '../../hooks/useApplication';
-import { STATUS_TONES } from '../../config';
 
 /**
  * Başvuru ekranlarının ortak düzeni: solda adım listesi, sağda aktif adım.
@@ -15,13 +14,13 @@ export default function ApplyLayout() {
 
   if (isLoading) return <PageSpinner />;
   if (error) {
-    if (onStatusPage) {
-  return (
-    <section className="flex flex-1 flex-col pb-12">
-      <Container size="md" className="my-auto w-full"><Outlet /></Container>
-    </section>
-  );
-}
+    return (
+      <Container size="md">
+        <Alert variant="error" title="Başvuru bilgileri alınamadı" action={<Button onClick={() => refetch()}>Tekrar dene</Button>}>
+          {error.message}
+        </Alert>
+      </Container>
+    );
   }
 
   const onStatusPage = pathname.startsWith('/basvuru/durum');

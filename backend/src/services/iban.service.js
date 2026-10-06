@@ -27,11 +27,6 @@ const ibanHash = (iban) => hmac(`iban|${iban}`);
 
 const STATUS_TEXT = { pending: 'Kontrol ediliyor', accepted: 'Onaylandı', rejected: 'Reddedildi' };
 
-async function bankName(code) {
-  if (!code) return null;
-  return (await db('banks').where({ code }).first('name'))?.name || null;
-}
-
 async function latestApplication(applicantId) {
   const app = await db('applications').where({ applicant_id: applicantId }).orderBy('id', 'desc').first();
   if (!app) throw notFound('Başvuru bulunamadı');
@@ -65,15 +60,12 @@ async function getForApplicant(applicantId) {
     holderName: `${applicant.first_name} ${applicant.last_name}`,
     account: acc ? {
       ibanMasked: maskIban(decrypt(acc.iban_enc)),
-      bankName: (await bankName(acc.bank_code)) || null,
       status: acc.status,
       statusLabel: STATUS_TEXT[acc.status],
       reviewNote: acc.status === 'rejected' ? acc.review_note : null,
       submittedAt: acc.created_at,
       documentName: acc.original_name,
     } : null,
-    // Formda IBAN yazılırken banka adını göstermek için
-    banks: app.status === 'approved' ? await db('banks').where({ is_active: true }).select('code', 'name') : [],
     warning: await content('iban_warning'),
     finalized: app.status === 'finalized' ? await content('finalize_success') : null,
   };
@@ -90,8 +82,8 @@ async function submit(applicantId, { iban, confirm }, file) {
   const errors = {};
   const parsed = parseTrIban(iban);
   if (!parsed.valid) errors.iban = parsed.reason;
-  if (confirm !== true) errors.confirm = 'Hesabın size ait vadesiz TL hesabı olduğunu onaylayın';
-  if (!file) errors.file = 'Hesap belgesini yükleyin';
+  if (confirm !== true) errors.confirm = 'Hesabın size ait vadesiz TL hesabı olduğunu onaylayınız';
+  if (!file) errors.file = 'Hesap belgesini yükleyiniz';
   let detected = null;
   if (file) {
     detected = detectType(file.buffer);
@@ -104,10 +96,9 @@ async function submit(applicantId, { iban, confirm }, file) {
   const usedElsewhere = await db('bank_accounts')
     .where({ iban_hash: hash }).whereNot({ application_id: app.id }).whereIn('status', ['pending', 'accepted']).whereNull('valid_to')
     .first('id');
-  if (usedElsewhere) throw validationError({ iban: 'Bu IBAN başka bir bursiyer için kayıtlı. Kendi adınıza açılmış hesabın IBAN\'ını girin' });
+  if (usedElsewhere) throw validationError({ iban: 'Bu IBAN başka bir bursiyer için kayıtlı. Kendi adınıza açılmış hesabın IBAN\'ını giriniz' });
 
   const applicant = await db('applicants').where({ id: applicantId }).first();
-  const known = await db('banks').where({ code: parsed.bankCode }).first('code');
   const key = await storage.save(file.buffer, detected.ext);
   const now = new Date();
   try {
@@ -119,8 +110,6 @@ async function submit(applicantId, { iban, confirm }, file) {
         iban_enc: encrypt(parsed.value),
         iban_last4: parsed.value.slice(-4),
         iban_hash: hash,
-        bank_code: known ? parsed.bankCode : null,
-        bank_code_raw: parsed.bankCode,
         holder_name: `${applicant.first_name} ${applicant.last_name}`,
         is_guardian_account: false,
         valid_from: todayTR(),
@@ -155,11 +144,10 @@ async function getOwnFile(applicantId) {
 /** Başvuru detayına eklenen IBAN geçmişi (en yeni önce) */
 async function forAdmin(app, admin) {
   const rows = await db('bank_accounts as b')
-    .leftJoin('banks as k', 'k.code', 'b.bank_code')
     .leftJoin('admin_users as u', 'u.id', 'b.reviewed_by')
     .where('b.application_id', app.id)
     .orderBy('b.id', 'desc')
-    .select('b.*', 'k.name as bank_name', 'u.full_name as reviewer_name');
+    .select('b.*', 'u.full_name as reviewer_name');
   const full = admin.can('decide') || admin.can('view_full_id');
   return Promise.all(rows.map(async (r) => {
     const iban = decrypt(r.iban_enc);
@@ -168,9 +156,6 @@ async function forAdmin(app, admin) {
       id: Number(r.id),
       isCurrent: !r.valid_to,
       iban: full ? formatIban(iban) : maskIban(iban),
-      bankCode: r.bank_code_raw,
-      bankName: r.bank_name,
-      bankKnown: !!r.bank_name,
       holderName: r.holder_name,
       status: r.status,
       statusLabel: STATUS_TEXT[r.status],
@@ -198,7 +183,7 @@ async function review(admin, app, { decision, note }) {
   if (app.status !== 'iban_pending') throw new AppError(409, 'NOT_IBAN_PENDING', 'Bu başvuruda kontrol bekleyen IBAN yok');
   const acc = await currentAccount(app.id);
   if (!acc || acc.status !== 'pending') throw new AppError(409, 'NOT_IBAN_PENDING', 'Bu başvuruda kontrol bekleyen IBAN yok');
-  if (decision === 'rejected' && !note) throw validationError({ note: 'Adaya gösterilecek red gerekçesini yazın' });
+  if (decision === 'rejected' && !note) throw validationError({ note: 'Adaya gösterilecek red gerekçesini yazınız' });
 
   const now = new Date();
   await db.transaction(async (trx) => {
@@ -236,7 +221,6 @@ function paymentQuery() {
     .join('bank_accounts as b', function joinCurrent() {
       this.on('b.application_id', 'a.id').andOnNull('b.valid_to').andOnVal('b.status', 'accepted');
     })
-    .leftJoin('banks as k', 'k.code', 'b.bank_code')
     .where('a.status', 'finalized');
 }
 

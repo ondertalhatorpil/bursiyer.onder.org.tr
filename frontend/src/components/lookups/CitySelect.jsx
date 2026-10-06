@@ -7,6 +7,6 @@ export default function CitySelect({ id, value, onChange, invalid, disabled, exc
   const options = data.filter((c) => !excludeIds.includes(c.id)).map((c) => ({ value: c.id, label: c.name }));
   return (
     <SearchSelect id={id} options={options} value={value} onChange={onChange} invalid={invalid} disabled={disabled}
-      loading={isLoading} placeholder="İl seçin" searchPlaceholder="İl ara…" />
+      loading={isLoading} placeholder="İl seçiniz" searchPlaceholder="İl arayınız…" />
   );
 }

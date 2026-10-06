@@ -5,7 +5,7 @@
 const { AppError } = require('../lib/errors');
 
 const STATUS_LABELS = {
-  draft: 'Taslak',
+  draft: 'Başvuru Taslağı',
   submitted: 'Başvuru Tamamlandı',
   in_review: 'İncelemede',
   revision_requested: 'Revize İstendi',

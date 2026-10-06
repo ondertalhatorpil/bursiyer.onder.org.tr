@@ -2,19 +2,21 @@ import { useState } from 'react';
 import { useLocation } from 'react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import clsx from 'clsx';
-import { PageSpinner } from '../../../components/ui';
+import { CircleCheck, LogOut } from 'lucide-react';
+import { Button, PageSpinner } from '../../../components/ui';
 import DocumentCard from '../documents/DocumentCard';
 import IbanStep from '../iban/IbanStep';
 import { documentsApi } from '../../../api/endpoints';
 import { APPLICATION_KEY, useApplication } from '../../../hooks/useApplication';
+import { useLogout } from '../../../hooks/useSession';
 import { formatDateTime } from '../../../lib/format';
 
 const EXPLAIN = {
   submitted: 'Başvurunuz alındı ve değerlendirme sırasına girdi.',
   in_review: 'Başvurunuz ilgili birim ve Genel Merkez tarafından inceleniyor.',
-  revision_requested: 'Bazı belgelerinizin yeniden yüklenmesi gerekiyor. Aşağıda işaretlenen belgeleri güncelleyin.',
+  revision_requested: 'Bazı belgelerinizin yeniden yüklenmesi gerekiyor. Aşağıda işaretlenen belgeleri güncelleyiniz.',
   rejected: 'Başvurunuz değerlendirme sonucunda olumlu sonuçlanmadı.',
-  approved: 'Tebrikler, başvurunuz onaylandı. Burs ödemesi için IBAN bilgilerinizi girin.',
+  approved: 'Tebrikler, başvurunuz onaylandı. Burs ödemesi için IBAN bilgilerinizi giriniz.',
   iban_pending: 'Başvurunuz onaylandı. IBAN bilgileriniz kontrol ediliyor.',
   finalized: 'Bursiyer kaydınız kesinleşti.',
 };
@@ -96,6 +98,7 @@ export default function StatusPage() {
   const { state } = useLocation();
   const { application } = useApplication();
   const qc = useQueryClient();
+  const logout = useLogout();
   const [copied, setCopied] = useState(false);
   const revision = application?.status === 'revision_requested';
   const docs = useQuery({ queryKey: ['documents'], queryFn: documentsApi.list, enabled: revision });
@@ -113,15 +116,25 @@ export default function StatusPage() {
 
   return (
     <div className="mx-auto w-full max-w-xl space-y-12 py-4 sm:py-8">
-      {/* Başlık: gönderimden hemen sonra başarı mesajı, sonra normal durum başlığı */}
+      {/* Başlık: gönderimden hemen sonra başarı ekranı, sonra normal durum başlığı */}
       <header className="text-center">
         {justSubmitted ? (
           <>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Başvurunuz alındı</p>
-            <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{justSubmitted.message.title}</h1>
-            <p className="mx-auto mt-3 max-w-md whitespace-pre-line text-sm leading-relaxed text-slate-600">
-              {justSubmitted.message.body.replace(/Başvuru Takip Numaranız: \S+\n?/, '')}
+            <span className="mx-auto grid size-16 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+              <CircleCheck className="size-9" aria-hidden />
+            </span>
+            <h1 className="mt-5 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">{justSubmitted.message.title}</h1>
+            <p className="mt-4 inline-flex flex-wrap items-center justify-center gap-x-2 rounded-full bg-emerald-50 px-4 py-2 text-sm text-emerald-900 ring-1 ring-inset ring-emerald-200">
+              Başvuru Takip Numaranız:
+              <strong className="font-bold tracking-wide tabular-nums">{application.trackingNo}</strong>
+              <button type="button" onClick={copy} className="font-semibold text-emerald-700 underline-offset-4 hover:underline">
+                {copied ? 'Kopyalandı' : 'Kopyala'}
+              </button>
             </p>
+            {/* Metnin her satırı ayrı paragraf: açıklama + süreç bilgilendirme notu */}
+            {justSubmitted.message.body.replace(/Başvuru Takip Numaranız: \S+\n?/, '').split('\n').filter(Boolean).map((line) => (
+              <p key={line} className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-slate-600">{line}</p>
+            ))}
           </>
         ) : (
           <>
@@ -134,8 +147,8 @@ export default function StatusPage() {
       <section className="space-y-10 text-center">
         <Progress status={application.status} />
 
-        {/* Takip numarası */}
-        <div>
+        {/* Takip numarası (başarı ekranında rozette gösterilir) */}
+        {!justSubmitted && <div>
           <p className="text-xs font-medium text-slate-500">Başvuru takip numaranız</p>
           <p className="mt-1 break-all text-[26px] font-bold tracking-wide text-slate-900 tabular-nums sm:text-4xl">
             {application.trackingNo}
@@ -147,7 +160,7 @@ export default function StatusPage() {
           >
             {copied ? 'Kopyalandı' : 'Numarayı kopyala'}
           </button>
-        </div>
+        </div>}
 
         {/* Bilgiler */}
         <dl className="divide-y divide-slate-200 border-y border-slate-200 text-left text-sm">
@@ -164,6 +177,12 @@ export default function StatusPage() {
             <dd className="text-right font-semibold text-slate-900 tabular-nums">{formatDateTime(application.submittedAt)}</dd>
           </div>
         </dl>
+
+        {justSubmitted && (
+          <Button variant="secondary" size="lg" icon={LogOut} loading={logout.isPending} onClick={() => logout.mutate()}>
+            Güvenli Çıkış
+          </Button>
+        )}
       </section>
 
       {/* Adım 8: IBAN */}

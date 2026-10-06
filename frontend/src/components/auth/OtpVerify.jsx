@@ -80,10 +80,10 @@ export default function OtpVerify({ info, onVerify, onResend, onBack, submitLabe
         <OtpInput value={code} onChange={setCode} disabled={verifying || expired} invalid={!!error} autoFocus />
         <p className="text-center text-sm" aria-live="polite">
           {expired ? (
-            <span className="font-semibold text-accent-600">Kodun süresi doldu, yeni kod isteyin.</span>
+            <span className="font-semibold text-accent-600">Kodun süresi doldu, yeni kod isteyiniz.</span>
           ) : (
             <span className="text-slate-500">
-              Kod <span className="font-semibold tabular-nums text-slate-900">{mmss(expiresLeft)}</span> içinde geçerliliğini yitirecek
+              Kalan Süre: <span className="font-semibold tabular-nums text-slate-900">{mmss(expiresLeft)}</span>
             </span>
           )}
         </p>
@@ -108,12 +108,9 @@ export default function OtpVerify({ info, onVerify, onResend, onBack, submitLabe
             Bilgileri düzenle
           </button>
         ) : <span />}
-        <button type="button" onClick={resend} disabled={resendLeft > 0 || resending} className={textBtn}>
-          {resending
-            ? 'Gönderiliyor…'
-            : resendLeft > 0
-              ? <>Tekrar gönder <span className="tabular-nums">({resendLeft} sn)</span></>
-              : 'Kodu tekrar gönder'}
+        {/* Kodun süresi dolunca aktifleşir */}
+        <button type="button" onClick={resend} disabled={!expired || resendLeft > 0 || resending} className={textBtn}>
+          {resending ? 'Gönderiliyor…' : 'Doğrulama Kodunu Tekrar Gönder'}
         </button>
       </div>
     </div>

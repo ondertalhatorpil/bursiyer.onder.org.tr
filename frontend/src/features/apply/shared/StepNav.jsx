@@ -9,7 +9,9 @@ import { APPLICATION_STEPS, STEP_ROUTES } from '../../../config';
  * Masaüstünde sol sütunda dikey, mobilde üstte yatay kaydırılabilir.
  */
 export default function StepNav({ application }) {
-  const { steps = {}, currentStep = 3 } = application;
+  const { steps = {}, currentStep = 3, category } = application;
+  // Yüksek lisans ve doktorada 4. adım kanal değil, başvuru şartlarıdır
+  const stepTitle = (step, title) => (step === 4 && (category === 'yuksek_lisans' || category === 'doktora') ? 'Başvuru Şartları' : title);
   const listRef = useRef(null);
   const { pathname } = useLocation();
 
@@ -42,7 +44,7 @@ export default function StepNav({ application }) {
                 {done && !isActive ? <Check className="size-4" aria-hidden /> : !reachable && step > 2 ? <Lock className="size-3.5" aria-hidden /> : step}
               </span>
               <span className={clsx('whitespace-nowrap text-sm font-semibold lg:whitespace-normal', isActive ? 'text-brand-900' : reachable || done ? 'text-slate-700' : 'text-slate-400')}>
-                {title}
+                {stepTitle(step, title)}
               </span>
             </>
           );

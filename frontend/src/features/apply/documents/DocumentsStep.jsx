@@ -27,10 +27,10 @@ export default function DocumentsStep() {
     <StepPage
       step={6}
       title="Belge Yükleme"
-      description="Belgeleri e-Devlet'ten barkodlu PDF olarak indirip yükleyin. Fotoğraf çekilmiş veya taranmış belgeler kabul edilmeyebilir."
+      description="Lütfen istenen belgeleri e-Devlet Kapısı üzerinden oluşturulmuş, karekodlu ve resmi PDF formatında yükleyiniz. Ekran görüntüsü, fotoğraf çekimi veya okunaksız taranmış belgeler kesinlikle değerlendirmeye alınmayacaktır."
       footer={(
         <StepActions step={6} onNext={() => navigate('/basvuru/ozet')} nextLabel="Devam Et" nextDisabled={!data?.complete}
-          hint={data && !data.complete ? `Zorunlu belgeler: ${uploaded} / ${required.length}` : undefined} />
+          hint={data && !data.complete ? `Yüklenen Zorunlu Belgeler: ${uploaded} / ${required.length}` : undefined} />
       )}
     >
       {isLoading && <PageSpinner />}

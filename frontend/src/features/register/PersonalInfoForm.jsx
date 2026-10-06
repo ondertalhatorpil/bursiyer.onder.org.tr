@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowRight } from 'lucide-react';
 import { Alert, Button, Field, MaskedInput, MASKS, TextInput } from '../../components/ui';
 import { ConsentCheckbox } from '../../components/auth';
+import { CountrySelect } from '../../components/lookups';
 import { applyApiErrors } from '../../lib/form-errors';
 import { ageFrom, isYkn } from '../../lib/validation';
 import { REGISTER_FIELDS, registerDefaults, registerSchema } from './schema';
@@ -70,7 +71,7 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
               htmlFor="idNumber"
               required
               error={errors.idNumber?.message}
-              hint="Uluslararası öğrenciler 99 ile başlayan numarayı yazar"
+              hint="T.C. vatandaşı olmayan adayların 99 ile başlayan Yabancı Kimlik Numarasını (YKN) girmesi gerekmektedir."
             >
               <Controller control={control} name="idNumber" render={({ field }) => (
                 <MaskedInput id="idNumber" mask={MASKS.idNumber} className="text-base" invalid={!!errors.idNumber} {...field} />
@@ -83,7 +84,9 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
             </Field>
             {foreign && (
               <Field label="Uyruk" htmlFor="nationality" required error={errors.nationality?.message} className="sm:col-span-2">
-                <TextInput id="nationality" placeholder="Örn. Azerbaycan" className="text-base" invalid={!!errors.nationality} {...register('nationality')} />
+                <Controller control={control} name="nationality" render={({ field }) => (
+                  <CountrySelect id="nationality" value={field.value} onChange={field.onChange} invalid={!!errors.nationality} />
+                )} />
               </Field>
             )}
           </div>
@@ -97,7 +100,7 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
 
         <Section title="İletişim bilgileri">
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-            <Field label="Cep Telefonu" htmlFor="phone" required error={errors.phone?.message} hint="Doğrulama kodu bu numaraya gelir">
+            <Field label="Cep Telefonu" htmlFor="phone" required error={errors.phone?.message} hint="SMS doğrulama kodu bu numaraya gönderilecektir.">
               <Controller control={control} name="phone" render={({ field }) => (
                 <MaskedInput id="phone" mask={MASKS.phone} autoComplete="tel-national" className="text-base" invalid={!!errors.phone} {...field} />
               )} />
@@ -128,19 +131,23 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
               control={control}
               name="consents.kvkk"
               type="kvkk"
-              linkText="KVKK Aydınlatma Metni'ni ve Açık Rıza Beyanı'nı"
               error={errors.consents?.kvkk?.message}
             >
-              okudum, verilerimin işlenmesini onaylıyorum.
+              {(link) => (
+                <>
+                  {link("KVKK Aydınlatma Metni'ni")} okudum, anladım ve {link('Açık Rıza Beyanı')} kapsamında
+                  kişisel verilerimin işlenmesini onaylıyorum.
+                </>
+              )}
             </ConsentCheckbox>
             <ConsentCheckbox
               control={control}
               name="consents.sharing"
               type="sharing"
-              linkText="Burs başvuru, değerlendirme ve finansman süreçleri"
+              linkText="Burs başvuru, değerlendirme ve burs tahsis süreçlerinin yürütülmesi"
               error={errors.consents?.sharing?.message}
             >
-              kapsamında kişisel, iletişim ve eğitim bilgilerimin ÖNDER'in işbirliği yaptığı protokol kurumları, vakıflar ve sponsor kuruluşlarla paylaşılmasına açık rıza veriyorum.
+              amacıyla; kimlik, iletişim ve eğitim bilgilerimin ÖNDER'in iş birliği içinde bulunduğu protokol kurumları, vakıflar ve sponsor kuruluşlar ile paylaşılmasına açık rıza gösteriyorum.
             </ConsentCheckbox>
           </fieldset>
         </Section>
@@ -151,7 +158,7 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
             Doğrulama Kodu Gönder
           </Button>
           <p className="mt-3 hidden text-center text-xs text-slate-500 lg:block">
-            Telefonunuza 6 haneli bir kod gönderilecek.
+            Belirttiğiniz cep telefonu numarasına 6 haneli SMS doğrulama kodu iletilecektir.
           </p>
         </div>
       </div>

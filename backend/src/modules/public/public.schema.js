@@ -6,6 +6,7 @@ const CONSENT_TYPES = ['kvkk', 'sharing', 'guardian', 'criminal_record', 'requir
 
 module.exports = {
   cityParams: z.object({ cityId: id }),
+  universityParams: z.object({ universityId: id }),
   consentParams: z.object({ type: z.enum(CONSENT_TYPES, { error: 'Bilinmeyen metin tipi' }) }),
   contentParams: z.object({ key: z.string().regex(/^[a-z0-9_]{1,64}$/) }),
   schoolsQuery: z.object({

@@ -21,6 +21,17 @@ export function formatDateTime(iso) {
   });
 }
 
+/** ISO tarih-saat -> { date: "31 Ekim 2026", time: "23.59" } (Türkiye saati) */
+export function formatLongDateTime(iso) {
+  if (!iso) return { date: '', time: '' };
+  const d = new Date(iso);
+  const opts = { timeZone: 'Europe/Istanbul' };
+  return {
+    date: d.toLocaleDateString('tr-TR', { ...opts, day: 'numeric', month: 'long', year: 'numeric' }),
+    time: d.toLocaleTimeString('tr-TR', { ...opts, hour: '2-digit', minute: '2-digit' }).replace(':', '.'),
+  };
+}
+
 export function formatBytes(bytes) {
   if (bytes == null) return '';
   if (bytes < 1024) return `${bytes} B`;

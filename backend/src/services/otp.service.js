@@ -55,19 +55,19 @@ async function sendOtp({ phone, purpose, subjectRef = null, ip = null, vars = {}
     .first('created_at');
   if (last) {
     const wait = Math.ceil(OTP.resendSec - (Date.now() - new Date(last.created_at).getTime()) / 1000);
-    throw new AppError(429, 'OTP_COOLDOWN', `Yeni kod için ${Math.max(wait, 1)} saniye bekleyin`, { retryAfter: Math.max(wait, 1) });
+    throw new AppError(429, 'OTP_COOLDOWN', `Yeni kod için ${Math.max(wait, 1)} saniye bekleyiniz`, { retryAfter: Math.max(wait, 1) });
   }
 
   const hourAgo = secondsAgo(3600);
   if (!test) {
     const [{ n: phoneCount }] = await db('otp_codes').where({ phone }).andWhere('created_at', '>', hourAgo).count({ n: '*' });
     if (Number(phoneCount) >= OTP.perPhonePerHour) {
-      throw new AppError(429, 'OTP_PHONE_LIMIT', 'Bu numaraya çok fazla kod gönderildi, lütfen 1 saat sonra tekrar deneyin');
+      throw new AppError(429, 'OTP_PHONE_LIMIT', 'Bu numaraya çok fazla kod gönderildi, lütfen 1 saat sonra tekrar deneyiniz');
     }
     if (ip) {
       const [{ n: ipCount }] = await db('otp_codes').where({ ip }).andWhere('created_at', '>', hourAgo).count({ n: '*' });
       if (Number(ipCount) >= OTP.perIpPerHour) {
-        throw new AppError(429, 'OTP_IP_LIMIT', 'Çok fazla doğrulama kodu istediniz, lütfen 1 saat sonra tekrar deneyin');
+        throw new AppError(429, 'OTP_IP_LIMIT', 'Çok fazla doğrulama kodu istediniz, lütfen 1 saat sonra tekrar deneyiniz');
       }
     }
   }
@@ -138,10 +138,10 @@ async function verifyOtp({ phone, purpose, subjectRef = null, code }) {
 
   if (result.ok) return true;
   if (result.error === 'expired') {
-    throw new AppError(410, 'OTP_EXPIRED', 'Kodun süresi doldu, lütfen yeni kod isteyin');
+    throw new AppError(410, 'OTP_EXPIRED', 'Kodun süresi doldu, lütfen yeni kod isteyiniz');
   }
   if (result.error === 'locked') {
-    throw new AppError(429, 'OTP_LOCKED', 'Çok fazla hatalı deneme yaptınız, lütfen yeni kod isteyin');
+    throw new AppError(429, 'OTP_LOCKED', 'Çok fazla hatalı deneme yaptınız, lütfen yeni kod isteyiniz');
   }
   throw new AppError(422, 'OTP_INVALID', `Doğrulama kodu hatalı. Kalan deneme hakkı: ${result.remaining}`, { remaining: result.remaining });
 }

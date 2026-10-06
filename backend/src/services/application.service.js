@@ -11,10 +11,11 @@ const { validateExtraFields, parseJson } = require('../lib/rules');
 const { AppError, notFound, validationError } = require('../lib/errors');
 const { changeStatus, STATUS_LABELS } = require('./status.service');
 const { checkRefs } = require('./lookup.service');
+const { COUNTRY_SET, toCountry } = require('../lib/countries');
 
 const CATEGORY_LABELS = {
   lise: 'Lise Bursu',
-  universite: 'Üniversite Bursu',
+  universite: 'Lisans Bursu',
   yuksek_lisans: 'Yüksek Lisans Bursu',
   doktora: 'Doktora Bursu',
 };
@@ -22,6 +23,8 @@ const LISANSUSTU = ['yuksek_lisans', 'doktora'];
 const MIN_BIRTH_YEAR = { yuksek_lisans: 1999, doktora: 1991 };
 const REQUIREMENTS_CONSENT = { yuksek_lisans: 'requirements_yl', doktora: 'requirements_dr' };
 const ISTANBUL = 34;
+// Lisede Adım 4'teki bu alanlar Adım 5'i belirler (okul, sınıf, il/ilçe)
+const EDUCATION_KEYS = ['region', 'city_id', 'district_id', 'school_id', 'grade'];
 
 const idNumberHash = (idNumber) => hmac(`idno|${idNumber}`);
 
@@ -100,7 +103,7 @@ async function createRegistration({ reg, program, consentTextIds, ip, userAgent 
   return db.transaction(async (trx) => {
     const hash = idNumberHash(reg.idNumber);
     if (await trx('applicants').where({ id_number_hash: hash }).first()) {
-      throw new AppError(409, 'ALREADY_REGISTERED', 'Bu kimlik numarasıyla kayıt zaten var, lütfen giriş yapın');
+      throw new AppError(409, 'ALREADY_REGISTERED', 'Bu kimlik numarasıyla kayıt zaten var, lütfen giriş yapınız');
     }
 
     const now = new Date();
@@ -210,7 +213,7 @@ async function requireEditableApplication(applicantId) {
 }
 
 function requireCategory(app, allowed) {
-  if (!app.category) throw new AppError(409, 'STEP_ORDER', 'Önce burs kategorisini seçin (Adım 3)');
+  if (!app.category) throw new AppError(409, 'STEP_ORDER', 'Önce burs kategorisini seçiniz (Adım 3)');
   if (allowed && !allowed.includes(app.category)) {
     throw new AppError(409, 'WRONG_CATEGORY', 'Bu işlem seçtiğiniz kategori için geçerli değil');
   }
@@ -256,20 +259,21 @@ async function setChannel(applicantId, { channelId, subUnitId, fields }) {
   requireCategory(app, ['lise', 'universite']);
 
   const channel = await db('channels').where({ id: channelId, category: app.category, is_active: true }).first();
-  if (!channel) throw validationError({ channelId: 'Listeden bir başvuru kanalı seçin' });
+  if (!channel) throw validationError({ channelId: 'Listeden bir başvuru kanalı seçiniz' });
 
   const subUnits = await db('sub_units').where({ channel_id: channel.id, is_active: true });
   let subUnit = null;
   if (subUnits.length) {
     subUnit = subUnits.find((u) => u.id === subUnitId);
-    if (!subUnit) throw validationError({ subUnitId: 'Listeden bir birim seçin' });
+    if (!subUnit) throw validationError({ subUnitId: 'Listeden bir birim seçiniz' });
   }
 
   const defs = [...(parseJson(channel.extra_fields) || []), ...(parseJson(subUnit?.extra_fields) || [])];
   const input = { ...(fields || {}) };
-  // Uluslararası AİHL: uyruk boş bırakılırsa adayın uyruğu kullanılır
+  // Uluslararası AİHL: uyruk boş bırakılırsa adayın uyruğu kullanılır (listede varsa)
   for (const f of defs) {
-    if (f.prefill === 'applicant.nationality' && !input[f.key]) input[f.key] = applicant.nationality;
+    const own = toCountry(applicant.nationality);
+    if (f.prefill === 'applicant.nationality' && !input[f.key] && COUNTRY_SET.has(own)) input[f.key] = own;
   }
 
   const { data, errors, refs } = validateExtraFields(defs, input);
@@ -280,6 +284,7 @@ async function setChannel(applicantId, { channelId, subUnitId, fields }) {
   }
 
   const previousChannel = app.channel_id;
+  const previousData = parseJson((await db('application_details').where({ application_id: app.id }).first())?.data) || {};
   let educationCleared = false;
 
   await db.transaction(async (trx) => {
@@ -288,8 +293,10 @@ async function setChannel(applicantId, { channelId, subUnitId, fields }) {
       .insert({ application_id: app.id, data: JSON.stringify(data), updated_at: new Date() })
       .onConflict('application_id').merge();
 
-    // Lisede okul/il kanala bağlı olabilir (spor, uluslararası, teşkilat bölgesi): kanal değişince eğitim bilgisi sıfırlanır
-    if (app.category === 'lise' && previousChannel && previousChannel !== channel.id) {
+    // Lisede okul, sınıf ve il kanaldan gelebilir (spor, uluslararası, teşkilat): kanal ya da bu alanlar
+    // değişince eğitim bilgisi sıfırlanır, Adım 5 yeni seçime göre tekrar doldurulur
+    const lockedChanged = EDUCATION_KEYS.some((k) => previousData[k] !== data[k]);
+    if (app.category === 'lise' && previousChannel && (previousChannel !== channel.id || lockedChanged)) {
       educationCleared = (await trx('education').where({ application_id: app.id }).del()) > 0;
     }
     if (!ageInfo(applicant).isMinor) await advanceStep(trx, app, 5);
@@ -352,17 +359,18 @@ async function setEducation(applicantId, body) {
     application_id: app.id,
     city_id: null, district_id: null, school_id: null, school_other: null,
     university_id: null, university_other: null, university_type: null,
-    faculty: null, department: null, grade: null, fall_registration: null,
+    faculty: null, department: null, grade: null,
     updated_at: new Date(),
   };
 
   if (app.category === 'lise') {
     const channel = app.channel_id ? await db('channels').where({ id: app.channel_id }).first() : null;
-    if (!channel) throw new AppError(409, 'STEP_ORDER', 'Önce başvuru kanalını seçin (Adım 4)');
+    if (!channel) throw new AppError(409, 'STEP_ORDER', 'Önce başvuru kanalını seçiniz (Adım 4)');
     const details = parseJson((await db('application_details').where({ application_id: app.id }).first())?.data) || {};
 
+    // Adım 4'te okul seçildiyse (spor, uluslararası, teşkilat Anadolu) okul ve konumu oradan gelir
     let lockedSchool = null;
-    if (['lise_spor', 'lise_uluslararasi'].includes(channel.code) && details.school_id) {
+    if (details.school_id) {
       lockedSchool = await db('schools').where({ id: details.school_id }).first();
     }
 
@@ -373,62 +381,71 @@ async function setEducation(applicantId, body) {
       if (channel.code === 'lise_teskilat') {
         cityId = details.region === 'istanbul' ? ISTANBUL : details.city_id;
       }
-      if (!cityId) errors.cityId = 'İl seçin';
-      if (!body.districtId) errors.districtId = 'İlçe seçin';
+      if (!cityId) errors.cityId = 'İl seçiniz';
+      if (!body.districtId) errors.districtId = 'İlçe seçiniz';
 
       if (cityId && body.districtId) {
         const district = await db('districts').where({ id: body.districtId, city_id: cityId }).first();
-        if (!district) errors.districtId = 'Seçilen ile ait bir ilçe seçin';
+        if (!district) errors.districtId = 'Seçilen ile ait bir ilçe seçiniz';
       }
       if (body.schoolId) {
         const school = await db('schools').where({ id: body.schoolId, is_active: true }).first();
         if (!school || school.city_id !== cityId || school.district_id !== body.districtId) {
-          errors.schoolId = 'Seçilen il ve ilçedeki okullardan birini seçin';
+          errors.schoolId = 'Seçilen il ve ilçedeki okullardan birini seçiniz';
         }
         row.school_id = body.schoolId;
       } else if (body.schoolOther) {
         row.school_other = body.schoolOther;
       } else {
-        errors.schoolId = 'Okulunuzu seçin veya "Diğer" ile okul adını yazın';
+        errors.schoolId = 'Okulunuzu seçiniz veya "Diğer" ile okul adını yazınız';
       }
       Object.assign(row, { city_id: cityId || null, district_id: body.districtId || null });
     }
 
-    if (!['hazirlik', '9', '10', '11', '12'].includes(body.grade)) errors.grade = 'Sınıf seçin';
-    row.grade = body.grade;
+    // Sınıf Adım 4'te seçildiyse oradan gelir
+    const grade = details.grade || body.grade;
+    if (!['hazirlik', '9', '10', '11', '12'].includes(grade)) errors.grade = 'Sınıf seçiniz';
+    row.grade = grade;
   } else {
     // Üniversite ve lisansüstü
-    if (!body.cityId) errors.cityId = 'Kurumun bulunduğu ili seçin';
-    else if (!(await db('cities').where({ id: body.cityId }).first())) errors.cityId = 'Geçerli bir il seçin';
+    if (!body.cityId) errors.cityId = 'Kurumun bulunduğu ili seçiniz';
+    else if (!(await db('cities').where({ id: body.cityId }).first())) errors.cityId = 'Geçerli bir il seçiniz';
     row.city_id = body.cityId || null;
 
     if (body.universityId) {
       const uni = await db('universities').where({ id: body.universityId, is_active: true }).first();
-      if (!uni) errors.universityId = 'Listeden bir üniversite seçin';
+      if (!uni) errors.universityId = 'Listeden bir üniversite seçiniz';
       else Object.assign(row, { university_id: uni.id, university_type: uni.type });
     } else if (body.universityOther) {
-      if (!['devlet', 'vakif'].includes(body.universityType)) errors.universityType = 'Üniversite türünü seçin';
+      if (!['devlet', 'vakif'].includes(body.universityType)) errors.universityType = 'Üniversite türünü seçiniz';
       Object.assign(row, { university_other: body.universityOther, university_type: body.universityType || null });
     } else {
-      errors.universityId = 'Üniversitenizi seçin veya "Diğer" ile adını yazın';
+      errors.universityId = 'Üniversitenizi seçiniz veya "Diğer" ile adını yazınız';
     }
 
-    if (!body.faculty) errors.faculty = LISANSUSTU.includes(app.category) ? 'Enstitü adını yazın' : 'Fakülte adını yazın';
-    if (!body.department) errors.department = LISANSUSTU.includes(app.category) ? 'Program / anabilim dalı adını yazın' : 'Bölüm adını yazın';
-    Object.assign(row, { faculty: body.faculty || null, department: body.department || null });
+    // Fakülte/bölüm listesi olan üniversitede listeden seçilir, diğerlerinde ("Diğer" dahil) elle yazılır
+    const faculties = row.university_id
+      ? await db('faculties').where({ university_id: row.university_id, is_active: true }).select('id', 'name')
+      : [];
+    if (faculties.length) {
+      const faculty = body.faculty && faculties.find((f) => f.name === body.faculty);
+      const department = faculty && body.department
+        ? await db('departments').where({ faculty_id: faculty.id, name: body.department, is_active: true }).first()
+        : null;
+      if (!faculty) errors.faculty = 'Listeden bir fakülte seçiniz';
+      if (!department) errors.department = 'Listeden bir bölüm seçiniz';
+      Object.assign(row, { faculty: faculty?.name || null, department: department?.name || null });
+    } else {
+      if (!body.faculty) errors.faculty = 'Fakülte adını yazınız';
+      if (!body.department) errors.department = 'Bölüm adını yazınız';
+      Object.assign(row, { faculty: body.faculty || null, department: body.department || null });
+    }
 
     if (app.category === 'universite') {
-      if (!['hazirlik', '1', '2', '3', '4', '5', '6'].includes(body.grade)) errors.grade = 'Sınıf seçin';
+      if (!['hazirlik', '1', '2', '3', '4', '5', '6'].includes(body.grade)) errors.grade = 'Sınıf seçiniz';
       row.grade = body.grade;
     } else {
       row.grade = app.category === 'yuksek_lisans' ? 'yl' : 'dr';
-    }
-
-    if (row.university_type === 'vakif') {
-      if (!['completed', 'pending'].includes(body.fallRegistration)) {
-        errors.fallRegistration = 'Güz dönemi kayıt yenileme durumunuzu seçin';
-      }
-      row.fall_registration = body.fallRegistration || null;
     }
   }
 
@@ -518,7 +535,6 @@ async function getApplicationDetail(applicantId) {
       faculty: education.faculty,
       department: education.department,
       grade: education.grade,
-      fallRegistration: education.fall_registration,
     } : null,
   };
 }

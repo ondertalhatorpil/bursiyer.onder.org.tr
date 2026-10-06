@@ -40,12 +40,12 @@ export default function LoginPage() {
 
         {/* Başlık */}
         <h1 className="mt-8 text-3xl font-bold tracking-tight text-slate-900">
-          {flow ? 'Kodu girin' : 'Başvuruma devam et'}
+          {flow ? 'Kodu giriniz' : 'Başvuruma devam et'}
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-slate-500">
           {flow
-            ? 'Kayıtlı telefonunuza gönderilen 6 haneli kodu girin.'
-            : 'Kimlik numaranızı girin, başvurunuzda kayıtlı telefona doğrulama kodu gönderelim.'}
+            ? 'Kayıtlı telefonunuza gönderilen 6 haneli kodu giriniz.'
+            : 'Kimlik numaranızı giriniz, başvurunuzda kayıtlı telefona doğrulama kodu gönderelim.'}
         </p>
 
         {/* Form */}

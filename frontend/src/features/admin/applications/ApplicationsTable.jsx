@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router';
 import { Award, Building2, FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
 import StatusBadge from '../shared/StatusBadge';
 import { formatDateTime } from '../../../lib/format';
+import { sponsorsApi } from '../../../api/adminEndpoints';
 
 /**
  * Başvuru tablosu. Masaüstünde tablo (sabit yükseklik, tek satır), mobilde kart listesi.
@@ -141,14 +142,9 @@ function Signals({ a }) {
   const items = [];
 
   if (a.status === 'finalized') {
-    items.push(
-      a.qualified
-        ? { icon: Award, text: 'Nitelikli bursiyer', cls: 'text-brand-700 bg-brand-50 ring-brand-200' }
-        : { icon: Award, text: 'Normal bursiyer', cls: 'text-slate-600 bg-slate-100 ring-slate-200' }
-    );
-    if (a.sponsorLabel) {
-      items.push({ icon: Building2, text: a.sponsorLabel, cls: 'text-slate-700 bg-slate-100 ring-slate-200' });
-    }
+    // Nitelikli bursiyer: sadece kurdele (adı fareyle üzerine gelince)
+    if (a.qualified) items.push({ key: 'qualified', node: <IconChip icon={Award} title="Nitelikli bursiyer" cls="text-brand-700 bg-brand-50 ring-brand-200" /> });
+    if (a.sponsors) items.push({ key: 'sponsors', node: <SponsorLogos sponsors={a.sponsors} /> });
   }
 
   if (a.isMinor) {
@@ -175,7 +171,7 @@ function Signals({ a }) {
 
   return (
     <ul className="flex items-center gap-1.5 whitespace-nowrap">
-      {items.map((i, idx) => (
+      {items.map((i, idx) => (i.node ? <li key={i.key} className="shrink-0">{i.node}</li> : (
         <li
           key={`${i.text}-${idx}`}
           className={`inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium ring-1 ring-inset ${i.cls}`}
@@ -183,7 +179,32 @@ function Signals({ a }) {
           <i.icon className="size-3.5 shrink-0" aria-hidden />
           <span>{i.text}</span>
         </li>
-      ))}
+      )))}
     </ul>
+  );
+}
+
+/** Yazısız ikon rozeti; açıklama fareyle üzerine gelince görünür */
+function IconChip({ icon: Icon, title, cls = 'text-slate-600 bg-slate-100 ring-slate-200' }) {
+  return (
+    <span title={title} aria-label={title} className={`inline-flex items-center rounded-md p-1 ring-1 ring-inset ${cls}`}>
+      <Icon className="size-3.5" aria-hidden />
+    </span>
+  );
+}
+
+/**
+ * Burs veren firmalar: logosu olan firmanın logosu, olmayanın ve Genel Merkez'in bina ikonu.
+ * Adlar yazılmaz; fareyle üzerine gelince görünür.
+ */
+function SponsorLogos({ sponsors }) {
+  if (!sponsors.length) return <IconChip icon={Building2} title="Genel Merkez" />;
+  return (
+    <span className="flex items-center gap-2">
+      {sponsors.map((s) => (s.hasLogo ? (
+        <img key={s.id} src={sponsorsApi.logoUrl(s.id, s.logoVersion)} alt={s.name} title={s.name}
+          className="h-6 w-auto max-w-20 object-contain" />
+      ) : <IconChip key={s.id} icon={Building2} title={s.name} />))}
+    </span>
   );
 }

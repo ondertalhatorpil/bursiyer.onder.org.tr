@@ -46,7 +46,7 @@ export default function UploadDropzone({ formats = ['pdf'], maxMb = 5, onFile, u
         )}
       >
         {uploading ? <Spinner className="size-6 text-brand-600" /> : <UploadCloud className="size-7 text-brand-600" aria-hidden />}
-        <span className="text-sm font-semibold text-brand-800">{uploading ? 'Yükleniyor…' : 'Dosya seçin veya buraya sürükleyin'}</span>
+        <span className="text-sm font-semibold text-brand-800">{uploading ? 'Yükleniyor…' : 'Dosya Seçiniz veya Buraya Sürükleyiniz'}</span>
         <span className="text-xs text-slate-500">{formats.map((f) => f.toUpperCase()).join(', ')} · en fazla {maxMb} MB</span>
       </button>
       <input ref={inputRef} type="file" accept={accept} className="hidden" onChange={(e) => { handle(e.target.files?.[0]); e.target.value = ''; }} />

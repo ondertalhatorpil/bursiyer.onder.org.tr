@@ -182,7 +182,6 @@ async function paymentsExport(req, res) {
     { header: 'Kanal / Birim', key: 'channel', width: 30 },
     { header: 'Hesap Sahibi', key: 'holderName', width: 26 },
     { header: 'IBAN', key: 'iban', width: 36 },
-    { header: 'Banka', key: 'bank', width: 30 },
     { header: 'IBAN Onay Tarihi', key: 'verifiedAt', width: 18 },
   ];
   for (const r of rows) {

@@ -91,7 +91,6 @@ function AccountDetails({ app, a, compact }) {
     <div className="space-y-3">
       <dl className="grid grid-cols-1 gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
         <div className="min-w-0 sm:col-span-2"><dt className="text-xs font-medium text-slate-500">IBAN</dt><dd className="mt-0.5 break-all font-mono text-base font-semibold text-slate-900">{a.iban}</dd></div>
-        <div><dt className="text-xs font-medium text-slate-500">Banka</dt><dd className="mt-0.5 text-slate-900">{a.bankName || `Kod ${a.bankCode}`}</dd></div>
         <div><dt className="text-xs font-medium text-slate-500">Hesap sahibi (sistemden)</dt><dd className="mt-0.5 text-slate-900">{a.holderName}</dd></div>
         <div><dt className="text-xs font-medium text-slate-500">Gönderim</dt><dd className="mt-0.5 text-slate-900">{formatDateTime(a.submittedAt)}</dd></div>
         {a.document && (
@@ -102,9 +101,6 @@ function AccountDetails({ app, a, compact }) {
           </dd></div>
         )}
       </dl>
-      {!compact && !a.bankKnown && (
-        <p className="flex items-center gap-1.5 text-xs font-medium text-amber-700"><TriangleAlert className="size-3.5" aria-hidden />Banka kodu ({a.bankCode}) listede yok; bankayı belgeden kontrol edin.</p>
-      )}
       {!compact && a.usedByOthers && (
         <p className="flex items-center gap-1.5 text-xs font-medium text-accent-700"><TriangleAlert className="size-3.5" aria-hidden />Bu IBAN daha önce başka bir başvuruda girilmiş.</p>
       )}

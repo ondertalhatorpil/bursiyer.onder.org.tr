@@ -159,7 +159,7 @@ describe('onay metinleri', () => {
 describe('ekran metinleri', () => {
   test('güncellenir ve herkese açık uçta görünür', async () => {
     const list = await admin.get('/api/admin/settings/content').expect(200);
-    expect(list.body.find((b) => b.key === 'submit_success').placeholders).toEqual(['tracking_no']);
+    expect(list.body.find((b) => b.key === 'submit_success').placeholders).toEqual(['tracking_no', 'program_name']);
     await admin.put('/api/admin/settings/content/applications_closed').send({ title: 'Kapalı', body: 'Başvurular 1 Ekim\'de açılacak.' }).expect(200);
     const pub = await request(app).get('/api/public/content/applications_closed').expect(200);
     expect(pub.body.body).toBe('Başvurular 1 Ekim\'de açılacak.');

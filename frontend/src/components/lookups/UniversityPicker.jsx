@@ -12,7 +12,7 @@ export default function UniversityPicker({ id, value, onChange, invalid, disable
   return (
     <SearchSelect
       id={id} options={options} value={value} onChange={onChange} invalid={invalid} disabled={disabled} loading={isLoading}
-      placeholder="Üniversite seçin" searchPlaceholder="Üniversite adıyla arayın…"
+      placeholder="Üniversite seçiniz" searchPlaceholder="Üniversite adıyla arayınız…"
       footer={onOther ? (close) => (
         <button type="button" onClick={() => { close(); onOther(); }}
           className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-semibold text-brand-700 hover:bg-brand-50">

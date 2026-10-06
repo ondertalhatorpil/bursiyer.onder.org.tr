@@ -23,7 +23,7 @@ export default function IbanStep() {
         <CircleCheckBig className="mx-auto size-12" aria-hidden />
         <h2 className="mt-4 text-2xl font-extrabold !text-white">{data.finalized.title}</h2>
         <p className="mx-auto mt-3 max-w-xl whitespace-pre-line text-sm leading-relaxed text-emerald-50">{data.finalized.body}</p>
-        {data.account && <p className="mt-4 text-sm text-emerald-100">{data.account.bankName} · {data.account.ibanMasked}</p>}
+        {data.account && <p className="mt-4 text-sm text-emerald-100">{data.account.ibanMasked}</p>}
       </div>
     );
   }
@@ -32,7 +32,7 @@ export default function IbanStep() {
   return (
     <Card>
       <CardHeader eyebrow="Adım 8" title="IBAN Bilgileri"
-        description={data.canSubmit ? 'Burs ödemesinin yapılacağı hesap bilgilerinizi girin.' : undefined}
+        description={data.canSubmit ? 'Burs ödemesinin yapılacağı hesap bilgilerinizi giriniz.' : undefined}
         actions={acc && <Badge tone={TONE[acc.status]} dot>{acc.statusLabel}</Badge>} />
       <CardBody className="space-y-5">
         {data.warning && (
@@ -42,7 +42,7 @@ export default function IbanStep() {
         {acc?.status === 'rejected' && data.canSubmit && (
           <Alert variant="error" title="Girdiğiniz IBAN kabul edilmedi">
             {acc.reviewNote}
-            <p className="mt-1">Lütfen bilgileri kontrol edip yeniden girin.</p>
+            <p className="mt-1">Lütfen bilgileri kontrol edip yeniden giriniz.</p>
           </Alert>
         )}
 
@@ -59,7 +59,6 @@ export default function IbanStep() {
             </Alert>
             <dl className="grid gap-4 rounded-xl bg-slate-50 p-4 text-sm sm:grid-cols-2">
               <div><dt className="text-slate-500">Hesap sahibi</dt><dd className="mt-0.5 font-semibold">{data.holderName}</dd></div>
-              <div><dt className="text-slate-500">Banka</dt><dd className="mt-0.5 font-semibold">{acc.bankName || '—'}</dd></div>
               <div><dt className="text-slate-500">IBAN</dt><dd className="mt-0.5 font-mono font-semibold">{acc.ibanMasked}</dd></div>
               <div><dt className="text-slate-500">Gönderim</dt><dd className="mt-0.5 font-semibold">{formatDateTime(acc.submittedAt)}</dd></div>
               <div className="sm:col-span-2">

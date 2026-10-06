@@ -6,7 +6,7 @@
 #             dışarıya sunucu Nginx'i (HTTPS) üzerinden açılır
 #   phpmyadmin  veritabanı yönetimi: https://<site>/phpmyadmin/ (frontend Nginx'i üzerinden)
 #
-# Ayarlar: bu klasördeki .env dosyası (.env.example'dan kopyalayın)
+# Ayarlar: bu klasördeki .env dosyası (.env.example'dan kopyalayın). Adım adım kurulum: KURULUM.md
 #
 #   İlk kurulum:
 #     docker compose up -d --build

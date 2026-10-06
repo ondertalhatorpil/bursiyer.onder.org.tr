@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { FileCheck2, Landmark, Send } from 'lucide-react';
+import { FileCheck2, Send } from 'lucide-react';
 import { Alert, Button, Checkbox, Field, MaskedInput, MASKS, TextInput } from '../../../components/ui';
 import UploadDropzone from '../documents/UploadDropzone';
 import { ibanApi } from '../../../api/endpoints';
@@ -15,7 +15,6 @@ export default function IbanForm({ data, onSaved }) {
   const [errors, setErrors] = useState({});
 
   const check = checkTrIban(iban);
-  const bank = check.valid ? data.banks.find((b) => b.code === check.bankCode) : null;
 
   const m = useMutation({
     mutationFn: () => ibanApi.submit({ iban: check.value, file }),
@@ -26,10 +25,10 @@ export default function IbanForm({ data, onSaved }) {
   const submit = (e) => {
     e.preventDefault();
     const errs = {};
-    if (!check.complete) errs.iban = 'IBAN\'ı eksiksiz girin (26 karakter)';
-    else if (!check.valid) errs.iban = 'IBAN hatalı, lütfen kontrol edin';
-    if (!file) errs.file = 'Hesap belgesini yükleyin';
-    if (!confirm) errs.confirm = 'Hesabın size ait vadesiz TL hesabı olduğunu onaylayın';
+    if (!check.complete) errs.iban = 'IBAN\'ı eksiksiz giriniz (26 karakter)';
+    else if (!check.valid) errs.iban = 'IBAN hatalı, lütfen kontrol ediniz';
+    if (!file) errs.file = 'Hesap belgesini yükleyiniz';
+    if (!confirm) errs.confirm = 'Hesabın size ait vadesiz TL hesabı olduğunu onaylayınız';
     setErrors(errs);
     if (!Object.keys(errs).length) m.mutate();
   };
@@ -41,16 +40,11 @@ export default function IbanForm({ data, onSaved }) {
         <TextInput id="holder" value={data.holderName} readOnly disabled />
       </Field>
       <Field label="IBAN" htmlFor="iban" required error={errors.iban}
-        hint={bank ? undefined : 'Banka uygulamanızdan kopyalayıp yapıştırabilirsiniz.'}>
+        hint="Banka uygulamanızdan kopyalayıp yapıştırabilirsiniz.">
         <MaskedInput id="iban" mask={MASKS.iban} value={iban} onChange={(v) => { setIban(v); setErrors((x) => ({ ...x, iban: undefined })); }}
           invalid={!!errors.iban || (check.complete && !check.valid)} autoComplete="off" />
       </Field>
-      {check.complete && !check.valid && !errors.iban && <p className="-mt-3 text-xs font-medium text-accent-600">IBAN hatalı görünüyor, lütfen kontrol edin.</p>}
-      {check.valid && (
-        <p className="-mt-3 flex items-center gap-1.5 text-sm text-emerald-700">
-          <Landmark className="size-4" aria-hidden />{bank ? bank.name : `Banka kodu ${check.bankCode}`}
-        </p>
-      )}
+      {check.complete && !check.valid && !errors.iban && <p className="-mt-3 text-xs font-medium text-accent-600">IBAN hatalı görünüyor, lütfen kontrol ediniz.</p>}
 
       <Field label="Hesap belgesi" htmlFor="iban-file" required error={errors.file}
         hint="Banka uygulamasından veya şubeden alınan, adınızın ve IBAN'ın göründüğü belge (PDF, JPG veya PNG, en fazla 5 MB).">
