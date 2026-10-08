@@ -9,7 +9,7 @@ if (!db.client.config.connection.database.endsWith('_test')) {
 
 /** Başvuru verilerini temizler (lookup tablolarına dokunmaz) */
 async function resetApplications() {
-  for (const t of ['consents', 'status_history', 'application_notes', 'documents', 'education',
+  for (const t of ['consents', 'status_history', 'application_notes', 'documents', 'yurt_details', 'education',
     'application_details', 'guardians', 'bank_accounts', 'sms_logs', 'applications', 'sessions', 'applicants', 'otp_codes']) {
     await db(t).del();
   }

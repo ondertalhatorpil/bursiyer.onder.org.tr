@@ -35,7 +35,11 @@ export const CATEGORIES = [
   { value: 'universite', label: 'Lisans Bursu', description: 'Üniversitelerin lisans programlarında öğrenim gören öğrenciler' },
   { value: 'yuksek_lisans', label: 'Yüksek Lisans Bursu', description: 'Tezli yüksek lisans programlarında öğrenim gören öğrenciler' },
   { value: 'doktora', label: 'Doktora Bursu', description: 'Doktora programlarında öğrenim gören araştırmacı ve öğrenciler' },
+  { value: 'yurt', label: 'Yurt Konaklama Bursu', description: 'ÖNDER öğrenci yurtlarında konaklayan üniversite öğrencileri' },
 ];
+
+/** Yurt Konaklama Bursu'nun akışı farklıdır: kanal ve belge adımı yoktur */
+export const isYurt = (category) => category === 'yurt';
 
 export const APPLICATION_STEPS = [
   { step: 1, title: 'Kişisel Bilgiler' },
@@ -55,6 +59,46 @@ export const STEP_ROUTES = {
   6: '/basvuru/belgeler',
   7: '/basvuru/ozet',
 };
+
+/** Yurt Konaklama Bursu adımları: kanal yerine doğrudan eğitim, belgeler yerine aile ve burs bilgileri */
+export const YURT_APPLICATION_STEPS = [
+  { step: 1, title: 'Kişisel Bilgiler' },
+  { step: 2, title: 'SMS Doğrulama' },
+  { step: 3, title: 'Burs Kategorisi' },
+  { step: 4, title: 'Eğitim Bilgileri' },
+  { step: 5, title: 'Aile ve Gelir Bilgileri' },
+  { step: 6, title: 'Burs Bilgileri' },
+  { step: 7, title: 'Özet ve Gönderim' },
+];
+
+export const YURT_STEP_ROUTES = {
+  3: '/basvuru/kategori',
+  4: '/basvuru/egitim',
+  5: '/basvuru/aile',
+  6: '/basvuru/burs-bilgileri',
+  7: '/basvuru/ozet',
+};
+
+export const stepsFor = (category) => (isYurt(category) ? YURT_APPLICATION_STEPS : APPLICATION_STEPS);
+export const stepRoutesFor = (category) => (isYurt(category) ? YURT_STEP_ROUTES : STEP_ROUTES);
+
+/** Yurt Konaklama Bursu seçenekleri (başvuru formu, özet ve admin detayı ortak kullanır) */
+export const TUITION_RATES = [100, 75, 50, 25].map((r) => ({ value: r, label: `%${r}` }));
+export const GUARDIAN_HOUSING = [
+  { value: 'kira', label: 'Kira' },
+  { value: 'ev_sahibi', label: 'Ev Sahibi' },
+  { value: 'lojman', label: 'Lojman' },
+  { value: 'diger', label: 'Diğer' },
+];
+export const PARENT_STATUS = [{ value: 'sag', label: 'Sağ' }, { value: 'vefat', label: 'Vefat Etti' }];
+export const PARENTS_LIVING = [{ value: 'birlikte', label: 'Birlikte Yaşıyor' }, { value: 'ayri', label: 'Ayrı Yaşıyor' }];
+export const KYK_SUPPORT = [
+  { value: 'yok', label: 'Almıyorum' },
+  { value: 'burs', label: 'KYK Bursu' },
+  { value: 'kredi', label: 'Öğrenim Kredisi' },
+];
+export const YES_NO = [{ value: true, label: 'Evet' }, { value: false, label: 'Hayır' }];
+export const optionLabel = (options, value) => options.find((o) => o.value === value)?.label;
 
 export const GRADES = {
   lise: [

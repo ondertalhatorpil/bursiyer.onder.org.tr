@@ -39,6 +39,7 @@ async function loadContext(applicantId) {
 }
 
 async function applicableTypes(ctx) {
+  if (ctx.category === app$.YURT) return []; // Yurt Konaklama Bursu'nda belge adımı yok
   const types = await db('document_types').where({ is_active: true });
   return resolveDocuments(types.map((t) => ({ ...t, rules: parseJson(t.rules) })), ctx);
 }

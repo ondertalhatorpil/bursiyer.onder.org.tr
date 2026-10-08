@@ -1,13 +1,14 @@
 /**
- * Üniversite listesi. Ad ve il seeds/data/universite-fakulte-bolum.json'dan (seeds/lib/university-data.js),
- * tür (devlet/vakıf) seeds/data/universities.json'dan gelir.
+ * Üniversite listesi. Ad, il ve tür (devlet/vakıf) seeds/data/universite-fakulte-bolum.json'dan gelir
+ * (seeds/lib/university-data.js). Dosyada türü olmayan üniversite için seeds/data/universities.json'a bakılır.
  *   - Adı değişen üniversiteler (RENAMED) yerinde güncellenir, böylece bağlı başvuruların university_id'si korunur.
- *   - İl her çalıştırmada dosyadan güncellenir; mevcut kayıtların türü ezilmez.
+ *   - İl ve tür her çalıştırmada dosyadan güncellenir (Yurt Konaklama Bursu'nda özel üniversite soruları türe göre açılır).
  *   - Listede olmayan üniversiteler pasife alınır (silinmez, eski başvurular bağlı olabilir).
  *     Listede olmayan üniversite için adaylar "Diğer" seçeneğini kullanır.
  */
 const universities = require('./lib/university-data');
-const types = new Map(require('./data/universities.json').map((u) => [u.name, u.type]));
+const fallbackTypes = new Map(require('./data/universities.json').map((u) => [u.name, u.type]));
+const typeOf = (u) => u.type || fallbackTypes.get(u.name);
 
 // eski ad -> yeni ad
 const RENAMED = {
@@ -55,15 +56,15 @@ exports.seed = async (knex) => {
   const cityId = new Map((await knex('cities').select('id', 'name')).map((c) => [c.name, c.id]));
   const problems = universities.flatMap((u) => [
     ...(cityId.has(u.city) ? [] : [`${u.name}: "${u.city}" ili bulunamadı`]),
-    ...(types.has(u.name) ? [] : [`${u.name}: universities.json'da türü (devlet/vakif) yok`]),
+    ...(typeOf(u) ? [] : [`${u.name}: türü (devlet/vakif) bulunamadı`]),
   ]);
   if (problems.length) throw new Error(`Üniversite listesi:\n${problems.join('\n')}`);
 
   await knex('universities').insert(universities.map((u) => ({
     name: u.name,
     city_id: cityId.get(u.city),
-    type: types.get(u.name),
-  }))).onConflict('name').merge(['city_id']);
+    type: typeOf(u),
+  }))).onConflict('name').merge(['city_id', 'type']);
 
   const names = universities.map((u) => u.name);
   await knex('universities').whereNotIn('name', names).update({ is_active: false });

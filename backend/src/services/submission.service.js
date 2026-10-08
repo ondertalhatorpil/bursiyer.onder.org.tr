@@ -2,7 +2,8 @@
  * Adım 7: özet ve gönderim.
  *
  * Gönderimde:
- *   1. Eksik kontrolü (kategori, kanal/şart beyanı, veli onayı, eğitim, zorunlu belgeler)
+ *   1. Eksik kontrolü (kategori, kanal/şart beyanı, veli onayı, eğitim, zorunlu belgeler;
+ *      yurtta eğitim, veli onayı, aile ve burs bilgileri)
  *   2. Başvuruya artık uymayan belgeler arşivlenir (ör. sınıf değiştiyse eski tipteki belge)
  *   3. Takip numarası üretilir (OND-2026-XXXXX), yaş ve 18 altı bilgisi o günkü haliyle sabitlenir
  *   4. Statü: Taslak -> Başvuru Tamamlandı (status_history'ye yazılır)
@@ -24,6 +25,14 @@ async function findMissing(applicantId, detail, documents) {
 
   if (!detail.category) {
     add(3, 'category', 'Burs kategorisi seçilmedi');
+    return missing;
+  }
+  // Yurt Konaklama Bursu: kanal ve belge yok; eğitim (+ veli) Adım 4, aile Adım 5, burs bilgileri Adım 6
+  if (detail.category === app$.YURT) {
+    if (!detail.education) add(4, 'education', 'Eğitim ve yurt bilgileri girilmedi');
+    if (detail.guardianRequired && !detail.guardian?.verified) add(4, 'guardian', 'Veli / vasi onayı alınmadı');
+    if (!detail.yurt?.family) add(5, 'family', 'Aile ve gelir bilgileri girilmedi');
+    if (!detail.yurt?.scholarship) add(6, 'scholarship', 'Burs bilgileri girilmedi');
     return missing;
   }
   if (app$.LISANSUSTU.includes(detail.category)) {

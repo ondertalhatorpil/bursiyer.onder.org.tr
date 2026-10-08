@@ -28,4 +28,8 @@ export const MASKS = {
   date: { mask: '00/00/0000', inputMode: 'numeric', placeholder: 'GG/AA/YYYY' },
   // TR sabit; kullanıcı TR yazsa da yazmasa da aynı sonuç. Yapıştırılan boşluklu / boşluksuz IBAN kabul edilir.
   iban: { mask: 'TR00 0000 0000 0000 0000 0000 00', inputMode: 'numeric', placeholder: 'TR00 0000 0000 0000 0000 0000 00' },
+  // Tam TL tutar, binlik ayraçlı gösterilir (15.000); değer ayraçsız gelir ("15000")
+  money: { mask: Number, scale: 0, thousandsSeparator: '.', min: 0, max: 100000000, unmask: true, inputMode: 'numeric' },
+  // Kardeş sayısı gibi küçük tam sayılar
+  count: { mask: Number, scale: 0, min: 0, max: 30, unmask: true, inputMode: 'numeric' },
 };

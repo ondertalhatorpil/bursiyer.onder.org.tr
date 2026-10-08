@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import { Check, Lock } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router';
-import { APPLICATION_STEPS, STEP_ROUTES } from '../../../config';
+import { stepRoutesFor, stepsFor } from '../../../config';
 
 /**
  * Adım listesi. Tamamlanan adımlar tik alır; henüz ulaşılmamış adımlar kilitlidir.
@@ -10,6 +10,8 @@ import { APPLICATION_STEPS, STEP_ROUTES } from '../../../config';
  */
 export default function StepNav({ application }) {
   const { steps = {}, currentStep = 3, category } = application;
+  // Yurt Konaklama Bursu'nun adımları ve adresleri farklıdır
+  const routes = stepRoutesFor(category);
   // Yüksek lisans ve doktorada 4. adım kanal değil, başvuru şartlarıdır
   const stepTitle = (step, title) => (step === 4 && (category === 'yuksek_lisans' || category === 'doktora') ? 'Başvuru Şartları' : title);
   const listRef = useRef(null);
@@ -27,10 +29,10 @@ export default function StepNav({ application }) {
   return (
     <nav aria-label="Başvuru adımları">
       <ol ref={listRef} className="flex gap-1 overflow-x-auto pb-2 [scrollbar-width:none] lg:flex-col lg:gap-1 lg:overflow-visible lg:pb-0">
-        {APPLICATION_STEPS.map(({ step, title }) => {
+        {stepsFor(category).map(({ step, title }) => {
           const done = !!steps[step];
           const reachable = step >= 3 && step <= Math.max(currentStep, 3);
-          const route = STEP_ROUTES[step];
+          const route = routes[step];
           const inner = (isActive) => (
             <>
               <span

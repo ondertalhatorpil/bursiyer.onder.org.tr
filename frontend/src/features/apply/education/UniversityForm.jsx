@@ -1,16 +1,22 @@
 import { useEffect, useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Alert, Button, Field, RadioCardGroup, SearchSelect, Select, TextInput } from '../../../components/ui';
+import { Alert, Button, Field, MaskedInput, MASKS, RadioCardGroup, SearchSelect, Select, TextInput } from '../../../components/ui';
 import { CitySelect, UniversityPicker } from '../../../components/lookups';
 import { useFaculties, useUniversities } from '../../../hooks/useLookups';
 import { applyApiErrors } from '../../../lib/form-errors';
-import { GRADES } from '../../../config';
+import { GRADES, isYurt, TUITION_RATES } from '../../../config';
 
-const FIELDS = ['cityId', 'universityId', 'universityOther', 'universityType', 'faculty', 'department', 'grade'];
+const FIELDS = ['cityId', 'universityId', 'universityOther', 'universityType', 'faculty', 'department', 'grade',
+  'tuitionScholarshipRate', 'annualTuitionFee'];
 
-/** Üniversite, yüksek lisans ve doktora eğitim bilgileri */
+/**
+ * Üniversite, yüksek lisans ve doktora eğitim bilgileri.
+ * Yurt Konaklama Bursu'nda ayrıca özel (vakıf) üniversitede burs oranı ve oran %100 değilse
+ * üniversiteye ödenen yıllık ücret alınır (yurt seçimi EducationStep'te, formun üstünde).
+ */
 export default function UniversityForm({ formId, application, onSubmit }) {
-  const grad = application.category !== 'universite';
+  const yurt = isYurt(application.category);
+  const grad = application.category !== 'universite' && !yurt;
   const edu = application.education;
   const [other, setOther] = useState(!!edu?.universityOther);
   const { data: universities = [] } = useUniversities();
@@ -24,12 +30,19 @@ export default function UniversityForm({ formId, application, onSubmit }) {
       faculty: edu?.faculty || '',
       department: edu?.department || '',
       grade: grad ? '' : edu?.grade || '',
+      tuitionScholarshipRate: edu?.tuitionScholarshipRate ?? '',
+      annualTuitionFee: edu?.annualTuitionFee != null ? String(edu.annualTuitionFee) : '',
     },
   });
 
   const universityId = useWatch({ control, name: 'universityId' });
   const facultyName = useWatch({ control, name: 'faculty' });
+  const universityType = useWatch({ control, name: 'universityType' });
+  const tuitionRate = useWatch({ control, name: 'tuitionScholarshipRate' });
   const selectedUni = universities.find((u) => String(u.id) === String(universityId));
+  // Özel üniversite: listedekinde türü listeden, "Diğer"de adayın seçtiği türden
+  const privateUni = yurt && (other ? universityType === 'vakif' : selectedUni?.type === 'vakif');
+  const feeRequired = privateUni && tuitionRate !== '' && Number(tuitionRate) !== 100;
 
   // Listedeki üniversitede fakülte ve bölüm listeden seçilir; "Diğer" ya da listesi olmayan üniversitede elle yazılır
   const { data: faculties = [], isLoading: facultiesLoading } = useFaculties(other ? null : universityId);
@@ -58,6 +71,10 @@ export default function UniversityForm({ formId, application, onSubmit }) {
       faculty: v.faculty,
       department: v.department,
       ...(grad ? {} : { grade: v.grade }),
+      ...(privateUni ? {
+        tuitionScholarshipRate: v.tuitionScholarshipRate === '' ? undefined : Number(v.tuitionScholarshipRate),
+        ...(feeRequired ? { annualTuitionFee: v.annualTuitionFee || undefined } : {}),
+      } : {}),
     };
     try {
       await onSubmit(body);
@@ -99,6 +116,26 @@ export default function UniversityForm({ formId, application, onSubmit }) {
                 options={[{ value: 'devlet', label: 'Devlet' }, { value: 'vakif', label: 'Vakıf' }]} />
             )} />
           </Field>
+        )}
+
+        {privateUni && (
+          <div className="space-y-4 rounded-xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200 sm:col-span-2">
+            <p className="text-sm font-semibold text-slate-800">Özel üniversitede okuyanlar dolduracaktır</p>
+            <Field label="Üniversitedeki Burs Oranınız" required error={errors.tuitionScholarshipRate?.message}>
+              <Controller control={control} name="tuitionScholarshipRate" render={({ field }) => (
+                <RadioCardGroup name="tuitionScholarshipRate" size="sm" columns={4} value={field.value} onChange={field.onChange}
+                  invalid={!!errors.tuitionScholarshipRate} options={TUITION_RATES} />
+              )} />
+            </Field>
+            {feeRequired && (
+              <Field label="Üniversiteye Ödediğiniz Yıllık Ücret (TL)" htmlFor="annualTuitionFee" required
+                error={errors.annualTuitionFee?.message} className="sm:max-w-xs">
+                <Controller control={control} name="annualTuitionFee" render={({ field }) => (
+                  <MaskedInput id="annualTuitionFee" mask={MASKS.money} placeholder="Örn. 150.000" invalid={!!errors.annualTuitionFee} {...field} />
+                )} />
+              </Field>
+            )}
+          </div>
         )}
 
         <Field label="Kurumun Bulunduğu İl" htmlFor="cityId" required error={errors.cityId?.message}

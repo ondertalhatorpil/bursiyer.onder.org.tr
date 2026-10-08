@@ -1,5 +1,5 @@
 /**
- * Veli / vasi (Adım 4, sadece 18 yaş altı adaylar - kategori fark etmeksizin).
+ * Veli / vasi (Adım 4, sadece 18 yaş altı adaylar - kategori fark etmeksizin; yurtta eğitim bilgileriyle birlikte).
  *
  *   saveGuardian  : bilgileri kaydeder ve velinin telefonuna SMS kodu gönderir
  *   resend        : kodu tekrar gönderir
@@ -101,8 +101,13 @@ async function verify(applicantId, { code }, { ip, userAgent }) {
       ip: ip || '',
       user_agent: userAgent ? String(userAgent).slice(0, 512) : null,
     });
-    const channelDone = app$.LISANSUSTU.includes(app.category) ? !!app.requirements_accepted_at : !!app.channel_id;
-    if (channelDone) await app$.advanceStep(trx, app, 5);
+    if (app.category === app$.YURT) {
+      // Yurtta veli onayı Adım 4'te (eğitim bilgileri) alınır
+      if (await trx('education').where({ application_id: app.id }).first('application_id')) await app$.advanceStep(trx, app, 5);
+    } else {
+      const channelDone = app$.LISANSUSTU.includes(app.category) ? !!app.requirements_accepted_at : !!app.channel_id;
+      if (channelDone) await app$.advanceStep(trx, app, 5);
+    }
   });
 
   return { application: await app$.getApplicationDetail(applicantId) };

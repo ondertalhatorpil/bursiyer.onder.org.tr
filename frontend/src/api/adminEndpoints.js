@@ -26,18 +26,22 @@ export const adminApi = {
   dashboard: (programId) => guard(api.get(`/admin/dashboard${qs({ programId })}`)),
   programs: () => guard(api.get('/admin/programs')),
   applications: (filters) => guard(api.get(`/admin/applications${qs(filters)}`)),
+  // Kullanıcıya göre filtre seçenekleri + hızlı sekmeler (sayılarıyla)
+  applicationsMeta: (programId) => guard(api.get(`/admin/applications/meta${qs({ programId })}`)),
   exportUrl: (filters) => `/api/admin/applications/export${qs({ ...filters, page: undefined, pageSize: undefined })}`,
   application: (id) => guard(api.get(`/admin/applications/${id}`)),
   documentUrl: (id, documentId) => `/api/admin/applications/${id}/documents/${documentId}/file`,
   reviewDocument: (id, documentId, body) => guard(request(`/admin/applications/${id}/documents/${documentId}`, { method: 'PATCH', body })),
   setStatus: (id, body) => guard(api.post(`/admin/applications/${id}/status`, body)),
   addNote: (id, body) => guard(api.post(`/admin/applications/${id}/notes`, body)),
+  // Yurt Konaklama Bursu önerisi: stage = dorm (yurt müdürü) | hq (yurtlar birimi)
+  setYurtReview: (id, stage, body) => guard(api.put(`/admin/applications/${id}/yurt-review/${stage}`, body)),
   setReference: (id, verified) => guard(api.post(`/admin/applications/${id}/reference`, { verified })),
   setSponsors: (id, sponsorIds) => guard(api.put(`/admin/applications/${id}/sponsors`, { sponsorIds })),
   setQualified: (id, qualified) => guard(api.post(`/admin/applications/${id}/qualified`, { qualified })),
   ibanFileUrl: (id, accountId) => `/api/admin/applications/${id}/iban/${accountId}/file`,
   reviewIban: (id, body) => guard(api.post(`/admin/applications/${id}/iban/review`, body)),
-  paymentsExportUrl: () => '/api/admin/applications/payments-export',
+  paymentsExportUrl: (programId) => `/api/admin/applications/payments-export${qs({ programId })}`,
 };
 
 /** Burs veren firmalar (liste herkes; yönetim manage_settings) */
@@ -77,5 +81,6 @@ export const usersApi = {
   update: (id, body) => guard(request(`/admin/users/${id}`, { method: 'PATCH', body })),
   resetPassword: (id) => guard(api.post(`/admin/users/${id}/reset-password`, {})),
   setScopes: (id, scopes) => guard(api.put(`/admin/users/${id}/scopes`, { scopes })),
+  setGrants: (id, grants) => guard(api.put(`/admin/users/${id}/grants`, grants)),
   auditLogs: (filters) => guard(api.get(`/admin/users/audit-logs${qs(filters)}`)),
 };

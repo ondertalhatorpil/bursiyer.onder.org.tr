@@ -7,7 +7,9 @@
  *   PUT  /guardian              Adım 4: veli bilgisi -> velinin telefonuna SMS kodu (18 yaş altı)
  *   POST /guardian/resend
  *   POST /guardian/verify       kod + veli açık rızası
- *   PUT  /education             Adım 5: eğitim ve okul bilgileri
+ *   PUT  /education             Adım 5: eğitim ve okul bilgileri (yurtta Adım 4: + yurt, burs oranı)
+ *   PUT  /yurt/family           Yurt Konaklama Bursu Adım 5: aile ve gelir bilgileri
+ *   PUT  /yurt/scholarship      Yurt Konaklama Bursu Adım 6: burs bilgileri + talep edilen aylık burs
  *   GET  /summary               Adım 7: özet + eksikler + gönderilebilir mi
  *   POST /submit                Adım 7: incelemeye gönder -> takip no + SMS
  * Belgeler (Adım 6): /api/documents
@@ -30,6 +32,8 @@ router.put('/guardian', otpSendLimiter, validate({ body: schema.guardian }), c.s
 router.post('/guardian/resend', otpSendLimiter, c.resendGuardian);
 router.post('/guardian/verify', authLimiter, validate({ body: schema.guardianVerify }), c.verifyGuardian);
 router.put('/education', validate({ body: schema.education }), c.setEducation);
+router.put('/yurt/family', validate({ body: schema.yurtFamily }), c.setYurtFamily);
+router.put('/yurt/scholarship', validate({ body: schema.yurtScholarship }), c.setYurtScholarship);
 router.get('/summary', c.summary);
 router.post('/submit', authLimiter, validate({ body: schema.submit }), c.submit);
 

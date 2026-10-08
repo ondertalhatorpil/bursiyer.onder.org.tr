@@ -1,7 +1,8 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router';
 import { Button } from '../../../components/ui';
-import { STEP_ROUTES } from '../../../config';
+import { stepRoutesFor } from '../../../config';
+import { useApplication } from '../../../hooks/useApplication';
 
 /**
  * Adım alt çubuğu: Geri + ileri/kaydet.
@@ -9,7 +10,8 @@ import { STEP_ROUTES } from '../../../config';
  * onNext verilirse buton onu çalıştırır; yoksa `form` id'li formu gönderir.
  */
 export default function StepActions({ step, nextDisabled, loading, nextLabel = 'Kaydet ve Devam Et', onNext, form, hint }) {
-  const back = STEP_ROUTES[step - 1];
+  const { application } = useApplication();
+  const back = stepRoutesFor(application?.category)[step - 1];
   return (
     <div className="sticky bottom-0 z-10 -mx-4 border-t border-slate-200 bg-white/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 backdrop-blur sm:-mx-6 sm:px-6 lg:static lg:mx-0 lg:bg-transparent lg:px-0 lg:pb-0 lg:pt-6 lg:backdrop-blur-none">
       {hint && <p className="mb-3 text-center text-sm text-slate-500 lg:text-right">{hint}</p>}

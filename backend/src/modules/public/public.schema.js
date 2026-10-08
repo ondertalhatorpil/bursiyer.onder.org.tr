@@ -1,7 +1,8 @@
 const { z } = require('zod');
 
 const id = z.coerce.number().int().positive();
-const CATEGORIES = ['lise', 'universite', 'yuksek_lisans', 'doktora'];
+// yurt kategorisinde kanal yoktur (boş liste döner)
+const CATEGORIES = ['lise', 'universite', 'yuksek_lisans', 'doktora', 'yurt'];
 const CONSENT_TYPES = ['kvkk', 'sharing', 'guardian', 'criminal_record', 'requirements_yl', 'requirements_dr'];
 
 module.exports = {

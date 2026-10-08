@@ -37,6 +37,9 @@ export const applicationApi = {
   resendGuardian: () => api.post('/application/guardian/resend', {}),
   verifyGuardian: (code) => api.post('/application/guardian/verify', { code, consent: true }),
   setEducation: (body) => api.put('/application/education', body),
+  // Yurt Konaklama Bursu
+  setYurtFamily: (body) => api.put('/application/yurt/family', body),
+  setYurtScholarship: (body) => api.put('/application/yurt/scholarship', body),
   summary: () => api.get('/application/summary'),
   submit: () => api.post('/application/submit', { confirm: true }),
 };

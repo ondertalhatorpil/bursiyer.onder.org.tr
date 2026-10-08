@@ -43,6 +43,16 @@ async function setEducation(req, res) {
   res.json(await svc.setEducation(req.applicantId, req.valid.body));
 }
 
+/** Yurt Konaklama Bursu Adım 5: aile ve gelir bilgileri */
+async function setYurtFamily(req, res) {
+  res.json(await svc.setYurtFamily(req.applicantId, req.valid.body));
+}
+
+/** Yurt Konaklama Bursu Adım 6: burs bilgileri */
+async function setYurtScholarship(req, res) {
+  res.json(await svc.setYurtScholarship(req.applicantId, req.valid.body));
+}
+
 /** Adım 7: özet (tüm bilgiler, belgeler, eksikler) */
 async function summary(req, res) {
   res.json(await submission.getSummary(req.applicantId));
@@ -56,4 +66,5 @@ async function submit(req, res) {
 module.exports = {
   summary, submit,
   get, setCategory, setChannel, acceptRequirements, saveGuardian, resendGuardian, verifyGuardian, setEducation,
+  setYurtFamily, setYurtScholarship,
 };

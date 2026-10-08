@@ -12,6 +12,8 @@ import ChannelStep from './features/apply/channel/ChannelStep';
 import EducationStep from './features/apply/education/EducationStep';
 import DocumentsStep from './features/apply/documents/DocumentsStep';
 import SummaryStep from './features/apply/summary/SummaryStep';
+import FamilyStep from './features/apply/yurt/FamilyStep';
+import ScholarshipStep from './features/apply/yurt/ScholarshipStep';
 import StatusPage from './features/apply/status/StatusPage';
 import { RedirectIfAdmin, RequireAdmin, RequirePermission } from './features/admin/layout/AdminGuards';
 import NotFound from './pages/NotFound';
@@ -28,6 +30,8 @@ import ErrorPage from './pages/ErrorPage';
  *   /basvuru/egitim     Adım 5
  *   /basvuru/belgeler   Adım 6
  *   /basvuru/ozet       Adım 7
+ *   Yurt Konaklama Bursu (kanal ve belge yok):
+ *     /basvuru/egitim Adım 4 (+ yurt, veli onayı) · /basvuru/aile Adım 5 · /basvuru/burs-bilgileri Adım 6 · /basvuru/ozet Adım 7
  *   /basvuru/durum      gönderilmiş başvurunun durumu
  *
  * Admin paneli (ayrı düzen):
@@ -107,10 +111,12 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <ApplyIndex /> },
               { path: 'kategori', element: <CategoryStep /> },
-              { path: 'kanal', element: <RequireStep step={4}><ChannelStep /></RequireStep> },
-              { path: 'egitim', element: <RequireStep step={5}><EducationStep /></RequireStep> },
-              { path: 'belgeler', element: <RequireStep step={6}><DocumentsStep /></RequireStep> },
-              { path: 'ozet', element: <RequireStep step={7}><SummaryStep /></RequireStep> },
+              { path: 'kanal', element: <RequireStep><ChannelStep /></RequireStep> },
+              { path: 'egitim', element: <RequireStep><EducationStep /></RequireStep> },
+              { path: 'belgeler', element: <RequireStep><DocumentsStep /></RequireStep> },
+              { path: 'aile', element: <RequireStep><FamilyStep /></RequireStep> },
+              { path: 'burs-bilgileri', element: <RequireStep><ScholarshipStep /></RequireStep> },
+              { path: 'ozet', element: <RequireStep><SummaryStep /></RequireStep> },
               { path: 'durum', element: <StatusPage /> },
             ],
           },

@@ -8,7 +8,7 @@ const text = (label, max = 255) => z.string()
   .pipe(z.string().min(2, `${label} en az 2 karakter olmalı`).max(max, `${label} en fazla ${max} karakter olabilir`));
 
 const category = z.object({
-  category: z.enum(['lise', 'universite', 'yuksek_lisans', 'doktora'], { error: 'Bir burs kategorisi seçiniz' }),
+  category: z.enum(['lise', 'universite', 'yuksek_lisans', 'doktora', 'yurt'], { error: 'Bir burs kategorisi seçiniz' }),
 });
 
 // Adım 4 - kanal. Ek alanlar (fields) serbest nesne; tanıma göre serviste doğrulanır.
@@ -62,9 +62,15 @@ const guardianVerify = z.object({
 });
 
 // Adım 5 - eğitim. Hangi alanların zorunlu olduğu kategoriye göre serviste belirlenir.
-const optionalText = (label, max = 255) => z.preprocess(
-  (v) => (typeof v === 'string' && v.trim() === '' ? undefined : v),
-  text(label, max).optional(),
+const blankToUndefined = (v) => (v === null || (typeof v === 'string' && v.trim() === '') ? undefined : v);
+const optionalText = (label, max = 255) => z.preprocess(blankToUndefined, text(label, max).optional());
+
+// Tutarlar tam TL (kuruş yok)
+const MAX_MONEY = 100_000_000;
+const optionalMoney = (label) => z.preprocess(
+  blankToUndefined,
+  z.coerce.number({ error: `${label} geçerli bir tutar olmalı` }).int(`${label} tam TL olarak yazılmalı`)
+    .min(0, `${label} negatif olamaz`).max(MAX_MONEY, `${label} geçerli bir tutar olmalı`).optional(),
 );
 
 const education = z.object({
@@ -78,6 +84,55 @@ const education = z.object({
   faculty: optionalText('Fakülte'),
   department: optionalText('Bölüm'),
   grade: z.string().optional(),
+  // Yurt Konaklama Bursu
+  dormitoryId: id.optional(),
+  tuitionScholarshipRate: z.preprocess(blankToUndefined, z.coerce.number().int().optional()),
+  annualTuitionFee: optionalMoney('Yıllık ücret'),
+});
+
+// Adım 5 / 6 (yurt). Tutarlar tam TL.
+const parent = (label) => z.object({
+  status: z.enum(['sag', 'vefat'], { error: `${label} durumunu seçiniz (Sağ / Vefat Etti)` }),
+  fullName: text(`${label} adı soyadı`, 128),
+  job: optionalText('Meslek', 128),
+  location: optionalText('Yaşadığı il ve ilçe', 128),
+  income: optionalMoney('Aylık gelir'),
+  extraIncome: optionalMoney('Ek gelir'),
+}, { error: `${label} bilgilerini giriniz` });
+
+const count = (label) => z.preprocess(
+  blankToUndefined,
+  z.coerce.number({ error: `${label} zorunludur` }).int(`${label} tam sayı olmalı`)
+    .min(1, `${label} en az 1 olmalı (kendiniz dahil)`).max(30, `${label} en fazla 30 olabilir`),
+);
+
+const yurtFamily = z.object({
+  siblingCount: count('Toplam kardeş sayısı'),
+  studyingSiblingCount: count('Okuyan kardeş sayısı'),
+  guardianHousing: z.enum(['kira', 'ev_sahibi', 'lojman', 'diger'], { error: 'Velinizin yaşadığı yerin durumunu seçiniz' }),
+  guardianHousingNote: optionalText('Açıklama', 255),
+  mother: parent('Anne'),
+  father: parent('Baba'),
+  parentsLiving: z.enum(['birlikte', 'ayri']).optional(),
+});
+
+const yesNo = (message) => z.boolean({ error: message });
+
+const yurtScholarship = z.object({
+  otherScholarship: yesNo('Başka bir kuruluştan/kişiden burs alıp almadığınızı seçiniz'),
+  otherScholarshipOrg: optionalText('Burs aldığınız kurum', 255),
+  otherScholarshipAmount: optionalMoney('Aldığınız burs miktarı'),
+  gsbSupport: yesNo('GSB beslenme barınma yardımı alıp almadığınızı seçiniz'),
+  kykSupport: z.enum(['yok', 'burs', 'kredi'], { error: "KYK'dan destek alıp almadığınızı seçiniz" }),
+  requestedAmount: z.preprocess(
+    blankToUndefined,
+    z.coerce.number({ error: 'Talep ettiğiniz aylık burs miktarını yazınız' }).int('Tutarı tam TL olarak yazınız')
+      .min(1, 'Talep ettiğiniz aylık burs miktarını yazınız').max(MAX_MONEY, 'Geçerli bir tutar yazınız'),
+  ),
+  commissionNote: z.preprocess(
+    blankToUndefined,
+    z.string().trim().max(2000, 'Açıklama en fazla 2000 karakter olabilir').optional(),
+  ),
 });
 
 // Adım 7
@@ -85,4 +140,4 @@ const submit = z.object({
   confirm: z.literal(true, { error: 'Bilgilerinizin doğruluğunu onaylamanız gerekiyor' }),
 });
 
-module.exports = { category, channel, requirements, guardian, guardianVerify, education, submit };
+module.exports = { category, channel, requirements, guardian, guardianVerify, education, yurtFamily, yurtScholarship, submit };

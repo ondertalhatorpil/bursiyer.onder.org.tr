@@ -12,7 +12,7 @@ const { parseJson } = require('../lib/rules');
 const { AppError, notFound, forbidden, validationError } = require('../lib/errors');
 const { applyScope } = require('../middlewares/auth-admin');
 const { changeStatus, canTransition, STATUS_LABELS, TRANSITIONS } = require('./status.service');
-const { CATEGORY_LABELS } = require('./application.service');
+const { CATEGORY_LABELS, YURT, serializeYurtDetails } = require('./application.service');
 const sms = require('./sms');
 const iban = require('./iban.service');
 const sponsors = require('./sponsor.service');
@@ -43,8 +43,28 @@ function baseQuery() {
     .leftJoin('sub_units as su', 'su.id', 'a.sub_unit_id')
     .leftJoin('cities as c', 'c.id', 'e.city_id')
     .leftJoin('schools as s', 's.id', 'e.school_id')
-    .leftJoin('universities as u', 'u.id', 'e.university_id');
+    .leftJoin('universities as u', 'u.id', 'e.university_id')
+    .leftJoin('yurt_reviews as yr', 'yr.application_id', 'a.id')
+    .leftJoin('yurt_details as yd', 'yd.application_id', 'a.id');
 }
+
+const CATEGORIES = ['lise', 'universite', 'yuksek_lisans', 'doktora', YURT];
+// Yurt önerisi verilebilen (karar verilmemiş) statüler
+const YURT_OPEN = ['submitted', 'in_review'];
+const YURT_DECIDED = ['approved', 'iban_pending', 'finalized', 'rejected'];
+
+/** Yurt Konaklama Bursu öneri aşaması */
+function applyYurtStage(q, stage) {
+  q.where('a.category', YURT);
+  if (stage === 'decided') return q.whereIn('a.status', YURT_DECIDED);
+  q.whereIn('a.status', YURT_OPEN);
+  if (stage === 'dorm_pending') return q.whereNull('yr.dorm_at');
+  if (stage === 'hq_pending') return q.whereNotNull('yr.dorm_at').whereNull('yr.hq_at');
+  return q.whereNotNull('yr.hq_at'); // decision_pending
+}
+
+/** "YYYY-MM-DD" (Türkiye günü) -> o günün başlangıcı (UTC) */
+const trDayStart = (day, plusDays = 0) => new Date(new Date(`${day}T00:00:00+03:00`).getTime() + plusDays * 86400000);
 
 /** Liste ve export için filtreler */
 function applyFilters(q, f) {
@@ -53,6 +73,14 @@ function applyFilters(q, f) {
   if (f.channelId) q.where('a.channel_id', f.channelId);
   if (f.subUnitId) q.where('a.sub_unit_id', f.subUnitId);
   if (f.cityId) q.where('e.city_id', f.cityId);
+  if (f.dormitoryId) q.where('a.category', YURT).where('e.dormitory_id', f.dormitoryId);
+  if (f.yurtStage) applyYurtStage(q, f.yurtStage);
+  if (f.universityType) q.where('e.university_type', f.universityType);
+  // Referans teyidi, nitelikli bursiyer ve burs veren Yurt Konaklama Bursu'nda yoktur
+  if (f.reference !== undefined || f.qualified !== undefined || f.sponsor) q.whereNot('a.category', YURT);
+  if (f.reference !== undefined) q[f.reference ? 'whereNotNull' : 'whereNull']('a.reference_verified_at');
+  if (f.from) q.where('a.submitted_at', '>=', trDayStart(f.from));
+  if (f.to) q.where('a.submitted_at', '<', trDayStart(f.to, 1));
   if (f.flag) q.whereRaw('JSON_CONTAINS(a.flags, ?)', [JSON.stringify(f.flag)]);
   if (f.minor !== undefined) q.where('a.is_minor', f.minor);
   // Burs türü yalnızca kesinleşmiş bursiyerler için anlamlı
@@ -68,7 +96,10 @@ function applyFilters(q, f) {
     else if (digits.length >= 10 && normalizeTrMobile(digits)) q.where('p.phone', normalizeTrMobile(digits));
     else {
       const like = `%${escapeLike(term)}%`;
-      q.where((w) => w.whereRaw("CONCAT(p.first_name, ' ', p.last_name) LIKE ?", [like]).orWhere('p.email', 'like', like));
+      // Ad soyad, e-posta, okul / üniversite adı
+      q.where((w) => w.whereRaw("CONCAT(p.first_name, ' ', p.last_name) LIKE ?", [like]).orWhere('p.email', 'like', like)
+        .orWhere('s.name', 'like', like).orWhere('e.school_other', 'like', like)
+        .orWhere('u.name', 'like', like).orWhere('e.university_other', 'like', like));
     }
   }
   return q;
@@ -78,9 +109,9 @@ function institution(row) {
   return row.school_name || row.school_other || row.university_name || row.university_other || null;
 }
 
-/** Kesinleşmiş bursiyerde burs veren: firma adları veya Genel Merkez; diğer statülerde boş */
+/** Kesinleşmiş bursiyerde burs veren: firma adları veya Genel Merkez; diğer statülerde ve yurt bursunda boş */
 function sponsorLabel(r, names) {
-  if (r.status !== 'finalized') return null;
+  if (r.status !== 'finalized' || r.category === YURT) return null;
   const list = names.get(Number(r.id)) || [];
   return list.length ? list.map((s) => s.name).join(', ') : sponsors.GENEL_MERKEZ;
 }
@@ -103,13 +134,15 @@ function listRow(r, admin, names = new Map()) {
     flags: (parseJson(r.flags) || []).map((f) => ({ code: f, label: FLAG_LABELS[f] || f })),
     revisionDocs: Number(r.revision_docs || 0),
     isMinor: !!r.is_minor,
-    referenceVerified: !!r.reference_verified_at,
-    qualified: !!r.is_qualified,
+    referenceVerified: r.category !== YURT && !!r.reference_verified_at,
+    qualified: r.category !== YURT && !!r.is_qualified,
     sponsorLabel: sponsorLabel(r, names),
-    // Listede logo gösterimi için (boşsa Genel Merkez)
-    sponsors: r.status === 'finalized' ? names.get(Number(r.id)) || [] : null,
+    // Listede logo gösterimi için (boşsa Genel Merkez); yurt bursunda burs veren yok
+    sponsors: r.status === 'finalized' && r.category !== YURT ? names.get(Number(r.id)) || [] : null,
     submittedAt: r.submitted_at,
     createdAt: r.created_at,
+    // Yurt Konaklama Bursu: hangi öneriler gönderildi
+    yurtReview: r.category === YURT ? { dorm: !!r.yr_dorm_at, hq: !!r.yr_hq_at, finalAmount: r.yr_final_amount } : null,
   };
 }
 
@@ -119,6 +152,7 @@ const LIST_COLUMNS = [
   'p.birth_date', 'ch.name as channel_name', 'su.name as sub_unit_name', 'c.name as city_name',
   's.name as school_name', 'e.school_other', 'u.name as university_name', 'e.university_other', 'e.university_type',
   'e.faculty', 'e.department', 'e.grade',
+  'yr.dorm_at as yr_dorm_at', 'yr.hq_at as yr_hq_at', 'yr.final_amount as yr_final_amount',
 ];
 
 function withDocCounts(q) {
@@ -131,13 +165,86 @@ function withDocCounts(q) {
 // Liste
 // ---------------------------------------------------------------------------
 
+const ORDER_BY = {
+  newest: 'a.submitted_at IS NULL, a.submitted_at DESC, a.created_at DESC',
+  oldest: 'a.submitted_at IS NULL, a.submitted_at ASC, a.created_at ASC',
+  name: 'p.last_name ASC, p.first_name ASC',
+  requested: 'yd.requested_amount IS NULL, yd.requested_amount DESC, a.submitted_at DESC',
+};
+
+/** Kullanıcının görebildiği kategoriler (kapsamına göre) */
+function visibleCategories(admin) {
+  if (admin.can('view_all')) return CATEGORIES;
+  if (admin.can('view_yurt')) return [YURT];
+  if (admin.scopes.some((s) => !s.category && !s.dormitory_id)) return CATEGORIES; // il bazlı kapsam: tüm kategoriler
+  return CATEGORIES.filter((c) => admin.scopes.some((s) => (s.dormitory_id ? YURT : s.category) === c));
+}
+
+/**
+ * Liste ekranının kullanıcıya göre ayarlanması:
+ *   categories   görebildiği kategoriler (tek ise kategori filtresi gizlenir)
+ *   dormitories  görebildiği yurtlar (yurt filtresi)
+ *   showCity     il filtresi anlamlı mı (tek ile sınırlıysa veya sadece yurt görüyorsa hayır)
+ *   queues       hızlı sekmeler: { key, label, filter, count, mine } — mine: kullanıcının sırasındaki işler
+ */
+async function listMeta(admin, programId) {
+  const pid = await resolveProgramId(programId);
+  const categories = visibleCategories(admin);
+  const hasYurt = categories.includes(YURT);
+  const hasOther = categories.some((c) => c !== YURT);
+
+  let dormitories = [];
+  if (hasYurt) {
+    const scoped = !admin.can('view_all') && !admin.can('view_yurt') && !admin.scopes.some((s) => !s.category && !s.dormitory_id);
+    const ids = admin.scopes.map((s) => s.dormitory_id).filter(Boolean);
+    const q = db('dormitories').select('id', 'name').orderBy('sort');
+    dormitories = scoped ? await q.whereIn('id', ids.length ? ids : [0]) : await q.where({ is_active: true });
+  }
+  const scopeCities = new Set(admin.scopes.map((s) => s.city_id));
+  const cityLocked = !admin.can('view_all') && !admin.can('view_yurt') && scopeCities.size === 1 && !scopeCities.has(null);
+
+  const queues = [
+    { key: 'all', label: 'Tümü', filter: {} },
+    ...(hasYurt && admin.can('yurt_dorm_review') ? [{ key: 'yurt_dorm', label: 'Önerimi bekleyen', filter: { yurtStage: 'dorm_pending' }, mine: true }] : []),
+    ...(hasYurt && admin.can('yurt_hq_review') ? [
+      { key: 'yurt_hq', label: 'Önerimi bekleyen', filter: { yurtStage: 'hq_pending' }, mine: true },
+      { key: 'yurt_dorm_wait', label: 'Yurt önerisi bekleniyor', filter: { yurtStage: 'dorm_pending' } },
+    ] : []),
+    ...(hasYurt && admin.can('yurt_decide') ? [{ key: 'yurt_decision', label: 'Karar bekleyen (yurt)', filter: { yurtStage: 'decision_pending' }, mine: true }] : []),
+    { key: 'submitted', label: 'Yeni gelenler', filter: { status: 'submitted' }, mine: hasOther && admin.can('review') },
+    { key: 'in_review', label: 'İncelemede', filter: { status: 'in_review' } },
+    ...(hasOther ? [{ key: 'revision_requested', label: 'Revize istendi', filter: { status: 'revision_requested' } }] : []),
+    { key: 'approved', label: 'Onaylandı', filter: { status: 'approved' } },
+    { key: 'iban_pending', label: 'IBAN kontrolünde', filter: { status: 'iban_pending' }, mine: admin.can('decide') },
+    { key: 'finalized', label: 'Kesinleşti', filter: { status: 'finalized' } },
+    { key: 'rejected', label: 'Reddedildi', filter: { status: 'rejected' } },
+  ];
+
+  const submitted = ['submitted', 'in_review', 'revision_requested', 'rejected', 'approved', 'iban_pending', 'finalized'];
+  const counts = await Promise.all(queues.map(async ({ filter }) => {
+    const q = applyFilters(applyScope(baseQuery().where('a.program_id', pid), admin), {
+      ...filter, status: filter.status ? [filter.status] : submitted,
+    });
+    const [{ n }] = await q.clearSelect().count({ n: '*' });
+    return Number(n);
+  }));
+
+  return {
+    programId: pid,
+    categories,
+    dormitories,
+    showCity: hasOther && !cityLocked,
+    queues: queues.map((qu, i) => ({ ...qu, mine: !!qu.mine, count: counts[i] })),
+  };
+}
+
 async function list(admin, f) {
   const programId = await resolveProgramId(f.programId);
   const q = applyFilters(applyScope(baseQuery().where('a.program_id', programId), admin), f);
 
   const [{ total }] = await q.clone().clearSelect().count({ total: '*' });
   const rows = await withDocCounts(q.clone().select(LIST_COLUMNS))
-    .orderByRaw('a.submitted_at IS NULL, a.submitted_at DESC, a.created_at DESC')
+    .orderByRaw(ORDER_BY[f.sort] || ORDER_BY.newest)
     .limit(f.pageSize)
     .offset((f.page - 1) * f.pageSize);
 
@@ -183,23 +290,93 @@ async function resolveChannelFields(app) {
   return { channel, sub, fields };
 }
 
-function allowedTransitions(admin, status) {
+function allowedTransitions(admin, status, category) {
   return (TRANSITIONS[status] || [])
+    // Revize belge üzerinden istenir; Yurt Konaklama Bursu'nda belge yok
+    .filter((to) => !(to === 'revision_requested' && category === YURT))
     // IBAN adımını aday başlatır, personel IBAN kontrolüyle bitirir (genel statü butonlarında yok)
     .filter((to) => !['iban_pending', 'finalized'].includes(to))
     .filter((to) => !(status === 'iban_pending' && to === 'approved'))
-    .filter((to) => (['approved', 'rejected'].includes(to) || status === 'rejected' || status === 'approved'
-      ? admin.can('decide') : admin.can('review')))
+    .filter((to) => {
+      const decision = ['approved', 'rejected'].includes(to) || status === 'rejected' || status === 'approved';
+      // Yurt Konaklama Bursu'nda karar (Burs Komisyonunun Kararı) sadece süper admindedir
+      if (decision && category === YURT) return admin.can('yurt_decide');
+      return decision ? admin.can('decide') : admin.can('review');
+    })
     .map((to) => ({ to, label: STATUS_LABELS[to] }));
+}
+
+// ---------------------------------------------------------------------------
+// Yurt Konaklama Bursu: öneri zinciri
+// ---------------------------------------------------------------------------
+
+const YURT_REVIEW_OPEN = ['submitted', 'in_review'];
+const YURT_STAGES = {
+  dorm: { permission: 'yurt_dorm_review', label: 'Yurt idaresi önerisi' },
+  hq: { permission: 'yurt_hq_review', label: 'Yurtlar birimi önerisi' },
+};
+
+async function yurtReviewFor(admin, app) {
+  if (app.category !== YURT) return null;
+  const r = await db('yurt_reviews as r')
+    .leftJoin('admin_users as d', 'd.id', 'r.dorm_by')
+    .leftJoin('admin_users as h', 'h.id', 'r.hq_by')
+    .leftJoin('admin_users as f', 'f.id', 'r.final_by')
+    .where('r.application_id', app.id)
+    .first('r.*', 'd.full_name as dorm_name', 'h.full_name as hq_name', 'f.full_name as final_name');
+  const open = YURT_REVIEW_OPEN.includes(app.status);
+  // Yurt müdürü (koordinatör) sadece kendi önerisini görür; Genel Merkez ve süper admin hepsini
+  const seesAll = admin.can('view_all') || admin.can('view_yurt');
+  const stage = (prefix, name) => (r?.[`${prefix}_at`] ? {
+    amount: r[`${prefix}_amount`], note: r[`${prefix}_note`] ?? null, by: r[name], at: r[`${prefix}_at`],
+  } : null);
+  return {
+    dorm: stage('dorm', 'dorm_name'),
+    hq: seesAll ? stage('hq', 'hq_name') : null,
+    final: seesAll && r?.final_at ? { amount: r.final_amount, by: r.final_name, at: r.final_at } : null,
+    requestedAmount: (await db('yurt_details').where({ application_id: app.id }).first('requested_amount'))?.requested_amount ?? null,
+    canDorm: open && admin.can('yurt_dorm_review'),
+    canHq: open && admin.can('yurt_hq_review'),
+    canDecide: admin.can('yurt_decide'),
+  };
+}
+
+/**
+ * Yurt idaresi (dorm) veya yurtlar birimi (hq) önerisini kaydeder / günceller.
+ * Karar verilene kadar (gönderildi / incelemede) değiştirilebilir. İlk öneriyle başvuru incelemeye alınır.
+ */
+async function setYurtReview(admin, publicId, stage, { amount, note }) {
+  const def = YURT_STAGES[stage];
+  if (!admin.can(def.permission)) throw forbidden();
+  const app = await findScoped(admin, publicId);
+  if (app.category !== YURT) throw new AppError(409, 'WRONG_CATEGORY', 'Bu işlem sadece Yurt Konaklama Bursu başvurularında yapılabilir');
+  if (!YURT_REVIEW_OPEN.includes(app.status)) {
+    throw new AppError(409, 'NOT_REVIEWABLE', 'Karar verilmiş başvuruya öneri gönderilemez');
+  }
+  if (stage === 'dorm' && !note) throw validationError({ note: 'Genel Merkeze iletilecek değerlendirme metnini yazın' });
+
+  await db.transaction(async (trx) => {
+    await trx('yurt_reviews')
+      .insert({ application_id: app.id, [`${stage}_amount`]: amount, [`${stage}_note`]: note || null, [`${stage}_by`]: admin.id, [`${stage}_at`]: new Date() })
+      .onConflict('application_id')
+      .merge([`${stage}_amount`, `${stage}_note`, `${stage}_by`, `${stage}_at`]);
+    if (app.status === 'submitted') {
+      await changeStatus(trx, {
+        applicationId: app.id, from: 'submitted', to: 'in_review', actorType: 'admin', adminId: admin.id, note: `${def.label} gönderildi`,
+      });
+    }
+  });
+  return app;
 }
 
 async function detail(admin, publicId) {
   const app = await findScoped(admin, publicId);
+  const yurtApp = app.category === YURT;
   const applicant = await db('applicants').where({ id: app.applicant_id }).first();
   const fullId = admin.can('view_full_id');
   const idNumber = decrypt(applicant.id_number_enc);
 
-  const [{ channel, sub, fields }, guardian, education, documents, notes, history, smsLogs, consents, refAdmin, qualifiedAdmin, program] = await Promise.all([
+  const [{ channel, sub, fields }, guardian, education, documents, notes, history, smsLogs, consents, refAdmin, qualifiedAdmin, program, yurtRow] = await Promise.all([
     resolveChannelFields(app),
     db('guardians').where({ application_id: app.id }).first(),
     db('education as e')
@@ -207,8 +384,10 @@ async function detail(admin, publicId) {
       .leftJoin('districts as d', 'd.id', 'e.district_id')
       .leftJoin('schools as s', 's.id', 'e.school_id')
       .leftJoin('universities as u', 'u.id', 'e.university_id')
+      .leftJoin('dormitories as y', 'y.id', 'e.dormitory_id')
       .where('e.application_id', app.id)
-      .first('e.*', 'c.name as city_name', 'd.name as district_name', 's.name as school_name', 's.meb_code', 'u.name as university_name'),
+      .first('e.*', 'c.name as city_name', 'd.name as district_name', 's.name as school_name', 's.meb_code', 'u.name as university_name',
+        'y.name as dormitory_name'),
     db('documents as d')
       .join('document_types as t', 't.id', 'd.document_type_id')
       .leftJoin('admin_users as r', 'r.id', 'd.reviewed_by')
@@ -228,6 +407,7 @@ async function detail(admin, publicId) {
     app.reference_verified_by ? db('admin_users').where({ id: app.reference_verified_by }).first('full_name') : null,
     app.qualified_by ? db('admin_users').where({ id: app.qualified_by }).first('full_name') : null,
     db('programs').where({ id: app.program_id }).first(),
+    app.category === YURT ? db('yurt_details').where({ application_id: app.id }).first() : null,
   ]);
 
   return {
@@ -236,7 +416,7 @@ async function detail(admin, publicId) {
     program: { name: program.name, title: program.title },
     status: app.status,
     statusLabel: STATUS_LABELS[app.status],
-    allowedTransitions: allowedTransitions(admin, app.status),
+    allowedTransitions: allowedTransitions(admin, app.status, app.category),
     category: app.category,
     categoryLabel: CATEGORY_LABELS[app.category] || null,
     flags: (parseJson(app.flags) || []).map((f) => ({ code: f, label: FLAG_LABELS[f] || f })),
@@ -247,13 +427,14 @@ async function detail(admin, publicId) {
     decidedAt: app.decided_at,
     createdAt: app.created_at,
     rejectionReason: app.rejection_reason,
-    reference: {
+    // Yurt Konaklama Bursu'nda referans teyidi, burs veren ve nitelikli bursiyer yoktur (null)
+    reference: yurtApp ? null : {
       verified: !!app.reference_verified_at,
       verifiedAt: app.reference_verified_at,
       verifiedBy: refAdmin?.full_name || null,
     },
-    sponsors: await sponsors.detailFor(app),
-    qualified: {
+    sponsors: yurtApp ? null : await sponsors.detailFor(app),
+    qualified: yurtApp ? null : {
       value: !!app.is_qualified,
       changedAt: app.qualified_at,
       changedBy: qualifiedAdmin?.full_name || null,
@@ -292,7 +473,13 @@ async function detail(admin, publicId) {
       faculty: education.faculty,
       department: education.department,
       grade: education.grade,
+      dormitory: education.dormitory_name,
+      tuitionScholarshipRate: education.tuition_scholarship_rate,
+      annualTuitionFee: education.annual_tuition_fee,
     } : null,
+    // Yurt Konaklama Bursu: aile ve gelir bilgileri, burs bilgileri
+    yurt: app.category === YURT ? serializeYurtDetails(yurtRow) : null,
+    yurtReview: await yurtReviewFor(admin, app),
     documents: documents.map((d) => ({
       id: d.public_id,
       typeCode: d.type_code,
@@ -350,9 +537,9 @@ async function reviewDocument(admin, publicId, documentId, { reviewStatus, note 
   });
 }
 
-async function setStatus(admin, publicId, { to, note, reason }) {
+async function setStatus(admin, publicId, { to, note, reason, finalAmount }) {
   const app = await findScoped(admin, publicId);
-  if (!allowedTransitions(admin, app.status).some((t) => t.to === to)) {
+  if (!allowedTransitions(admin, app.status, app.category).some((t) => t.to === to)) {
     if (canTransition(app.status, to)) throw forbidden('Bu karar için yetkiniz yok');
     throw new AppError(409, 'INVALID_STATUS_TRANSITION', `"${STATUS_LABELS[app.status]}" durumundaki başvuru "${STATUS_LABELS[to] || to}" durumuna alınamaz`);
   }
@@ -362,9 +549,20 @@ async function setStatus(admin, publicId, { to, note, reason }) {
     if (!Number(marked.n)) throw new AppError(422, 'NO_REVISION_DOCUMENTS', 'Önce yeniden yüklenmesi gereken belgeleri işaretleyin');
   }
   if (to === 'rejected' && !reason) throw validationError({ reason: 'Red gerekçesini yazın' });
+  // Yurt Konaklama Bursu onayında aylık burs miktarı (Burs Komisyonunun Kararı) zorunlu
+  const yurtFinal = app.category === YURT && to === 'approved';
+  if (yurtFinal && !finalAmount) throw validationError({ finalAmount: 'Onaylanan aylık burs miktarını yazın' });
 
   await db.transaction(async (trx) => {
     await changeStatus(trx, { applicationId: app.id, from: app.status, to, actorType: 'admin', adminId: admin.id, note: note || reason || null });
+    if (yurtFinal) {
+      await trx('yurt_reviews')
+        .insert({ application_id: app.id, final_amount: finalAmount, final_by: admin.id, final_at: new Date() })
+        .onConflict('application_id').merge(['final_amount', 'final_by', 'final_at']);
+    } else if (app.category === YURT && to === 'in_review' && app.status === 'approved') {
+      // Onay geri alınırsa karar tutarı da geri alınır
+      await trx('yurt_reviews').where({ application_id: app.id }).update({ final_amount: null, final_by: null, final_at: null });
+    }
     const patch = {
       ...(to === 'approved' || to === 'rejected' ? { decided_at: new Date() } : {}),
       ...(to === 'rejected' ? { rejection_reason: reason } : {}),
@@ -390,9 +588,17 @@ async function addNote(admin, publicId, { kind, body }) {
   await db('application_notes').insert({ application_id: app.id, admin_user_id: admin.id, kind, body, created_at: new Date() });
 }
 
+/** Yurt Konaklama Bursu'nda olmayan işlemler (nitelikli bursiyer, burs veren, referans teyidi) */
+function rejectForYurt(app, what) {
+  if (app.category === YURT) {
+    throw new AppError(409, 'NOT_APPLICABLE', `${what} Yurt Konaklama Bursu başvurularında kullanılmaz`);
+  }
+}
+
 /** Nitelikli bursiyer işareti. Sadece kesinleşmiş bursiyerlerde; kaldırılıp yeniden konabilir. */
 async function setQualified(admin, publicId, qualified) {
   const app = await findScoped(admin, publicId);
+  rejectForYurt(app, 'Nitelikli bursiyer işareti');
   if (app.status !== 'finalized') {
     throw new AppError(409, 'NOT_FINALIZED', 'Nitelikli bursiyer işareti yalnızca kaydı kesinleşmiş bursiyerlere konabilir');
   }
@@ -406,6 +612,7 @@ async function setQualified(admin, publicId, qualified) {
 
 async function setReference(admin, publicId, verified) {
   const app = await findScoped(admin, publicId);
+  rejectForYurt(app, 'Referans teyidi');
   await db('applications').where({ id: app.id }).update({
     reference_verified_at: verified ? new Date() : null,
     reference_verified_by: verified ? admin.id : null,
@@ -491,7 +698,7 @@ async function paymentRows(admin, programId) {
     idNumber: decrypt(r.id_number_enc),
     phone: formatTrMobile(r.phone),
     category: CATEGORY_LABELS[r.category] || '',
-    scholarshipType: r.is_qualified ? 'Nitelikli' : 'Normal',
+    scholarshipType: r.category === YURT ? '' : r.is_qualified ? 'Nitelikli' : 'Normal',
     sponsor: sponsorLabel(r, names),
     channel: [r.channel_name, r.sub_unit_name].filter(Boolean).join(' · '),
     holderName: r.holder_name,
@@ -501,6 +708,6 @@ async function paymentRows(admin, programId) {
 }
 
 module.exports = {
-  paymentRows, findScoped,
+  paymentRows, findScoped, setYurtReview, listMeta, rejectForYurt,
   FLAG_LABELS, list, detail, getDocumentForAdmin, reviewDocument, setStatus, addNote, setReference, setQualified, dashboard, exportRows,
 };

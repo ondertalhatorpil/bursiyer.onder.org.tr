@@ -13,6 +13,21 @@ export const STATUS_FILTERS = [
   { value: 'draft', label: 'Taslak (gönderilmemiş)' },
 ];
 
+/** Yurt Konaklama Bursu öneri aşaması (backend: yurtStage) */
+export const YURT_STAGE_FILTERS = [
+  { value: 'dorm_pending', label: 'Yurt önerisi bekleniyor' },
+  { value: 'hq_pending', label: 'Yurtlar birimi önerisi bekleniyor' },
+  { value: 'decision_pending', label: 'Karar bekleniyor' },
+  { value: 'decided', label: 'Karar verildi' },
+];
+
+/** Liste sıralaması (boş = en yeni gönderilen) */
+export const SORT_OPTIONS = [
+  { value: 'oldest', label: 'En eski gönderilen' },
+  { value: 'name', label: 'Ad soyada göre (A-Z)' },
+  { value: 'requested', label: 'Talep edilen burs (yüksekten)' },
+];
+
 export const FLAG_FILTERS = [
   { value: 'birth_year_out_of_range', label: 'Doğum yılı şart dışında' },
   { value: 'school_not_in_list', label: 'Okul / üniversite listede yok' },

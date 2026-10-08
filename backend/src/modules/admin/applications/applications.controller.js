@@ -11,6 +11,11 @@ async function list(req, res) {
   res.json(await svc.list(req.admin, req.valid.query));
 }
 
+/** Filtre seçenekleri ve hızlı sekmeler (kullanıcının görebildiklerine göre) */
+async function meta(req, res) {
+  res.json(await svc.listMeta(req.admin, req.valid.query.programId));
+}
+
 async function detail(req, res) {
   const data = await svc.detail(req.admin, req.valid.params.id);
   await audit(req, 'application.view', { targetType: 'application', meta: { id: data.id, trackingNo: data.trackingNo } });
@@ -42,7 +47,15 @@ async function reviewDocument(req, res) {
 async function setStatus(req, res) {
   const { id } = req.valid.params;
   await svc.setStatus(req.admin, id, req.valid.body);
-  await audit(req, 'application.status', { targetType: 'application', meta: { id, to: req.valid.body.to } });
+  await audit(req, 'application.status', { targetType: 'application', meta: { id, to: req.valid.body.to, finalAmount: req.valid.body.finalAmount } });
+  res.json({ application: await svc.detail(req.admin, id) });
+}
+
+/** Yurt Konaklama Bursu: yurt idaresi (dorm) / yurtlar birimi (hq) önerisi; yetki serviste kontrol edilir */
+async function setYurtReview(req, res) {
+  const { id, stage } = req.valid.params;
+  await svc.setYurtReview(req.admin, id, stage, req.valid.body);
+  await audit(req, `application.yurt_${stage}_review`, { targetType: 'application', meta: { id, amount: req.valid.body.amount } });
   res.json({ application: await svc.detail(req.admin, id) });
 }
 
@@ -73,6 +86,7 @@ async function setQualified(req, res) {
 async function setSponsors(req, res) {
   const { id } = req.valid.params;
   const app = await svc.findScoped(req.admin, id);
+  svc.rejectForYurt(app, 'Burs veren firma');
   const { added, removed } = await sponsorSvc.setForApplication(req.admin, app, req.valid.body.sponsorIds);
   if (added.length || removed.length) {
     await audit(req, 'application.sponsors', { targetType: 'application', meta: { id, trackingNo: app.tracking_no, added, removed } });
@@ -119,7 +133,7 @@ async function exportXlsx(req, res) {
       grade: GRADE_LABELS[r.grade] || '',
       minor: r.isMinor ? 'Evet' : 'Hayır',
       reference: r.referenceVerified ? 'Teyitli' : '',
-      scholarshipType: r.status === 'finalized' ? (r.qualified ? 'Nitelikli' : 'Normal') : '',
+      scholarshipType: r.status === 'finalized' && r.category !== 'yurt' ? (r.qualified ? 'Nitelikli' : 'Normal') : '',
       sponsorText: r.sponsorLabel || '',
       flagText: r.flags.map((f) => f.label).join(', '),
       submittedAt: r.submittedAt ? new Date(r.submittedAt).toLocaleString('tr-TR', { timeZone: 'Europe/Istanbul' }) : '',
@@ -202,4 +216,4 @@ async function paymentsExport(req, res) {
   res.end();
 }
 
-module.exports = { list, detail, file, reviewDocument, setStatus, addNote, setReference, setQualified, setSponsors, exportXlsx, ibanFile, reviewIban, paymentsExport };
+module.exports = { list, meta, detail, file, reviewDocument, setStatus, setYurtReview, addNote, setReference, setQualified, setSponsors, exportXlsx, ibanFile, reviewIban, paymentsExport };

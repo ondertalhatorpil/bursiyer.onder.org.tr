@@ -39,5 +39,11 @@ export function formatBytes(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(1).replace('.', ',')} MB`;
 }
 
+/** 15000 -> "15.000 ₺" (tam TL) */
+export function formatMoney(value) {
+  if (value === null || value === undefined || value === '') return '';
+  return `${Number(value).toLocaleString('tr-TR', { maximumFractionDigits: 0 })} ₺`;
+}
+
 /** Sadece rakamlar */
 export const digits = (v) => String(v ?? '').replace(/\D/g, '');

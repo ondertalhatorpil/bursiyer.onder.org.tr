@@ -2,6 +2,7 @@
   {
     "universite": "Abdullah Gül Üniversitesi",
     "sehir": "Kayseri",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İnsan ve Toplum Bilimleri Fakültesi",
@@ -45,6 +46,7 @@
   {
     "universite": "Acıbadem Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eczacılık Fakültesi",
@@ -86,6 +88,7 @@
   {
     "universite": "Adana Alparslan Türkeş Bilim ve Teknoloji Üniversitesi",
     "sehir": "Adana",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Havacılık ve Uzay Bilimleri Fakültesi",
@@ -139,6 +142,7 @@
   {
     "universite": "Adıyaman Üniversitesi",
     "sehir": "Adıyaman",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -232,6 +236,7 @@
   {
     "universite": "Afyon Kocatepe Üniversitesi",
     "sehir": "Afyonkarahisar",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bolvadin Uygulamalı Bilimler Yüksekokulu",
@@ -351,6 +356,7 @@
   {
     "universite": "Afyonkarahisar Sağlık Bilimleri Üniversitesi",
     "sehir": "Afyonkarahisar",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -384,6 +390,7 @@
   {
     "universite": "Ağrı İbrahim Çeçen Üniversitesi",
     "sehir": "Ağrı",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Beden Eğitimi ve Spor Yüksekokulu",
@@ -471,6 +478,7 @@
   {
     "universite": "Akdeniz Üniversitesi",
     "sehir": "Antalya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -685,6 +693,7 @@
   {
     "universite": "Aksaray Üniversitesi",
     "sehir": "Aksaray",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -783,6 +792,7 @@
   {
     "universite": "Alanya Alaaddin Keykubat Üniversitesi",
     "sehir": "Antalya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -863,6 +873,7 @@
   {
     "universite": "Alanya Hamdullah Emin Paşa Üniversitesi",
     "sehir": "Antalya",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İktisadi ve İdari Bilimler Fakültesi",
@@ -894,6 +905,7 @@
   {
     "universite": "Altınbaş Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -969,6 +981,7 @@
   {
     "universite": "Amasya Üniversitesi",
     "sehir": "Amasya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -1044,6 +1057,7 @@
   {
     "universite": "Anadolu Üniversitesi",
     "sehir": "Eskişehir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Açıköğretim Fakültesi",
@@ -1154,6 +1168,7 @@
   {
     "universite": "Ankara Bilim Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Güzel Sanatlar ve Tasarım Fakültesi",
@@ -1185,6 +1200,7 @@
   {
     "universite": "Ankara Hacı Bayram Veli Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bankacılık ve Sigortacılık Yüksekokulu",
@@ -1295,6 +1311,7 @@
   {
     "universite": "Ankara Medipol Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -1363,6 +1380,7 @@
   {
     "universite": "Ankara Sosyal Bilimler Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Hukuk Fakültesi",
@@ -1416,6 +1434,7 @@
   {
     "universite": "Ankara Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Açık ve Uzaktan Eğitim Fakültesi",
@@ -1621,6 +1640,7 @@
   {
     "universite": "Ankara Yıldırım Beyazıt Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -1728,6 +1748,7 @@
   {
     "universite": "Antalya Akev Üniversitesi",
     "sehir": "Antalya",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İktisadi ve İdari Bilimler Fakültesi",
@@ -1757,6 +1778,7 @@
   {
     "universite": "Antalya Bilim Üniversitesi",
     "sehir": "Antalya",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -1821,6 +1843,7 @@
   {
     "universite": "Ardahan Üniversitesi",
     "sehir": "Ardahan",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ardahan İnsani Bilimler ve Edebiyat Fakültesi",
@@ -1865,6 +1888,7 @@
   {
     "universite": "Artvin Çoruh Üniversitesi",
     "sehir": "Artvin",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Beden Eğitimi ve Spor Yüksekokulu",
@@ -1944,6 +1968,7 @@
   {
     "universite": "Atatürk Üniversitesi",
     "sehir": "Erzurum",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Açıköğretim Fakültesi",
@@ -2164,6 +2189,7 @@
   {
     "universite": "Atılım Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -2249,6 +2275,7 @@
   {
     "universite": "Avrasya Üniversitesi",
     "sehir": "Trabzon",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -2304,6 +2331,7 @@
   {
     "universite": "Aydın Adnan Menderes Üniversitesi",
     "sehir": "Aydın",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Aydın İktisat Fakültesi",
@@ -2450,6 +2478,7 @@
   {
     "universite": "Bahçeşehir Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -2549,6 +2578,7 @@
   {
     "universite": "Balıkesir Üniversitesi",
     "sehir": "Balıkesir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Burhaniye Uygulamalı Bilimler Yüksekokulu",
@@ -2664,6 +2694,7 @@
   {
     "universite": "Bandırma Onyedi Eylül Üniversitesi",
     "sehir": "Balıkesir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Denizcilik Fakültesi",
@@ -2730,6 +2761,7 @@
   {
     "universite": "Bartın Üniversitesi",
     "sehir": "Bartın",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bartın Orman Fakültesi",
@@ -2809,6 +2841,7 @@
   {
     "universite": "Başkent Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -2923,6 +2956,7 @@
   {
     "universite": "Batman Üniversitesi",
     "sehir": "Batman",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -2982,6 +3016,7 @@
   {
     "universite": "Bayburt Üniversitesi",
     "sehir": "Bayburt",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bayburt Eğitim Fakültesi",
@@ -3041,6 +3076,7 @@
   {
     "universite": "Beykent Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -3136,6 +3172,7 @@
   {
     "universite": "Beykoz Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İşletme ve Yönetim Bilimleri Fakültesi",
@@ -3185,6 +3222,7 @@
   {
     "universite": "Bezm-i Alem Vakıf Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -3220,6 +3258,7 @@
   {
     "universite": "Bilecik Şeyh Edebali Üniversitesi",
     "sehir": "Bilecik",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -3293,6 +3332,7 @@
   {
     "universite": "Bilkent Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen Fakültesi",
@@ -3365,6 +3405,7 @@
   {
     "universite": "Bingöl Üniversitesi",
     "sehir": "Bingöl",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Beden Eğitimi ve Spor Yüksekokulu",
@@ -3448,6 +3489,7 @@
   {
     "universite": "Biruni Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -3503,6 +3545,7 @@
   {
     "universite": "Bitlis Eren Üniversitesi",
     "sehir": "Bitlis",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -3560,6 +3603,7 @@
   {
     "universite": "Boğaziçi Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -3624,6 +3668,7 @@
   {
     "universite": "Bolu Abant İzzet Baysal Üniversitesi",
     "sehir": "Bolu",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -3748,6 +3793,7 @@
   {
     "universite": "Burdur Mehmet Akif Ersoy Üniversitesi",
     "sehir": "Burdur",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bucak İşletme Fakültesi",
@@ -3886,6 +3932,7 @@
   {
     "universite": "Bursa Teknik Üniversitesi",
     "sehir": "Bursa",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İnsan ve Toplum Bilimleri Fakültesi",
@@ -3936,6 +3983,7 @@
   {
     "universite": "Bursa Uludağ Üniversitesi",
     "sehir": "Bursa",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -4067,6 +4115,7 @@
   {
     "universite": "Çağ Üniversitesi",
     "sehir": "Mersin",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -4096,6 +4145,7 @@
   {
     "universite": "Çanakkale Onsekiz Mart Üniversitesi",
     "sehir": "Çanakkale",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Biga İktisadi ve İdari Bilimler Fakültesi",
@@ -4268,6 +4318,7 @@
   {
     "universite": "Çankaya Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -4319,6 +4370,7 @@
   {
     "universite": "Çankırı Karatekin Üniversitesi",
     "sehir": "Çankırı",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -4418,6 +4470,7 @@
   {
     "universite": "Çukurova Üniversitesi",
     "sehir": "Adana",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ceyhan Mühendislik Fakültesi",
@@ -4584,6 +4637,7 @@
   {
     "universite": "Demiroğlu Bilim Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -4618,6 +4672,7 @@
   {
     "universite": "Dicle Üniversitesi",
     "sehir": "Diyarbakır",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -4751,6 +4806,7 @@
   {
     "universite": "Doğuş Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -4805,6 +4861,7 @@
   {
     "universite": "Dokuz Eylül Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Buca Eğitim Fakültesi",
@@ -4977,6 +5034,7 @@
   {
     "universite": "Düzce Üniversitesi",
     "sehir": "Düzce",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Akçakoca Bey Siyasal Bilgiler Fakültesi",
@@ -5092,6 +5150,7 @@
   {
     "universite": "Ege Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Birgivi İslami İlimler Fakültesi",
@@ -5257,6 +5316,7 @@
   {
     "universite": "Erciyes Üniversitesi",
     "sehir": "Kayseri",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -5418,6 +5478,7 @@
   {
     "universite": "Erzincan Binali Yıldırım Üniversitesi",
     "sehir": "Erzincan",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ali Cavit Çelebioğlu Sivil Havacılık Yüksekokulu",
@@ -5517,6 +5578,7 @@
   {
     "universite": "Erzurum Teknik Üniversitesi",
     "sehir": "Erzurum",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Edebiyat Fakültesi",
@@ -5557,6 +5619,7 @@
   {
     "universite": "Eskişehir Osmangazi Üniversitesi",
     "sehir": "Eskişehir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -5662,6 +5725,7 @@
   {
     "universite": "Eskişehir Teknik Üniversitesi",
     "sehir": "Eskişehir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen Fakültesi",
@@ -5715,6 +5779,7 @@
   {
     "universite": "Fatih Sultan Mehmet Vakıf Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Edebiyat Fakültesi",
@@ -5773,6 +5838,7 @@
   {
     "universite": "Fenerbahçe Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İktisadi ve İdari Bilimler Fakültesi",
@@ -5813,6 +5879,7 @@
   {
     "universite": "Fırat Üniversitesi",
     "sehir": "Elazığ",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -5953,6 +6020,7 @@
   {
     "universite": "Galatasaray Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -5996,6 +6064,7 @@
   {
     "universite": "Gazi Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -6105,6 +6174,7 @@
   {
     "universite": "Gaziantep İslam Bilim ve Teknoloji Üniversitesi",
     "sehir": "Gaziantep",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İslami İlimler Fakültesi",
@@ -6132,6 +6202,7 @@
   {
     "universite": "Gaziantep Üniversitesi",
     "sehir": "Gaziantep",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -6267,6 +6338,7 @@
   {
     "universite": "Gebze Teknik Üniversitesi",
     "sehir": "Kocaeli",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İşletme Fakültesi",
@@ -6311,6 +6383,7 @@
   {
     "universite": "Giresun Üniversitesi",
     "sehir": "Giresun",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bulancak Kadir Karabaş Uygulamalı Bilimler Yüksekokulu",
@@ -6415,6 +6488,7 @@
   {
     "universite": "Gümüşhane Üniversitesi",
     "sehir": "Gümüşhane",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Edebiyat Fakültesi",
@@ -6487,6 +6561,7 @@
   {
     "universite": "Hacettepe Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -6638,6 +6713,7 @@
   {
     "universite": "Hakkari Üniversitesi",
     "sehir": "Hakkari",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -6675,6 +6751,7 @@
   {
     "universite": "Haliç Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -6742,6 +6819,7 @@
   {
     "universite": "Harran Üniversitesi",
     "sehir": "Şanlıurfa",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -6855,6 +6933,7 @@
   {
     "universite": "Hasan Kalyoncu Üniversitesi",
     "sehir": "Gaziantep",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -6918,6 +6997,7 @@
   {
     "universite": "Hatay Mustafa Kemal Üniversitesi",
     "sehir": "Hatay",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -7024,6 +7104,7 @@
   {
     "universite": "Hitit Üniversitesi",
     "sehir": "Çorum",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -7081,6 +7162,7 @@
   {
     "universite": "Iğdır Üniversitesi",
     "sehir": "Iğdır",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Beden Eğitimi ve Spor Yüksekokulu",
@@ -7152,6 +7234,7 @@
   {
     "universite": "Isparta Uygulamalı Bilimler Üniversitesi",
     "sehir": "Isparta",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Büyükkutlu Uygulamalı Bilimler Fakültesi",
@@ -7210,6 +7293,7 @@
   {
     "universite": "Işık Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -7263,6 +7347,7 @@
   {
     "universite": "İbn Haldun Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Bilimleri Fakültesi",
@@ -7311,6 +7396,7 @@
   {
     "universite": "İnönü Üniversitesi",
     "sehir": "Malatya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -7436,6 +7522,7 @@
   {
     "universite": "İskenderun Teknik Üniversitesi",
     "sehir": "Hatay",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Barbaros Hayrettin Gemi İnşaatı ve Denizcilik Fakültesi",
@@ -7504,6 +7591,7 @@
   {
     "universite": "İstanbul 29 Mayıs Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Edebiyat Fakültesi",
@@ -7551,6 +7639,7 @@
   {
     "universite": "İstanbul Arel Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -7628,6 +7717,7 @@
   {
     "universite": "İstanbul Atlas Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -7670,6 +7760,7 @@
   {
     "universite": "İstanbul Aydın Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -7795,6 +7886,7 @@
   {
     "universite": "İstanbul Ayvansaray Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Güzel Sanatlar, Tasarım ve Mimarlık Fakültesi",
@@ -7831,6 +7923,7 @@
   {
     "universite": "İstanbul Bilgi Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Hukuk Fakültesi",
@@ -7937,6 +8030,7 @@
   {
     "universite": "İstanbul Esenyurt Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İşletme ve Yönetim Bilimleri Fakültesi",
@@ -7983,6 +8077,7 @@
   {
     "universite": "İstanbul Galata Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8006,6 +8101,7 @@
   {
     "universite": "İstanbul Gedik Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Güzel Sanatlar ve Mimarlık Fakültesi",
@@ -8058,6 +8154,7 @@
   {
     "universite": "İstanbul Gelişim Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8144,6 +8241,7 @@
   {
     "universite": "İstanbul Kent Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8184,6 +8282,7 @@
   {
     "universite": "İstanbul Kültür Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -8259,6 +8358,7 @@
   {
     "universite": "İstanbul Medeniyet Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8353,6 +8453,7 @@
   {
     "universite": "İstanbul Medipol Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8480,6 +8581,7 @@
   {
     "universite": "İstanbul Okan Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8574,6 +8676,7 @@
   {
     "universite": "İstanbul Rumeli Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İktisadi, İdari ve Sosyal Bilimler Fakültesi",
@@ -8612,6 +8715,7 @@
   {
     "universite": "İstanbul Sabahattin Zaim Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -8684,6 +8788,7 @@
   {
     "universite": "İstanbul Sağlık Ve Teknoloji Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -8718,6 +8823,7 @@
   {
     "universite": "İstanbul Teknik Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bilgisayar ve Bilişim Fakültesi",
@@ -8837,6 +8943,7 @@
   {
     "universite": "İstanbul Ticaret Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Hukuk Fakültesi",
@@ -8895,6 +9002,7 @@
   {
     "universite": "İstanbul Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Açık ve Uzaktan Eğitim Fakültesi",
@@ -9061,6 +9169,7 @@
   {
     "universite": "İstanbul Üniversitesi-Cerrahpasa",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Cerrahpaşa Tıp Fakültesi",
@@ -9139,6 +9248,7 @@
   {
     "universite": "İstanbul Yeni Yüzyıl Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -9215,6 +9325,7 @@
   {
     "universite": "İstinye Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eczacılık Fakültesi",
@@ -9291,6 +9402,7 @@
   {
     "universite": "İzmir Bakırçay Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -9346,6 +9458,7 @@
   {
     "universite": "İzmir Demokrasi Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -9431,6 +9544,7 @@
   {
     "universite": "İzmir Ekonomi Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -9514,6 +9628,7 @@
   {
     "universite": "İzmir Katip Çelebi Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -9613,6 +9728,7 @@
   {
     "universite": "İzmir Tınaztepe Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Sağlık Bilimleri Fakültesi",
@@ -9634,6 +9750,7 @@
   {
     "universite": "İzmir Yüksek Teknoloji Enstitüsü",
     "sehir": "İzmir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen Fakültesi",
@@ -9673,6 +9790,7 @@
   {
     "universite": "Kadir Has Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Hukuk Fakültesi",
@@ -9731,6 +9849,7 @@
   {
     "universite": "Kafkas Üniversitesi",
     "sehir": "Kars",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Dede Korkut Eğitim Fakültesi",
@@ -9826,6 +9945,7 @@
   {
     "universite": "Kahramanmaraş İstiklal Üniversitesi",
     "sehir": "Kahramanmaraş",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İnsan ve Toplum Bilimleri Fakültesi",
@@ -9838,6 +9958,7 @@
   {
     "universite": "Kahramanmaraş Sütçü İmam Üniversitesi",
     "sehir": "Kahramanmaraş",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Afşin Sağlık Yüksekokulu",
@@ -9961,6 +10082,7 @@
   {
     "universite": "Kapadokya Üniversitesi",
     "sehir": "Nevşehir",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Beşeri Bilimler Fakültesi",
@@ -10007,6 +10129,7 @@
   {
     "universite": "Karabük Üniversitesi",
     "sehir": "Karabük",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -10131,6 +10254,7 @@
   {
     "universite": "Karadeniz Teknik Üniversitesi",
     "sehir": "Trabzon",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -10246,6 +10370,7 @@
   {
     "universite": "Karamanoğlu Mehmetbey Üniversitesi",
     "sehir": "Karaman",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ahmet Keleşoğlu Diş Hekimliği Fakültesi",
@@ -10346,6 +10471,7 @@
   {
     "universite": "Kastamonu Üniversitesi",
     "sehir": "Kastamonu",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -10455,6 +10581,7 @@
   {
     "universite": "Kayseri Üniversitesi",
     "sehir": "Kayseri",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Develi İslami İlimler Fakültesi",
@@ -10481,6 +10608,7 @@
   {
     "universite": "Kırıkkale Üniversitesi",
     "sehir": "Kırıkkale",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -10595,6 +10723,7 @@
   {
     "universite": "Kırklareli Üniversitesi",
     "sehir": "Kırklareli",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -10693,6 +10822,7 @@
   {
     "universite": "Kırşehir Ahi Evran Üniversitesi",
     "sehir": "Kırşehir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -10785,6 +10915,7 @@
   {
     "universite": "Kilis 7 Aralık Üniversitesi",
     "sehir": "Kilis",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -10851,6 +10982,7 @@
   {
     "universite": "Kocaeli Sağlık  ve Teknoloji Üniversitesi",
     "sehir": "Kocaeli",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -10869,6 +11001,7 @@
   {
     "universite": "Kocaeli Üniversitesi",
     "sehir": "Kocaeli",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Denizcilik Fakültesi",
@@ -11016,6 +11149,7 @@
   {
     "universite": "Koç Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen Fakültesi",
@@ -11079,6 +11213,7 @@
   {
     "universite": "Konya Gıda ve Tarım Üniversitesi",
     "sehir": "Konya",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Mühendislik ve Mimarlık Fakültesi",
@@ -11105,6 +11240,7 @@
   {
     "universite": "Konya Teknik Üniversitesi",
     "sehir": "Konya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Mimarlık ve Tasarım Fakültesi",
@@ -11132,6 +11268,7 @@
   {
     "universite": "Kto Karatay Üniversitesi",
     "sehir": "Konya",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Güzel Sanatlar ve Tasarım Fakültesi",
@@ -11213,6 +11350,7 @@
   {
     "universite": "Kütahya Dumlupınar Üniversitesi",
     "sehir": "Kütahya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -11313,6 +11451,7 @@
   {
     "universite": "Kütahya Sağlık Bilimleri Üniversitesi",
     "sehir": "Kütahya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -11341,6 +11480,7 @@
   {
     "universite": "Lokman Hekim Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -11381,6 +11521,7 @@
   {
     "universite": "Malatya Turgut Özal Üniversitesi",
     "sehir": "Malatya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İşletme ve Yönetim Bilimleri Fakültesi",
@@ -11427,6 +11568,7 @@
   {
     "universite": "Maltepe Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -11511,6 +11653,7 @@
   {
     "universite": "Manisa Celal Bayar Üniversitesi",
     "sehir": "Manisa",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -11640,6 +11783,7 @@
   {
     "universite": "Mardin Artuklu Üniversitesi",
     "sehir": "Mardin",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Edebiyat Fakültesi",
@@ -11712,6 +11856,7 @@
   {
     "universite": "Marmara Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Atatürk Eğitim Fakültesi",
@@ -11884,6 +12029,7 @@
   {
     "universite": "Mef Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -11930,6 +12076,7 @@
   {
     "universite": "Mersin Üniversitesi",
     "sehir": "Mersin",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Denizcilik Fakültesi",
@@ -12077,6 +12224,7 @@
   {
     "universite": "Mimar Sinan Güzel Sanatlar Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -12112,6 +12260,7 @@
   {
     "universite": "Muğla Sıtkı Koçman Üniversitesi",
     "sehir": "Muğla",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Dalaman Sivil Havacılık Yüksekokulu",
@@ -12271,6 +12420,7 @@
   {
     "universite": "Munzur Üniversitesi",
     "sehir": "Tunceli",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Edebiyat Fakültesi",
@@ -12332,6 +12482,7 @@
   {
     "universite": "Muş Alparslan Üniversitesi",
     "sehir": "Muş",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -12406,6 +12557,7 @@
   {
     "universite": "Necmettin Erbakan Üniversitesi",
     "sehir": "Konya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ahmet Keleşoğlu Eğitim Fakültesi",
@@ -12591,6 +12743,7 @@
   {
     "universite": "Nevşehir Hacı Bektaş Veli Üniversitesi",
     "sehir": "Nevşehir",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -12677,6 +12830,7 @@
   {
     "universite": "Niğde Ömer Halisdemir Üniversitesi",
     "sehir": "Niğde",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -12788,6 +12942,7 @@
   {
     "universite": "Nişantaşı Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İktisadi, İdari ve Sosyal Bilimler Fakültesi",
@@ -12858,6 +13013,7 @@
   {
     "universite": "Nuh Naci Yazgan Üniversitesi",
     "sehir": "Kayseri",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -12907,6 +13063,7 @@
   {
     "universite": "Ondokuz Mayıs Üniversitesi",
     "sehir": "Samsun",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ali Fuad Başgil Hukuk Fakültesi",
@@ -13072,6 +13229,7 @@
   {
     "universite": "Ordu Üniversitesi",
     "sehir": "Ordu",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -13160,6 +13318,7 @@
   {
     "universite": "Orta Doğu Teknik Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -13248,6 +13407,7 @@
   {
     "universite": "Osmaniye Korkut Ata Üniversitesi",
     "sehir": "Osmaniye",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -13326,6 +13486,7 @@
   {
     "universite": "Ostim Teknik Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İktisadi ve İdari Bilimler Fakültesi",
@@ -13357,6 +13518,7 @@
   {
     "universite": "Özyeğin Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Havacılık ve Uzay Bilimleri Fakültesi",
@@ -13420,6 +13582,7 @@
   {
     "universite": "Pamukkale Üniversitesi",
     "sehir": "Denizli",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -13569,6 +13732,7 @@
   {
     "universite": "Piri Reis Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Denizcilik Fakültesi",
@@ -13608,6 +13772,7 @@
   {
     "universite": "Recep Tayyip Erdoğan Üniversitesi",
     "sehir": "Rize",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Ardeşen Turizm Fakültesi",
@@ -13735,6 +13900,7 @@
   {
     "universite": "Sabancı Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Mühendislik ve Doğa Bilimleri Fakültesi",
@@ -13759,6 +13925,7 @@
   {
     "universite": "Sağlık Bilimleri Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Adana Tıp Fakültesi",
@@ -13885,6 +14052,7 @@
   {
     "universite": "Sakarya Uygulamalı Bilimler Üniversitesi",
     "sehir": "Sakarya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Sağlık Bilimleri Fakültesi",
@@ -13939,6 +14107,7 @@
   {
     "universite": "Sakarya Üniversitesi",
     "sehir": "Sakarya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Bilgisayar ve Bilişim Bilimleri Fakültesi",
@@ -14065,6 +14234,7 @@
   {
     "universite": "Samsun Üniversitesi",
     "sehir": "Samsun",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Havacılık ve Uzay Bilimleri Fakültesi",
@@ -14111,6 +14281,7 @@
   {
     "universite": "Sanko Üniversitesi",
     "sehir": "Gaziantep",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Sağlık Bilimleri Fakültesi",
@@ -14131,6 +14302,7 @@
   {
     "universite": "Selçuk Üniversitesi",
     "sehir": "Konya",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Akşehir İktisadi ve İdari Bilimler Fakültesi",
@@ -14361,6 +14533,7 @@
   {
     "universite": "Siirt Üniversitesi",
     "sehir": "Siirt",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -14458,6 +14631,7 @@
   {
     "universite": "Sinop Üniversitesi",
     "sehir": "Sinop",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Boyabat İktisadi ve İdari Bilimler Fakültesi",
@@ -14536,6 +14710,7 @@
   {
     "universite": "Sivas Cumhuriyet Üniversitesi",
     "sehir": "Sivas",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -14689,6 +14864,7 @@
   {
     "universite": "Süleyman Demirel Üniversitesi",
     "sehir": "Isparta",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -14827,6 +15003,7 @@
   {
     "universite": "Şırnak Üniversitesi",
     "sehir": "Şırnak",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "İktisadi ve İdari Bilimler Fakültesi",
@@ -14868,6 +15045,7 @@
   {
     "universite": "Tarsus Üniversitesi",
     "sehir": "Mersin",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Havacılık ve Uzay Bilimleri Fakültesi",
@@ -14900,6 +15078,7 @@
   {
     "universite": "Ted Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -14947,6 +15126,7 @@
   {
     "universite": "Tekirdağ Namık Kemal Üniversitesi",
     "sehir": "Tekirdağ",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Çorlu Mühendislik Fakültesi",
@@ -15048,6 +15228,7 @@
   {
     "universite": "Tobb Ekonomi ve Teknoloji Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Fen-Edebiyat Fakültesi",
@@ -15105,6 +15286,7 @@
   {
     "universite": "Tokat Gaziosmanpaşa Üniversitesi",
     "sehir": "Tokat",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -15233,6 +15415,7 @@
   {
     "universite": "Toros Üniversitesi",
     "sehir": "Mersin",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Güzel Sanatlar, Tasarım ve Mimarlık Fakültesi",
@@ -15279,6 +15462,7 @@
   {
     "universite": "Trabzon Üniversitesi",
     "sehir": "Trabzon",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fatih Eğitim Fakültesi",
@@ -15326,6 +15510,7 @@
   {
     "universite": "Trakya Üniversitesi",
     "sehir": "Edirne",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -15470,6 +15655,7 @@
   {
     "universite": "Türk Hava Kurumu Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Hava Ulaştırma Fakültesi",
@@ -15508,6 +15694,7 @@
   {
     "universite": "Türk-Alman Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Fen Fakültesi",
@@ -15552,6 +15739,7 @@
   {
     "universite": "Ufuk Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -15598,6 +15786,7 @@
   {
     "universite": "Uşak Üniversitesi",
     "sehir": "Uşak",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -15722,6 +15911,7 @@
   {
     "universite": "Üsküdar Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "İletişim Fakültesi",
@@ -15786,6 +15976,7 @@
   {
     "universite": "Van Yüzüncü Yıl Üniversitesi",
     "sehir": "Van",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Denizcilik Fakültesi",
@@ -15937,6 +16128,7 @@
   {
     "universite": "Yalova Üniversitesi",
     "sehir": "Yalova",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Hukuk Fakültesi",
@@ -16008,6 +16200,7 @@
   {
     "universite": "Yaşar Üniversitesi",
     "sehir": "İzmir",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Hukuk Fakültesi",
@@ -16081,6 +16274,7 @@
   {
     "universite": "Yeditepe Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Diş Hekimliği Fakültesi",
@@ -16219,6 +16413,7 @@
   {
     "universite": "Yıldız Teknik Üniversitesi",
     "sehir": "İstanbul",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Eğitim Fakültesi",
@@ -16324,6 +16519,7 @@
   {
     "universite": "Yozgat Bozok Üniversitesi",
     "sehir": "Yozgat",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Akdağmadeni Sağlık Yüksekokulu",
@@ -16430,6 +16626,7 @@
   {
     "universite": "Yüksek İhtisas Üniversitesi",
     "sehir": "Ankara",
+    "tur": "Özel (Vakıf)",
     "fakulteler": [
       {
         "fakulte": "Sağlık Bilimleri Fakültesi",
@@ -16451,6 +16648,7 @@
   {
     "universite": "Zonguldak Bülent Ecevit Üniversitesi",
     "sehir": "Zonguldak",
+    "tur": "Devlet",
     "fakulteler": [
       {
         "fakulte": "Denizcilik Fakültesi",

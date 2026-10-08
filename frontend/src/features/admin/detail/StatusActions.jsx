@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, Field, Modal, Alert } from '../../../components/ui';
+import { Button, Field, Modal, Alert, MaskedInput, MASKS } from '../../../components/ui';
 import { adminApi } from '../../../api/adminEndpoints';
 
 const VARIANT = { approved: 'primary', rejected: 'danger', revision_requested: 'secondary', in_review: 'secondary' };
@@ -18,6 +18,10 @@ export default function StatusActions({ app }) {
   const [target, setTarget] = useState(null);
   const [text, setText] = useState('');
   const [error, setError] = useState(null);
+  const [finalAmount, setFinalAmount] = useState('');
+  const [amountError, setAmountError] = useState(null);
+  // Yurt Konaklama Bursu onayında aylık burs miktarı girilir (Burs Komisyonunun Kararı)
+  const yurtApproval = (t) => !!app.yurtReview && t?.to === 'approved';
 
   const revisionCount = app.documents.filter((d) => d.isCurrent && d.reviewStatus === 'revision_requested').length;
   const mutation = useMutation({
@@ -26,16 +30,28 @@ export default function StatusActions({ app }) {
       qc.invalidateQueries({ queryKey: ['admin'] });
       setTarget(null);
     },
-    onError: (err) => setError(err.details?.reason || err.message),
+    onError: (err) => {
+      if (err.details?.finalAmount) setAmountError(err.details.finalAmount);
+      else setError(err.details?.reason || err.message);
+    },
   });
 
   if (!app.allowedTransitions.length) return null;
   const actionLabel = (t) => (t.to === 'in_review' && ['approved', 'rejected'].includes(app.status) ? 'Kararı geri al' : ACTION[t.to] || t.label);
 
-  const open = (t) => { setTarget(t); setText(''); setError(null); };
+  const open = (t) => {
+    setTarget(t); setText(''); setError(null); setAmountError(null);
+    // Varsayılan: en son öneri (yurtlar birimi, yoksa yurt idaresi, yoksa öğrencinin talebi)
+    const r = app.yurtReview;
+    const suggested = r && (r.hq?.amount || r.dorm?.amount || r.requestedAmount);
+    setFinalAmount(suggested ? String(suggested) : '');
+  };
   const submit = () => {
     if (target.to === 'rejected' && text.trim().length < 3) { setError('Red gerekçesini yazın'); return; }
-    mutation.mutate(target.to === 'rejected' ? { to: 'rejected', reason: text.trim() } : { to: target.to, note: text.trim() || undefined });
+    if (yurtApproval(target) && !finalAmount) { setAmountError('Onaylanan aylık burs miktarını yazın'); return; }
+    mutation.mutate(target.to === 'rejected'
+      ? { to: 'rejected', reason: text.trim() }
+      : { to: target.to, note: text.trim() || undefined, ...(yurtApproval(target) ? { finalAmount } : {}) });
   };
 
   return (
@@ -64,6 +80,13 @@ export default function StatusActions({ app }) {
             {target.to === 'revision_requested' && (revisionCount
               ? <Alert variant="info">{revisionCount} belge yeniden yükleme için işaretli.</Alert>
               : <Alert variant="warning">Önce aşağıdaki belgelerden yeniden yüklenmesi gerekenleri "Revize iste" ile işaretleyin.</Alert>)}
+            {yurtApproval(target) && (
+              <Field label="Onaylanan aylık burs (TL) · Burs Komisyonunun Kararı" htmlFor="final-amount" required error={amountError}
+                hint="Öneriler başvurunun Burs önerileri bölümünde">
+                <MaskedInput id="final-amount" mask={MASKS.money} value={finalAmount} onChange={(v) => { setFinalAmount(v); setAmountError(null); }}
+                  placeholder="Örn. 3.000" invalid={!!amountError} />
+              </Field>
+            )}
             <Field label={target.to === 'rejected' ? 'Red gerekçesi' : 'Not (isteğe bağlı)'} htmlFor="status-text" required={target.to === 'rejected'} error={error}>
               <textarea id="status-text" rows={4} value={text} onChange={(e) => setText(e.target.value)} maxLength={1000}
                 className="w-full rounded-xl px-3.5 py-2.5 text-[15px] ring-1 ring-inset ring-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500" />

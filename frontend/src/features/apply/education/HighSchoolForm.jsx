@@ -14,17 +14,18 @@ const FIELDS = ['cityId', 'districtId', 'schoolId', 'schoolOther', 'grade'];
  * Lise eğitim bilgileri. Kanal seçimine göre bazı alanlar Adım 4'ten kilitli gelir:
  *   Spor lisesi / Uluslararası AİHL / Teşkilat Anadolu: okul ve sınıf
  *   Teşkilat İstanbul: il
+ * Yurt Konaklama Bursu'nda lise yurdunun bağlı lisesi varsa (fixedSchool) okul ondan gelir, sadece sınıf seçilir.
  */
-export default function HighSchoolForm({ formId, application, onSubmit }) {
+export default function HighSchoolForm({ formId, application, onSubmit, fixedSchool }) {
   const code = application.channel?.code;
   const fields = application.channel?.fields || {};
-  const lockedSchoolId = fields.school_id || null;
+  const lockedSchoolId = fields.school_id || fixedSchool?.id || null;
   const lockedGrade = fields.grade || null;
   const lockedCityId = code === 'lise_teskilat'
     ? (fields.region === 'istanbul' ? ISTANBUL : Number(fields.city_id) || null)
     : null;
   // Kilitli okulun adını göstermek için okulun seçildiği liste
-  const lockedSchoolParams = !lockedSchoolId ? null
+  const lockedSchoolParams = !lockedSchoolId || fixedSchool ? null
     : code === 'lise_spor' ? { type: 'sports' }
       : code === 'lise_uluslararasi' ? { type: 'international' }
         : { cityId: fields.city_id };
@@ -45,7 +46,7 @@ export default function HighSchoolForm({ formId, application, onSubmit }) {
   const districtId = useWatch({ control, name: 'districtId' });
 
   const { data: lockedList = [] } = useSchools(lockedSchoolParams || {}, !!lockedSchoolParams);
-  const lockedSchool = lockedList.find((s) => String(s.id) === String(lockedSchoolId));
+  const lockedSchool = fixedSchool || lockedList.find((s) => String(s.id) === String(lockedSchoolId));
 
   const submit = handleSubmit(async (v) => {
     const body = {
@@ -73,7 +74,9 @@ export default function HighSchoolForm({ formId, application, onSubmit }) {
           <div className="text-sm">
             <p className="font-semibold text-brand-900">{lockedSchool?.name || 'Adım 4\'te seçtiğiniz okul'}</p>
             {lockedSchool && <p className="text-brand-800">{lockedSchool.cityName} / {lockedSchool.districtName}</p>}
-            <p className="mt-1 text-xs text-brand-700">Okul ve sınıf bilgisini değiştirmek için Adım 4'e dönünüz.</p>
+            <p className="mt-1 text-xs text-brand-700">
+              {fixedSchool ? 'Okulunuz konakladığınız yurda göre belirlendi.' : 'Okul ve sınıf bilgisini değiştirmek için Adım 4\'e dönünüz.'}
+            </p>
           </div>
         </div>
       ) : (

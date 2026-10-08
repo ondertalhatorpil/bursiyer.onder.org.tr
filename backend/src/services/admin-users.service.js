@@ -15,12 +15,12 @@ const { tempPassword } = require('../lib/password');
 const { PERMISSIONS } = require('../middlewares/auth-admin');
 const { destroyAllFor } = require('./session.service');
 
-const CATEGORY_LABELS = { lise: 'Lise', universite: 'Üniversite', yuksek_lisans: 'Yüksek Lisans', doktora: 'Doktora' };
+const CATEGORY_LABELS = { lise: 'Lise', universite: 'Üniversite', yuksek_lisans: 'Yüksek Lisans', doktora: 'Doktora', yurt: 'Yurt Konaklama' };
 
 const ROLE_DESCRIPTIONS = {
   super_admin: 'Tüm başvurular, kararlar, ayarlar ve kullanıcı yönetimi',
-  gm_reviewer: 'Tüm başvuruları görür, onay / red kararı verir',
-  coordinator: 'Sadece yetki alanındaki başvurular: belge inceleme, not, referans, revize',
+  gm_reviewer: 'Tüm başvuruları görür, onay / red kararı verir. Yurt Konaklama Bursu yetkisi verilirse sadece yurt başvurularını görür ve burs önerisi gönderir',
+  coordinator: 'Sadece yetki alanındaki başvurular: belge inceleme, not, referans, revize.',
   viewer: 'Sadece yetki alanındaki başvuruları görüntüler',
 };
 
@@ -33,6 +33,8 @@ async function roles() {
     name: r.name,
     description: ROLE_DESCRIPTIONS[r.code] || null,
     usesScopes: !(PERMISSIONS[r.code] || []).includes('view_all'),
+    // Ek yetki verilebilen rol (Yurt Konaklama Bursu: Yurtlar Biriminin Önerisi)
+    usesGrants: r.code === 'gm_reviewer',
   }));
 }
 
@@ -42,10 +44,12 @@ async function describeScopes(rows) {
   const channelIds = [...new Set(rows.map((r) => r.channel_id).filter(Boolean))];
   const subIds = [...new Set(rows.map((r) => r.sub_unit_id).filter(Boolean))];
   const cityIds = [...new Set(rows.map((r) => r.city_id).filter(Boolean))];
-  const [channels, subs, cities] = await Promise.all([
+  const dormIds = [...new Set(rows.map((r) => r.dormitory_id).filter(Boolean))];
+  const [channels, subs, cities, dorms] = await Promise.all([
     channelIds.length ? db('channels').whereIn('id', channelIds) : [],
     subIds.length ? db('sub_units').whereIn('id', subIds) : [],
     cityIds.length ? db('cities').whereIn('id', cityIds) : [],
+    dormIds.length ? db('dormitories').whereIn('id', dormIds) : [],
   ]);
   return rows.map((r) => ({
     id: r.id,
@@ -53,11 +57,13 @@ async function describeScopes(rows) {
     category: r.category,
     channelId: r.channel_id,
     subUnitId: r.sub_unit_id,
+    dormitoryId: r.dormitory_id,
     cityId: r.city_id,
     label: [
       CATEGORY_LABELS[r.category],
       channels.find((c) => c.id === r.channel_id)?.name,
       subs.find((s) => s.id === r.sub_unit_id)?.name,
+      dorms.find((d) => d.id === r.dormitory_id)?.name,
       cities.find((c) => c.id === r.city_id)?.name,
     ].filter(Boolean).join(' · ') || 'Tüm başvurular',
   }));
@@ -78,6 +84,7 @@ function serializeUser(u, scopes = []) {
     lastLoginAt: u.last_login_at,
     createdAt: u.created_at,
     scopes: scopes.filter((s) => s.adminUserId === u.id),
+    yurtHq: u.role_code === 'gm_reviewer' && !!u.yurt_hq,
   };
 }
 
@@ -142,6 +149,7 @@ async function update(actor, id, input) {
   if (input.role !== undefined && input.role !== user.role_code) {
     if (self) throw validationError({ role: 'Kendi rolünüzü değiştiremezsiniz' });
     patch.role_id = (await roleByCode(input.role)).id;
+    if (input.role !== 'gm_reviewer') patch.yurt_hq = false; // ek yetki sadece Genel Merkez Değerlendiricide
     roleChanged = true;
   }
   let deactivated = false;
@@ -181,12 +189,29 @@ async function resetPassword(actor, id) {
 /**
  * Kapsam satırlarını değiştirir (tümünü siler, yenilerini yazar).
  * Kanal seçilince kategori kanaldan alınır; alt birim o kanala ait olmalı.
+ * Yurt Konaklama Bursu kategorisinde kanal / birim / il yerine yurt seçilir ve zorunludur (yurt müdürü).
  */
 async function setScopes(id, scopes) {
-  if (!(await db('admin_users').where({ id }).first())) throw notFound('Kullanıcı bulunamadı');
+  const user = await baseQuery().where('u.id', id).first();
+  if (!user) throw notFound('Kullanıcı bulunamadı');
   const rows = [];
   for (const [i, s] of scopes.entries()) {
-    const row = { admin_user_id: id, category: s.category || null, channel_id: s.channelId || null, sub_unit_id: s.subUnitId || null, city_id: s.cityId || null };
+    const row = {
+      admin_user_id: id,
+      category: s.category || null,
+      channel_id: s.channelId || null,
+      sub_unit_id: s.subUnitId || null,
+      dormitory_id: s.dormitoryId || null,
+      city_id: s.cityId || null,
+    };
+    if (row.category === 'yurt' && !row.dormitory_id) {
+      throw validationError({ [`scopes.${i}.dormitoryId`]: 'Yurt Konaklama Bursu için bir yurt seçin' });
+    }
+    if (row.dormitory_id) {
+      if (row.category && row.category !== 'yurt') throw validationError({ [`scopes.${i}.dormitoryId`]: 'Yurt sadece Yurt Konaklama Bursu kategorisinde seçilebilir' });
+      if (!(await db('dormitories').where({ id: row.dormitory_id }).first())) throw validationError({ [`scopes.${i}.dormitoryId`]: 'Yurt bulunamadı' });
+      Object.assign(row, { category: 'yurt', channel_id: null, sub_unit_id: null, city_id: null });
+    }
     if (row.channel_id) {
       const ch = await db('channels').where({ id: row.channel_id }).first();
       if (!ch) throw validationError({ [`scopes.${i}.channelId`]: 'Kanal bulunamadı' });
@@ -207,6 +232,17 @@ async function setScopes(id, scopes) {
     await trx('admin_scopes').where({ admin_user_id: id }).del();
     if (rows.length) await trx('admin_scopes').insert(rows);
   });
+  return get(id);
+}
+
+/** Genel Merkez Değerlendirici ek yetkileri: Yurt Konaklama Bursu (Yurtlar Biriminin Önerisi) */
+async function setGrants(id, { yurtHq }) {
+  const user = await baseQuery().where('u.id', id).first();
+  if (!user) throw notFound('Kullanıcı bulunamadı');
+  if (user.role_code !== 'gm_reviewer') {
+    throw validationError({ yurtHq: 'Bu yetki sadece Genel Merkez Değerlendirici rolüne verilebilir' });
+  }
+  await db('admin_users').where({ id }).update({ yurt_hq: yurtHq, updated_at: new Date() });
   return get(id);
 }
 
@@ -234,6 +270,8 @@ const ACTION_LABELS = {
   'export.xlsx': 'Excel indirdi',
   'export.payments': 'Ödeme listesi indirdi',
   'iban.review': 'IBAN kontrol etti',
+  'application.yurt_dorm_review': 'Yurt idaresi önerisi gönderdi',
+  'application.yurt_hq_review': 'Yurtlar birimi önerisi gönderdi',
   'iban.document_view': 'Hesap belgesi açtı',
   'settings.program': 'Dönem ayarını değiştirdi',
   'settings.program_create': 'Yeni dönem oluşturdu',
@@ -245,6 +283,7 @@ const ACTION_LABELS = {
   'user.update': 'Kullanıcıyı düzenledi',
   'user.reset_password': 'Şifre sıfırladı',
   'user.scopes': 'Yetki alanını değiştirdi',
+  'user.grants': 'Ek yetkileri değiştirdi',
 };
 
 async function auditLogs({ adminId, action, from, to, page = 1, pageSize = 50 }) {
@@ -283,4 +322,4 @@ async function auditLogs({ adminId, action, from, to, page = 1, pageSize = 50 })
   };
 }
 
-module.exports = { roles, list, get, create, update, resetPassword, setScopes, auditLogs };
+module.exports = { roles, list, get, create, update, resetPassword, setScopes, setGrants, auditLogs };

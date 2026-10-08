@@ -1,5 +1,7 @@
 /**
  * Aday ve başvuru işlemleri (Adım 1-5). Belgeler (Adım 6) document.service'te, gönderim (Adım 7) Aşama 7'de.
+ * Yurt Konaklama Bursu'nun (yurt) adımları farklıdır: kanal ve belge yoktur.
+ *   Adım 4 eğitim (+ yurt, burs oranı) | Adım 5 aile ve gelir | Adım 6 burs bilgileri | Adım 7 özet
  */
 const crypto = require('crypto');
 const db = require('../db/knex');
@@ -18,8 +20,12 @@ const CATEGORY_LABELS = {
   universite: 'Lisans Bursu',
   yuksek_lisans: 'Yüksek Lisans Bursu',
   doktora: 'Doktora Bursu',
+  yurt: 'Yurt Konaklama Bursu',
 };
 const LISANSUSTU = ['yuksek_lisans', 'doktora'];
+const YURT = 'yurt';
+const UNIVERSITY_GRADES = ['hazirlik', '1', '2', '3', '4', '5', '6'];
+const TUITION_RATES = [100, 75, 50, 25];
 const MIN_BIRTH_YEAR = { yuksek_lisans: 1999, doktora: 1991 };
 const REQUIREMENTS_CONSENT = { yuksek_lisans: 'requirements_yl', doktora: 'requirements_dr' };
 const ISTANBUL = 34;
@@ -224,8 +230,9 @@ function requireCategory(app, allowed) {
 // ---------------------------------------------------------------------------
 
 /**
- * Kategori değişirse kategoriye bağlı veriler (kanal, ek alanlar, eğitim bilgisi, şart beyanı)
- * silinir. Veli bilgisi yaşa bağlı olduğu için korunur.
+ * Kategori değişirse kategoriye bağlı veriler (kanal, ek alanlar, eğitim bilgisi, şart beyanı,
+ * yurt bursu aile/burs bilgileri) silinir. Veli bilgisi yaşa bağlı olduğu için korunur.
+ * Adım 4: diğer kategorilerde kanal / şartlar, yurtta eğitim bilgileri.
  */
 async function setCategory(applicantId, category) {
   const { app } = await requireEditableApplication(applicantId);
@@ -235,6 +242,7 @@ async function setCategory(applicantId, category) {
     if (changed) {
       await trx('application_details').where({ application_id: app.id }).del();
       await trx('education').where({ application_id: app.id }).del();
+      await trx('yurt_details').where({ application_id: app.id }).del();
       await trx('applications').where({ id: app.id }).update({ requirements_accepted_at: null });
       await setFlag(trx, app, 'birth_year_out_of_range', false);
       await setFlag(trx, app, 'school_not_in_list', false);
@@ -352,7 +360,7 @@ async function acceptRequirements(applicantId, { ip, userAgent }) {
  *   - Teşkilat İstanbul: il İstanbul | Teşkilat Anadolu: il Adım 4'te seçilen il
  */
 async function setEducation(applicantId, body) {
-  const { app } = await requireEditableApplication(applicantId);
+  const { app, applicant } = await requireEditableApplication(applicantId);
   requireCategory(app);
   const errors = {};
   const row = {
@@ -360,25 +368,37 @@ async function setEducation(applicantId, body) {
     city_id: null, district_id: null, school_id: null, school_other: null,
     university_id: null, university_other: null, university_type: null,
     faculty: null, department: null, grade: null,
+    dormitory_id: null, tuition_scholarship_rate: null, annual_tuition_fee: null,
     updated_at: new Date(),
   };
 
-  if (app.category === 'lise') {
-    const channel = app.channel_id ? await db('channels').where({ id: app.channel_id }).first() : null;
-    if (!channel) throw new AppError(409, 'STEP_ORDER', 'Önce başvuru kanalını seçiniz (Adım 4)');
-    const details = parseJson((await db('application_details').where({ application_id: app.id }).first())?.data) || {};
+  // Yurt Konaklama Bursu: yurt önce seçilir; lise (ortaöğretim) yurdunda lise bilgileri istenir
+  const dorm = app.category === YURT ? await findYurtDormitory(body.dormitoryId, errors) : null;
+  const highSchool = app.category === 'lise' || dorm?.level === 'lise';
 
-    // Adım 4'te okul seçildiyse (spor, uluslararası, teşkilat Anadolu) okul ve konumu oradan gelir
+  if (highSchool) {
+    // Lise bursunda okul / sınıf / il kanaldan kilitli gelebilir; yurtta kanal yoktur
+    let channel = null;
+    let details = {};
+    if (app.category === 'lise') {
+      channel = app.channel_id ? await db('channels').where({ id: app.channel_id }).first() : null;
+      if (!channel) throw new AppError(409, 'STEP_ORDER', 'Önce başvuru kanalını seçiniz (Adım 4)');
+      details = parseJson((await db('application_details').where({ application_id: app.id }).first())?.data) || {};
+    }
+
+    // Adım 4'te okul seçildiyse (spor, uluslararası, teşkilat Anadolu) okul ve konumu oradan gelir;
+    // yurtta lise yurdunun bağlı lisesi varsa okul odur
     let lockedSchool = null;
-    if (details.school_id) {
-      lockedSchool = await db('schools').where({ id: details.school_id }).first();
+    const lockedSchoolId = details.school_id || dorm?.school_id;
+    if (lockedSchoolId) {
+      lockedSchool = await db('schools').where({ id: lockedSchoolId }).first();
     }
 
     if (lockedSchool) {
       Object.assign(row, { city_id: lockedSchool.city_id, district_id: lockedSchool.district_id, school_id: lockedSchool.id });
     } else {
       let cityId = body.cityId;
-      if (channel.code === 'lise_teskilat') {
+      if (channel?.code === 'lise_teskilat') {
         cityId = details.region === 'istanbul' ? ISTANBUL : details.city_id;
       }
       if (!cityId) errors.cityId = 'İl seçiniz';
@@ -441,23 +461,201 @@ async function setEducation(applicantId, body) {
       Object.assign(row, { faculty: body.faculty || null, department: body.department || null });
     }
 
-    if (app.category === 'universite') {
-      if (!['hazirlik', '1', '2', '3', '4', '5', '6'].includes(body.grade)) errors.grade = 'Sınıf seçiniz';
+    if (app.category === 'universite' || app.category === YURT) {
+      if (!UNIVERSITY_GRADES.includes(body.grade)) errors.grade = 'Sınıf seçiniz';
       row.grade = body.grade;
     } else {
       row.grade = app.category === 'yuksek_lisans' ? 'yl' : 'dr';
     }
   }
 
+  if (dorm) Object.assign(errors, applyYurtEducation(row, body, dorm));
+
   if (Object.keys(errors).length) throw validationError(errors);
 
   await db.transaction(async (trx) => {
     await trx('education').insert(row).onConflict('application_id').merge();
     await setFlag(trx, app, 'school_not_in_list', Boolean(row.school_other || row.university_other));
-    await advanceStep(trx, app, 6);
+    if (app.category !== YURT) await advanceStep(trx, app, 6);
+    // Yurtta eğitim Adım 4'tür; 18 yaş altında veli onayı da alınmadan Adım 5 açılmaz
+    else if (!ageInfo(applicant).isMinor || (await guardianVerified(trx, app.id))) await advanceStep(trx, app, 5);
   });
 
   return { application: await getApplicationDetail(applicantId) };
+}
+
+// ---------------------------------------------------------------------------
+// Yurt Konaklama Bursu
+// ---------------------------------------------------------------------------
+
+const guardianVerified = async (q, applicationId) => !!(await q('guardians')
+  .where({ application_id: applicationId }).whereNotNull('phone_verified_at').first('id'));
+
+/** Adım 4 (yurt): konaklanan yurt (aktif olmalı). Bulunamazsa hata yazar, null döner. */
+async function findYurtDormitory(dormitoryId, errors) {
+  if (!dormitoryId) {
+    errors.dormitoryId = 'Konakladığınız yurdu seçiniz';
+    return null;
+  }
+  const dorm = await db('dormitories').where({ id: dormitoryId, is_active: true }).first();
+  if (!dorm) errors.dormitoryId = 'Listeden geçerli bir yurt seçiniz';
+  return dorm || null;
+}
+
+/**
+ * Adım 4 (yurt) ek alanları: konaklanan yurt; özel (vakıf) üniversitede burs oranı ve
+ * oran %100 değilse üniversiteye ödenen yıllık ücret. Devlet üniversitesinde ve lise yurdunda bu ikisi boş kalır.
+ * @returns {object} hatalar
+ */
+function applyYurtEducation(row, body, dorm) {
+  const errors = {};
+  row.dormitory_id = dorm.id;
+
+  if (dorm.level !== 'lise' && row.university_type === 'vakif') {
+    if (!TUITION_RATES.includes(body.tuitionScholarshipRate)) {
+      errors.tuitionScholarshipRate = 'Üniversitedeki burs oranınızı seçiniz';
+    } else {
+      row.tuition_scholarship_rate = body.tuitionScholarshipRate;
+      if (body.tuitionScholarshipRate !== 100) {
+        if (!body.annualTuitionFee) errors.annualTuitionFee = 'Üniversiteye ödediğiniz yıllık ücreti yazınız';
+        else row.annual_tuition_fee = body.annualTuitionFee;
+      }
+    }
+  }
+  return errors;
+}
+
+/** Yurt adımlarında kategori ve adım sırası kontrolü */
+async function requireYurtStep(applicantId, step) {
+  const ctx = await requireEditableApplication(applicantId);
+  requireCategory(ctx.app, [YURT]);
+  if (ctx.app.current_step < step) {
+    throw new AppError(409, 'STEP_ORDER', `Önce önceki adımları tamamlayınız (Adım ${ctx.app.current_step})`);
+  }
+  return ctx;
+}
+
+const saveYurtDetails = (trx, applicationId, data) => trx('yurt_details')
+  .insert({ application_id: applicationId, ...data, updated_at: new Date() })
+  .onConflict('application_id').merge();
+
+/** Sağ ebeveynde meslek, yaşadığı yer ve gelir zorunludur; vefat ettiyse sadece adı tutulur */
+function parentRow(prefix, p, errors, label) {
+  const row = {
+    [`${prefix}_status`]: p.status,
+    [`${prefix}_name`]: p.fullName,
+    [`${prefix}_job`]: null,
+    [`${prefix}_location`]: null,
+    [`${prefix}_income`]: null,
+    [`${prefix}_extra_income`]: null,
+  };
+  if (p.status === 'sag') {
+    if (!p.job) errors[`${prefix}.job`] = `${label} mesleğini yazınız`;
+    if (!p.location) errors[`${prefix}.location`] = `${label} yaşadığı il ve ilçeyi yazınız`;
+    if (p.income == null) errors[`${prefix}.income`] = `${label} aylık gelirini yazınız (geliri yoksa 0)`;
+    Object.assign(row, {
+      [`${prefix}_job`]: p.job || null,
+      [`${prefix}_location`]: p.location || null,
+      [`${prefix}_income`]: p.income ?? null,
+      [`${prefix}_extra_income`]: p.extraIncome ?? null,
+    });
+  }
+  return row;
+}
+
+/** Adım 5 (yurt): aile ve gelir bilgileri */
+async function setYurtFamily(applicantId, body) {
+  const { app } = await requireYurtStep(applicantId, 5);
+  const errors = {};
+
+  if (body.studyingSiblingCount > body.siblingCount) {
+    errors.studyingSiblingCount = 'Okuyan kardeş sayısı toplam kardeş sayısından fazla olamaz';
+  }
+  if (body.guardianHousing === 'diger' && !body.guardianHousingNote) {
+    errors.guardianHousingNote = 'Velinizin yaşadığı yeri açıklayınız';
+  }
+  const bothAlive = body.mother.status === 'sag' && body.father.status === 'sag';
+  if (bothAlive && !body.parentsLiving) errors.parentsLiving = 'Anne ve babanızın birlikte mi ayrı mı yaşadığını seçiniz';
+
+  const row = {
+    sibling_count: body.siblingCount,
+    studying_sibling_count: body.studyingSiblingCount,
+    guardian_housing: body.guardianHousing,
+    guardian_housing_note: body.guardianHousing === 'diger' ? body.guardianHousingNote || null : null,
+    ...parentRow('mother', body.mother, errors, 'Annenizin'),
+    ...parentRow('father', body.father, errors, 'Babanızın'),
+    parents_living: bothAlive ? body.parentsLiving || null : null,
+    family_saved_at: new Date(),
+  };
+  if (Object.keys(errors).length) throw validationError(errors);
+
+  await db.transaction(async (trx) => {
+    await saveYurtDetails(trx, app.id, row);
+    await advanceStep(trx, app, 6);
+  });
+  return { application: await getApplicationDetail(applicantId) };
+}
+
+/** Adım 6 (yurt): burs bilgileri + talep edilen aylık burs. IBAN burada alınmaz (onaydan sonra istenir). */
+async function setYurtScholarship(applicantId, body) {
+  const { app } = await requireYurtStep(applicantId, 6);
+  const errors = {};
+  if (body.otherScholarship) {
+    if (!body.otherScholarshipOrg) errors.otherScholarshipOrg = 'Burs aldığınız kurumu yazınız';
+    if (!body.otherScholarshipAmount) errors.otherScholarshipAmount = 'Aldığınız burs miktarını yazınız';
+  }
+  if (Object.keys(errors).length) throw validationError(errors);
+
+  await db.transaction(async (trx) => {
+    await saveYurtDetails(trx, app.id, {
+      other_scholarship: body.otherScholarship,
+      other_scholarship_org: body.otherScholarship ? body.otherScholarshipOrg : null,
+      other_scholarship_amount: body.otherScholarship ? body.otherScholarshipAmount : null,
+      gsb_support: body.gsbSupport,
+      kyk_support: body.kykSupport,
+      requested_amount: body.requestedAmount,
+      commission_note: body.commissionNote || null,
+      scholarship_saved_at: new Date(),
+    });
+    await advanceStep(trx, app, 7);
+  });
+  return { application: await getApplicationDetail(applicantId) };
+}
+
+function serializeParent(d, prefix) {
+  if (!d[`${prefix}_status`]) return null;
+  return {
+    status: d[`${prefix}_status`],
+    fullName: d[`${prefix}_name`],
+    job: d[`${prefix}_job`],
+    location: d[`${prefix}_location`],
+    income: d[`${prefix}_income`],
+    extraIncome: d[`${prefix}_extra_income`],
+  };
+}
+
+/** yurt_details satırı -> { family, scholarship } (kaydedilmemiş bölüm null) */
+function serializeYurtDetails(d) {
+  return {
+    family: d?.family_saved_at ? {
+      siblingCount: d.sibling_count,
+      studyingSiblingCount: d.studying_sibling_count,
+      guardianHousing: d.guardian_housing,
+      guardianHousingNote: d.guardian_housing_note,
+      mother: serializeParent(d, 'mother'),
+      father: serializeParent(d, 'father'),
+      parentsLiving: d.parents_living,
+    } : null,
+    scholarship: d?.scholarship_saved_at ? {
+      otherScholarship: !!d.other_scholarship,
+      otherScholarshipOrg: d.other_scholarship_org,
+      otherScholarshipAmount: d.other_scholarship_amount,
+      gsbSupport: !!d.gsb_support,
+      kykSupport: d.kyk_support,
+      requestedAmount: d.requested_amount,
+      commissionNote: d.commission_note,
+    } : null,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -469,7 +667,8 @@ async function getApplicationDetail(applicantId) {
   const app = await getApplicationRow(applicantId);
   if (!app) throw notFound('Başvuru bulunamadı');
 
-  const [detailsRow, guardian, education, channel, subUnit] = await Promise.all([
+  const isYurt = app.category === YURT;
+  const [detailsRow, guardian, education, channel, subUnit, yurtRow] = await Promise.all([
     db('application_details').where({ application_id: app.id }).first(),
     db('guardians').where({ application_id: app.id }).first(),
     db('education as e')
@@ -477,11 +676,14 @@ async function getApplicationDetail(applicantId) {
       .leftJoin('districts as d', 'd.id', 'e.district_id')
       .leftJoin('schools as s', 's.id', 'e.school_id')
       .leftJoin('universities as u', 'u.id', 'e.university_id')
+      .leftJoin('dormitories as y', 'y.id', 'e.dormitory_id')
       .where('e.application_id', app.id)
-      .select('e.*', 'c.name as city_name', 'd.name as district_name', 's.name as school_name', 'u.name as university_name')
+      .select('e.*', 'c.name as city_name', 'd.name as district_name', 's.name as school_name', 'u.name as university_name',
+        'y.name as dormitory_name')
       .first(),
     app.channel_id ? db('channels').where({ id: app.channel_id }).first() : null,
     app.sub_unit_id ? db('sub_units').where({ id: app.sub_unit_id }).first() : null,
+    isYurt ? db('yurt_details').where({ application_id: app.id }).first() : null,
   ]);
 
   const { isMinor } = ageInfo(applicant);
@@ -489,7 +691,16 @@ async function getApplicationDetail(applicantId) {
 
   const channelDone = isGrad ? !!app.requirements_accepted_at : !!channel;
   const guardianDone = !isMinor || !!guardian?.phone_verified_at;
-  const steps = {
+  const yurt = isYurt ? serializeYurtDetails(yurtRow) : null;
+  const steps = isYurt ? {
+    1: true,
+    2: true,
+    3: true,
+    4: !!education && guardianDone,
+    5: !!yurt.family,
+    6: !!yurt.scholarship,
+    7: app.status !== 'draft',
+  } : {
     1: true,
     2: true,
     3: !!app.category,
@@ -535,13 +746,19 @@ async function getApplicationDetail(applicantId) {
       faculty: education.faculty,
       department: education.department,
       grade: education.grade,
+      dormitoryId: education.dormitory_id,
+      dormitoryName: education.dormitory_name,
+      tuitionScholarshipRate: education.tuition_scholarship_rate,
+      annualTuitionFee: education.annual_tuition_fee,
     } : null,
+    yurt,
   };
 }
 
 module.exports = {
   CATEGORY_LABELS,
   LISANSUSTU,
+  YURT,
   idNumberHash,
   getOpenProgram,
   requireOpenProgram,
@@ -559,5 +776,8 @@ module.exports = {
   setChannel,
   acceptRequirements,
   setEducation,
+  setYurtFamily,
+  setYurtScholarship,
+  serializeYurtDetails,
   getApplicationDetail,
 };

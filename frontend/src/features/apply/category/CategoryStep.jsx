@@ -6,7 +6,7 @@ import StepPage from '../shared/StepPage';
 import StepActions from '../shared/StepActions';
 import { applicationApi } from '../../../api/endpoints';
 import { useApplication, useApplicationUpdater } from '../../../hooks/useApplication';
-import { CATEGORIES } from '../../../config';
+import { CATEGORIES, stepRoutesFor } from '../../../config';
 
 /** Numaralı, çizgilerle ayrılmış seçim listesi (kutusuz) */
 function CategoryList({ value, onChange }) {
@@ -79,7 +79,7 @@ export default function CategoryStep() {
     try {
       const res = await applicationApi.setCategory(value);
       update(res.application);
-      navigate('/basvuru/kanal');
+      navigate(stepRoutesFor(value)[4]);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -91,7 +91,7 @@ export default function CategoryStep() {
   const next = () => {
     if (!value) return setError('Lütfen bir burs kategorisi seçiniz');
     if (changing) return setConfirmOpen(true);
-    if (value === application.category) return navigate('/basvuru/kanal');
+    if (value === application.category) return navigate(stepRoutesFor(value)[4]);
     return save();
   };
 

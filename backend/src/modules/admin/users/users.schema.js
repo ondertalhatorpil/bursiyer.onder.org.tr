@@ -18,12 +18,15 @@ const update = z.object({
 });
 
 const scope = z.object({
-  category: z.enum(['lise', 'universite', 'yuksek_lisans', 'doktora']).nullable().optional(),
+  category: z.enum(['lise', 'universite', 'yuksek_lisans', 'doktora', 'yurt']).nullable().optional(),
   channelId: id.nullable().optional(),
   subUnitId: id.nullable().optional(),
+  dormitoryId: id.nullable().optional(), // sadece Yurt Konaklama Bursu
   cityId: id.nullable().optional(),
 });
 const scopes = z.object({ scopes: z.array(scope).max(50) });
+// Genel Merkez Değerlendirici ek yetkileri
+const grants = z.object({ yurtHq: z.boolean({ error: 'Yetki seçimi geçersiz' }) });
 
 const auditQuery = z.object({
   adminId: id.optional(),
@@ -34,4 +37,4 @@ const auditQuery = z.object({
   pageSize: z.coerce.number().int().min(1).max(200).default(50),
 });
 
-module.exports = { params, create, update, scopes, auditQuery };
+module.exports = { params, create, update, scopes, grants, auditQuery };

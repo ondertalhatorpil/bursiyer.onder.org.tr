@@ -54,7 +54,8 @@ describe('public API', () => {
   });
 
   test('yurtlar', async () => {
-    expect((await request(app).get('/api/public/dormitories').expect(200)).body).toHaveLength(16);
+    const active = Number((await db('dormitories').where({ is_active: true }).count({ n: '*' }).first()).n);
+    expect((await request(app).get('/api/public/dormitories').expect(200)).body).toHaveLength(active);
   });
 
   test('ülke listesi', async () => {

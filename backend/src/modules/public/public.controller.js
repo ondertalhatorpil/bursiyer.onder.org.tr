@@ -98,7 +98,19 @@ function countries(req, res) {
 }
 
 async function dormitories(req, res) {
-  res.json(await db('dormitories').where({ is_active: true }).select('id', 'name').orderBy('sort'));
+  // level: lise | universite (Yurt Konaklama Bursu'nda eğitim formunu belirler)
+  // school: lise yurdunun bağlı lisesi (varsa öğrencinin okulu otomatik budur)
+  const rows = await db('dormitories as y')
+    .leftJoin('schools as s', 's.id', 'y.school_id')
+    .leftJoin('cities as c', 'c.id', 's.city_id')
+    .leftJoin('districts as d', 'd.id', 's.district_id')
+    .where('y.is_active', true)
+    .select('y.id', 'y.name', 'y.level', 's.id as schoolId', 's.name as schoolName', 'c.name as cityName', 'd.name as districtName')
+    .orderBy('y.sort');
+  res.json(rows.map(({ schoolId, schoolName, cityName, districtName, ...y }) => ({
+    ...y,
+    school: schoolId ? { id: schoolId, name: schoolName, cityName, districtName } : null,
+  })));
 }
 
 async function channels(req, res) {

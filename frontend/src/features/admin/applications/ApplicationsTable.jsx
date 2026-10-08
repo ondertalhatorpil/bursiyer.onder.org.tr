@@ -1,7 +1,7 @@
 import { Link, useNavigate } from 'react-router';
-import { Award, Building2, FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
+import { Award, BedDouble, Building2, FileWarning, ShieldCheck, TriangleAlert, UserRound } from 'lucide-react';
 import StatusBadge from '../shared/StatusBadge';
-import { formatDateTime } from '../../../lib/format';
+import { formatDateTime, formatMoney } from '../../../lib/format';
 import { sponsorsApi } from '../../../api/adminEndpoints';
 
 /**
@@ -145,6 +145,15 @@ function Signals({ a }) {
     // Nitelikli bursiyer: sadece kurdele (adı fareyle üzerine gelince)
     if (a.qualified) items.push({ key: 'qualified', node: <IconChip icon={Award} title="Nitelikli bursiyer" cls="text-brand-700 bg-brand-50 ring-brand-200" /> });
     if (a.sponsors) items.push({ key: 'sponsors', node: <SponsorLogos sponsors={a.sponsors} /> });
+  }
+
+  // Yurt Konaklama Bursu: öneri zincirinin hangi aşamada olduğu
+  if (a.yurtReview) {
+    const { dorm, hq, finalAmount } = a.yurtReview;
+    if (finalAmount) items.push({ icon: BedDouble, text: `Karar: ${formatMoney(finalAmount)}`, cls: 'text-emerald-800 bg-emerald-50 ring-emerald-200' });
+    else if (hq) items.push({ icon: BedDouble, text: 'Yurtlar birimi önerdi', cls: 'text-brand-800 bg-brand-50 ring-brand-200' });
+    else if (dorm) items.push({ icon: BedDouble, text: 'Yurt önerisi geldi', cls: 'text-brand-800 bg-brand-50 ring-brand-200' });
+    else if (a.status !== 'draft') items.push({ icon: BedDouble, text: 'Yurt önerisi bekleniyor', cls: 'text-amber-800 bg-amber-50 ring-amber-200' });
   }
 
   if (a.isMinor) {

@@ -12,14 +12,28 @@ import ReferenceToggle from './ReferenceToggle';
 import IbanReview from './IbanReview';
 import QualifiedToggle from './QualifiedToggle';
 import SponsorsPanel from './SponsorsPanel';
+import YurtReviewPanel from './YurtReviewPanel';
 import { adminApi } from '../../../api/adminEndpoints';
 import { can, useAdminSession } from '../../../hooks/useAdmin';
-import { formatDate, formatDateTime } from '../../../lib/format';
-import { GRADE_LABELS } from '../../../config';
+import { formatDate, formatDateTime, formatMoney } from '../../../lib/format';
+import {
+  GRADE_LABELS, GUARDIAN_HOUSING, isYurt, KYK_SUPPORT, optionLabel, PARENT_STATUS, PARENTS_LIVING,
+} from '../../../config';
 import { SMS_STATUS, SMS_TEMPLATES } from '../shared/constants';
 
 const ID_TYPES = { TC: 'T.C. Kimlik No', YKN: 'Yabancı Kimlik No', PASAPORT: 'Pasaport' };
 const UNI_TYPES = { devlet: 'Devlet', vakif: 'Vakıf' };
+const YES_NO = (v) => (v ? 'Evet' : 'Hayır');
+
+/** Yurt Konaklama Bursu: anne / baba satırları */
+const parentRows = (prefix, p) => (p ? [
+  { label: `${prefix} durumu`, value: optionLabel(PARENT_STATUS, p.status) },
+  { label: `${prefix} adı soyadı`, value: p.fullName },
+  { label: `${prefix} mesleği`, value: p.job },
+  { label: `${prefix} yaşadığı il / ilçe`, value: p.location },
+  { label: `${prefix} aylık geliri`, value: formatMoney(p.income) },
+  { label: `${prefix} ek geliri`, value: formatMoney(p.extraIncome) },
+] : []);
 
 export default function ApplicationDetailPage() {
   const { id } = useParams();
@@ -35,6 +49,9 @@ export default function ApplicationDetailPage() {
   const app = data.application;
   const p = app.applicant;
   const e = app.education;
+  const yurt = isYurt(app.category);
+  const family = app.yurt?.family;
+  const scholarship = app.yurt?.scholarship;
   const canReview = can(admin, 'review');
   const yesNo = (v, yes, no) => (v ? <OkText>{yes}</OkText> : <WarnText>{no}</WarnText>);
 
@@ -51,7 +68,7 @@ export default function ApplicationDetailPage() {
             <h1 className="text-2xl font-extrabold">{p.firstName} {p.lastName}</h1>
             <StatusBadge status={app.status} label={app.statusLabel} />
             {app.isMinor && <Badge>18 yaş altı</Badge>}
-            {app.status === 'finalized' && app.qualified.value && <Badge tone="brand"><Award className="size-3.5" aria-hidden />Nitelikli bursiyer</Badge>}
+            {app.status === 'finalized' && app.qualified?.value && <Badge tone="brand"><Award className="size-3.5" aria-hidden />Nitelikli bursiyer</Badge>}
           </div>
           <p className="mt-1 text-sm text-slate-600">
             <span className="font-mono font-semibold text-slate-800">{app.trackingNo || 'Takip no yok (taslak)'}</span>
@@ -71,6 +88,7 @@ export default function ApplicationDetailPage() {
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-5">
           {['approved', 'iban_pending', 'finalized'].includes(app.status) && <IbanReview app={app} canDecide={can(admin, 'decide')} />}
+          {yurt && app.status !== 'draft' && <YurtReviewPanel app={app} />}
           <InfoSection title="Kişisel bilgiler" rows={[
             { label: ID_TYPES[p.idType] || 'Kimlik No', value: <span className="font-mono">{p.idNumber}</span> },
             { label: 'Doğum tarihi', value: `${formatDate(p.birthDate)} (${p.age} yaş)` },
@@ -106,10 +124,41 @@ export default function ApplicationDetailPage() {
               { label: 'Fakülte', value: e.faculty },
               { label: 'Bölüm / program', value: e.department },
               { label: 'Sınıf', value: GRADE_LABELS[e.grade] || e.grade },
+              { label: 'Konakladığı yurt', value: e.dormitory, wide: true },
+              { label: 'Üniversitedeki burs oranı', value: e.tuitionScholarshipRate && `%${e.tuitionScholarshipRate}` },
+              { label: 'Ödenen yıllık ücret', value: formatMoney(e.annualTuitionFee) },
             ]} />
           )}
 
-          <DocumentsReview app={app} canReview={canReview} />
+          {yurt && (
+            <InfoSection title="Aile ve gelir bilgileri" rows={family ? [
+              { label: 'Toplam kardeş sayısı (kendisi dahil)', value: family.siblingCount },
+              { label: 'Okuyan kardeş sayısı (kendisi dahil)', value: family.studyingSiblingCount },
+              { label: 'Velinin yaşadığı yer', value: optionLabel(GUARDIAN_HOUSING, family.guardianHousing) },
+              { label: 'Açıklama', value: family.guardianHousingNote },
+              ...parentRows('Anne', family.mother),
+              ...parentRows('Baba', family.father),
+              { label: 'Anne ve baba', value: optionLabel(PARENTS_LIVING, family.parentsLiving) },
+            ] : []}>
+              {!family && <p className="text-sm text-slate-500">Girilmedi</p>}
+            </InfoSection>
+          )}
+
+          {yurt && (
+            <InfoSection title="Burs bilgileri" rows={scholarship ? [
+              { label: 'Talep edilen aylık burs', value: <strong>{formatMoney(scholarship.requestedAmount)}</strong> },
+              { label: 'Başka kuruluştan / kişiden burs', value: YES_NO(scholarship.otherScholarship) },
+              { label: 'Burs aldığı kurum', value: scholarship.otherScholarshipOrg },
+              { label: 'Aldığı burs miktarı', value: formatMoney(scholarship.otherScholarshipAmount) },
+              { label: 'GSB beslenme barınma yardımı', value: YES_NO(scholarship.gsbSupport) },
+              { label: "KYK'dan destek", value: optionLabel(KYK_SUPPORT, scholarship.kykSupport) },
+              { label: 'Burs Komisyonuna', value: scholarship.commissionNote && <span className="whitespace-pre-line">{scholarship.commissionNote}</span>, wide: true },
+            ] : []}>
+              {!scholarship && <p className="text-sm text-slate-500">Girilmedi</p>}
+            </InfoSection>
+          )}
+
+          {!yurt && <DocumentsReview app={app} canReview={canReview} />}
 
           <InfoSection title="Onaylar ve bildirimler">
             <div className="grid gap-6 text-sm md:grid-cols-2">
@@ -138,9 +187,10 @@ export default function ApplicationDetailPage() {
         </div>
 
         <aside className="min-w-0 space-y-5">
-          {app.qualified.editable && <QualifiedToggle app={app} canWrite={can(admin, 'decide')} />}
-          {app.sponsors.editable && <SponsorsPanel app={app} canWrite={canReview} />}
-          <ReferenceToggle app={app} canWrite={canReview} />
+          {/* Yurt Konaklama Bursu'nda nitelikli bursiyer, burs veren ve referans teyidi yok (backend null döner) */}
+          {app.qualified?.editable && <QualifiedToggle app={app} canWrite={can(admin, 'decide')} />}
+          {app.sponsors?.editable && <SponsorsPanel app={app} canWrite={canReview} />}
+          {app.reference && <ReferenceToggle app={app} canWrite={canReview} />}
           <NotesPanel app={app} canWrite={canReview} />
           <HistoryTimeline history={app.history} />
         </aside>

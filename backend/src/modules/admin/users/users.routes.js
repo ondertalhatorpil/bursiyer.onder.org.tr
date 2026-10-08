@@ -8,6 +8,7 @@
  *   PATCH /:id                  düzenle / rol / aktif-pasif
  *   POST  /:id/reset-password   geçici şifre üret
  *   PUT   /:id/scopes           yetki alanları
+ *   PUT   /:id/grants           ek yetkiler (Genel Merkez Değerlendirici: Yurt Konaklama Bursu)
  */
 const { Router } = require('express');
 const db = require('../../../db/knex');
@@ -69,6 +70,12 @@ router.post('/:id/reset-password', validate({ params: s.params }), async (req, r
 router.put('/:id/scopes', validate({ params: s.params, body: s.scopes }), async (req, res) => {
   const user = await svc.setScopes(req.valid.params.id, req.valid.body.scopes);
   await audit(req, 'user.scopes', { targetType: 'admin_user', targetId: user.id, meta: { email: user.email, scopes: user.scopes.map((x) => x.label) } });
+  res.json(user);
+});
+
+router.put('/:id/grants', validate({ params: s.params, body: s.grants }), async (req, res) => {
+  const user = await svc.setGrants(req.valid.params.id, req.valid.body);
+  await audit(req, 'user.grants', { targetType: 'admin_user', targetId: user.id, meta: { email: user.email, yurtHq: user.yurtHq } });
   res.json(user);
 });
 

@@ -1,30 +1,42 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router';
+import { Link, useSearchParams } from 'react-router';
 import { MessageSquareText, TriangleAlert } from 'lucide-react';
 import { Alert, Card, CardBody, CardHeader, PageSpinner } from '../../../components/ui';
 import StatTile from './StatTile';
 import DailyChart from './DailyChart';
 import BarList from './BarList';
 import { adminApi } from '../../../api/adminEndpoints';
+import ProgramSelect from '../shared/ProgramSelect';
 
 /** Genel bakış: statü sayıları, günlük başvuru, kategori/kanal dağılımı, işaretler */
 export default function DashboardPage() {
-  const { data, isLoading, error } = useQuery({ queryKey: ['admin', 'dashboard'], queryFn: () => adminApi.dashboard(), refetchInterval: 60_000 });
+  // Dönem seçimi adres çubuğunda (boş = en son dönem); listeye giden bağlantılar da dönemi taşır
+  const [params, setParams] = useSearchParams();
+  const programId = params.get('programId') || '';
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['admin', 'dashboard', programId],
+    queryFn: () => adminApi.dashboard(programId || undefined),
+    refetchInterval: 60_000,
+  });
   if (isLoading) return <PageSpinner />;
   if (error) return <Alert variant="error">{error.message}</Alert>;
 
   const s = Object.fromEntries(data.status.map((x) => [x.code, x.count]));
-  const link = (status) => `/admin/basvurular?status=${status}`;
+  const list = (query = {}) => `/admin/basvurular?${new URLSearchParams({ ...(programId ? { programId } : {}), ...query })}`;
+  const link = (status) => list({ status });
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-extrabold">Genel Bakış</h1>
-        <p className="text-sm text-slate-500">Veriler dakikada bir yenilenir.</p>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-extrabold">Genel Bakış</h1>
+          <p className="text-sm text-slate-500">Veriler dakikada bir yenilenir.</p>
+        </div>
+        <ProgramSelect value={programId} onChange={(v) => setParams(v ? { programId: v } : {}, { replace: true })} />
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label="Gönderilen başvuru" value={data.totalSubmitted} to="/admin/basvurular" emphasis />
+        <StatTile label="Gönderilen başvuru" value={data.totalSubmitted} to={list()} emphasis />
         <StatTile label="Yeni (incelenmedi)" value={s.submitted} to={link('submitted')} />
         <StatTile label="İncelemede" value={s.in_review} to={link('in_review')} />
         <StatTile label="Revize istendi" value={s.revision_requested} to={link('revision_requested')} />
@@ -57,7 +69,7 @@ export default function DashboardPage() {
           <CardBody className="space-y-3">
             {!data.flags.length && <p className="text-sm text-slate-500">İşaretli başvuru yok.</p>}
             {data.flags.map((f) => (
-              <Link key={f.code} to={`/admin/basvurular?flag=${f.code}`} className="flex items-center justify-between rounded-xl bg-amber-50 px-4 py-3 text-sm ring-1 ring-amber-200">
+              <Link key={f.code} to={list({ flag: f.code })} className="flex items-center justify-between rounded-xl bg-amber-50 px-4 py-3 text-sm ring-1 ring-amber-200">
                 <span className="flex items-center gap-2 text-amber-900"><TriangleAlert className="size-4" aria-hidden />{f.label}</span>
                 <span className="font-bold tabular-nums text-amber-900">{f.count}</span>
               </Link>

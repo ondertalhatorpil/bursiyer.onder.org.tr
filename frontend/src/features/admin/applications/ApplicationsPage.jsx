@@ -2,6 +2,8 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Download, Inbox, Wallet } from 'lucide-react';
 import { Alert, PageSpinner } from '../../../components/ui';
 import FiltersBar from './FiltersBar';
+import QueueTabs from './QueueTabs';
+import ProgramSelect from '../shared/ProgramSelect';
 import ApplicationsTable from './ApplicationsTable';
 import Pagination from './Pagination';
 import useListFilters from './useListFilters';
@@ -17,6 +19,12 @@ export default function ApplicationsPage() {
     queryFn: () => adminApi.applications(apiFilters),
     placeholderData: keepPreviousData,
   });
+  // Kullanıcıya göre filtre seçenekleri ve hızlı sekmeler
+  const { data: meta } = useQuery({
+    queryKey: ['admin', 'applications', 'meta', filters.programId],
+    queryFn: () => adminApi.applicationsMeta(filters.programId || undefined),
+    placeholderData: keepPreviousData,
+  });
 
   return (
     <div className="space-y-6">
@@ -30,9 +38,10 @@ export default function ApplicationsPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
+          <ProgramSelect value={filters.programId} onChange={(v) => setFilter({ programId: v })} />
           {can(admin, 'export') && can(admin, 'view_full_id') && (
             <a
-              href={adminApi.paymentsExportUrl()}
+              href={adminApi.paymentsExportUrl(filters.programId || undefined)}
               title="Kayıt kesinleşmiş bursiyerler ve onaylı IBAN'ları"
               className="inline-flex h-9 items-center justify-center gap-2 rounded-xl bg-white px-3.5 text-xs font-semibold text-slate-700 shadow-sm ring-1 ring-slate-300 transition-colors hover:bg-slate-50 hover:text-slate-900 focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
@@ -53,8 +62,9 @@ export default function ApplicationsPage() {
         </div>
       </div>
 
-      {/* Filtre Barı */}
-      <FiltersBar filters={filters} setFilter={setFilter} reset={reset} activeCount={activeCount} />
+      {/* Hızlı sekmeler + filtre barı */}
+      <QueueTabs queues={meta?.queues} filters={filters} setFilter={setFilter} />
+      <FiltersBar filters={filters} setFilter={setFilter} reset={reset} activeCount={activeCount} meta={meta} />
 
       {/* Hata Durumu */}
       {error && (
