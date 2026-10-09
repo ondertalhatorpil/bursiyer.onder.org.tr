@@ -5,6 +5,7 @@ import StepPage from '../shared/StepPage';
 import StepActions from '../shared/StepActions';
 import HighSchoolForm from './HighSchoolForm';
 import UniversityForm from './UniversityForm';
+import GradEducationForm from './GradEducationForm';
 import GuardianSection from '../guardian/GuardianSection';
 import { applicationApi } from '../../../api/endpoints';
 import { useApplication, useApplicationUpdater } from '../../../hooks/useApplication';
@@ -55,7 +56,9 @@ export default function EducationStep() {
   };
 
   // Yurtta form, yurt seçilince açılır (lise yurdu -> lise formu)
-  const Form = application.category === 'lise' || dorm?.level === 'lise' ? HighSchoolForm : UniversityForm;
+  const grad = application.category === 'yuksek_lisans' || application.category === 'doktora';
+  const Form = application.category === 'lise' || dorm?.level === 'lise' ? HighSchoolForm
+    : grad ? GradEducationForm : UniversityForm;
   const formReady = !yurt || !!dorm;
   const guardianPending = yurt && application.guardianRequired && !application.guardian?.verified;
   return (
@@ -66,7 +69,9 @@ export default function EducationStep() {
         ? 'Okuduğunuz liseyi ve sınıfınızı seçiniz.'
         : yurt
           ? 'Konakladığınız ÖNDER yurdunu seçiniz, ardından okulunuzun bilgilerini giriniz.'
-          : 'Kayıtlı olduğunuz üniversite ve programı giriniz.'}
+          : grad
+            ? 'Kayıtlı olduğunuz üniversite, enstitü ve programın adlarını ve kurumun bulunduğu ili yazınız.'
+            : 'Kayıtlı olduğunuz üniversite ve programı giriniz.'}
       footer={formReady
         ? <StepActions step={yurt ? 4 : 5} form={FORM_ID} loading={saving} hint={guardianPending ? 'Veli onayı da gerekli' : undefined} />
         : <StepActions step={4} onNext={() => setDormError('Konakladığınız yurdu seçiniz')} />}

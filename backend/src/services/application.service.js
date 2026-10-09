@@ -365,7 +365,7 @@ async function setEducation(applicantId, body) {
   const errors = {};
   const row = {
     application_id: app.id,
-    city_id: null, district_id: null, school_id: null, school_other: null,
+    city_id: null, city_other: null, district_id: null, school_id: null, school_other: null,
     university_id: null, university_other: null, university_type: null,
     faculty: null, department: null, grade: null,
     dormitory_id: null, tuition_scholarship_rate: null, annual_tuition_fee: null,
@@ -426,8 +426,10 @@ async function setEducation(applicantId, body) {
     const grade = details.grade || body.grade;
     if (!['hazirlik', '9', '10', '11', '12'].includes(grade)) errors.grade = 'Sınıf seçiniz';
     row.grade = grade;
+  } else if (LISANSUSTU.includes(app.category)) {
+    Object.assign(errors, await applyGradEducation(row, body, app.category));
   } else {
-    // Üniversite ve lisansüstü
+    // Üniversite (lisans) ve yurt (üniversite yurdu)
     if (!body.cityId) errors.cityId = 'Kurumun bulunduğu ili seçiniz';
     else if (!(await db('cities').where({ id: body.cityId }).first())) errors.cityId = 'Geçerli bir il seçiniz';
     row.city_id = body.cityId || null;
@@ -461,27 +463,66 @@ async function setEducation(applicantId, body) {
       Object.assign(row, { faculty: body.faculty || null, department: body.department || null });
     }
 
-    if (app.category === 'universite' || app.category === YURT) {
-      if (!UNIVERSITY_GRADES.includes(body.grade)) errors.grade = 'Sınıf seçiniz';
-      row.grade = body.grade;
-    } else {
-      row.grade = app.category === 'yuksek_lisans' ? 'yl' : 'dr';
-    }
+    if (!UNIVERSITY_GRADES.includes(body.grade)) errors.grade = 'Sınıf seçiniz';
+    row.grade = body.grade;
   }
 
   if (dorm) Object.assign(errors, applyYurtEducation(row, body, dorm));
 
   if (Object.keys(errors).length) throw validationError(errors);
+  // Yurt türü (lise <-> üniversite) değişirse burs bilgilerindeki GSB / KYK cevapları geçersiz kalır
+  const prevLevel = dorm ? await yurtLevel(db, app.id) : null;
 
   await db.transaction(async (trx) => {
+    if (prevLevel && prevLevel !== dorm.level) {
+      await trx('yurt_details').where({ application_id: app.id }).update({
+        gsb_support: null,
+        kyk_support: null,
+        // Üniversite yurduna geçildiyse GSB / KYK sorulacağı için burs bilgileri yeniden girilir
+        ...(dorm.level !== 'lise' ? { scholarship_saved_at: null } : {}),
+      });
+    }
     await trx('education').insert(row).onConflict('application_id').merge();
-    await setFlag(trx, app, 'school_not_in_list', Boolean(row.school_other || row.university_other));
+    // Lisansüstünde üniversite zaten yazılarak girilir: "listede yok" işareti konmaz
+    await setFlag(trx, app, 'school_not_in_list',
+      !LISANSUSTU.includes(app.category) && Boolean(row.school_other || row.university_other));
     if (app.category !== YURT) await advanceStep(trx, app, 6);
     // Yurtta eğitim Adım 4'tür; 18 yaş altında veli onayı da alınmadan Adım 5 açılmaz
     else if (!ageInfo(applicant).isMinor || (await guardianVerified(trx, app.id))) await advanceStep(trx, app, 5);
   });
 
   return { application: await getApplicationDetail(applicantId) };
+}
+
+/**
+ * Yüksek lisans / doktora: üniversite adı, enstitü, bölüm ve şehir yazılarak girilir.
+ * Yazılan üniversite / şehir listedekiyle aynıysa (büyük-küçük harf farkı önemsiz) kayda bağlanır,
+ * böylece üniversite türü ve il filtresi çalışır; değilse yazıldığı gibi saklanır.
+ * @returns {object} hatalar
+ */
+async function applyGradEducation(row, body, category) {
+  const errors = {};
+  if (!body.universityName) errors.universityName = 'Üniversite adını yazınız';
+  if (!body.faculty) errors.faculty = 'Enstitü adını yazınız';
+  if (!body.department) errors.department = 'Bölüm / program adını yazınız';
+  if (!body.cityName) errors.cityName = 'Kurumun bulunduğu ili yazınız';
+
+  if (body.universityName) {
+    const uni = await db('universities').where({ name: body.universityName, is_active: true }).first();
+    if (uni) Object.assign(row, { university_id: uni.id, university_type: uni.type });
+    else row.university_other = body.universityName;
+  }
+  if (body.cityName) {
+    const city = await db('cities').where({ name: body.cityName }).first();
+    if (city) row.city_id = city.id;
+    else row.city_other = body.cityName;
+  }
+  Object.assign(row, {
+    faculty: body.faculty || null,
+    department: body.department || null,
+    grade: category === 'yuksek_lisans' ? 'yl' : 'dr',
+  });
+  return errors;
 }
 
 // ---------------------------------------------------------------------------
@@ -596,10 +637,25 @@ async function setYurtFamily(applicantId, body) {
   return { application: await getApplicationDetail(applicantId) };
 }
 
-/** Adım 6 (yurt): burs bilgileri + talep edilen aylık burs. IBAN burada alınmaz (onaydan sonra istenir). */
+/** Başvurunun yurdunun öğrenim düzeyi (lise | universite), eğitim girilmediyse null */
+async function yurtLevel(q, applicationId) {
+  const row = await q('education as e').join('dormitories as y', 'y.id', 'e.dormitory_id')
+    .where('e.application_id', applicationId).first('y.level');
+  return row?.level || null;
+}
+
+/**
+ * Adım 6 (yurt): burs bilgileri + talep edilen aylık burs. IBAN burada alınmaz (onaydan sonra istenir).
+ * Lise yurdunun formunda GSB ve KYK soruları yoktur; sadece üniversite yurtlarında zorunludur.
+ */
 async function setYurtScholarship(applicantId, body) {
   const { app } = await requireYurtStep(applicantId, 6);
+  const lise = (await yurtLevel(db, app.id)) === 'lise';
   const errors = {};
+  if (!lise) {
+    if (body.gsbSupport === undefined) errors.gsbSupport = 'GSB beslenme barınma yardımı alıp almadığınızı seçiniz';
+    if (body.kykSupport === undefined) errors.kykSupport = "KYK'dan destek alıp almadığınızı seçiniz";
+  }
   if (body.otherScholarship) {
     if (!body.otherScholarshipOrg) errors.otherScholarshipOrg = 'Burs aldığınız kurumu yazınız';
     if (!body.otherScholarshipAmount) errors.otherScholarshipAmount = 'Aldığınız burs miktarını yazınız';
@@ -611,8 +667,8 @@ async function setYurtScholarship(applicantId, body) {
       other_scholarship: body.otherScholarship,
       other_scholarship_org: body.otherScholarship ? body.otherScholarshipOrg : null,
       other_scholarship_amount: body.otherScholarship ? body.otherScholarshipAmount : null,
-      gsb_support: body.gsbSupport,
-      kyk_support: body.kykSupport,
+      gsb_support: lise ? null : body.gsbSupport,
+      kyk_support: lise ? null : body.kykSupport,
       requested_amount: body.requestedAmount,
       commission_note: body.commissionNote || null,
       scholarship_saved_at: new Date(),
@@ -650,7 +706,7 @@ function serializeYurtDetails(d) {
       otherScholarship: !!d.other_scholarship,
       otherScholarshipOrg: d.other_scholarship_org,
       otherScholarshipAmount: d.other_scholarship_amount,
-      gsbSupport: !!d.gsb_support,
+      gsbSupport: d.gsb_support == null ? null : !!d.gsb_support, // lise yurdunda sorulmaz (null)
       kykSupport: d.kyk_support,
       requestedAmount: d.requested_amount,
       commissionNote: d.commission_note,
@@ -679,7 +735,7 @@ async function getApplicationDetail(applicantId) {
       .leftJoin('dormitories as y', 'y.id', 'e.dormitory_id')
       .where('e.application_id', app.id)
       .select('e.*', 'c.name as city_name', 'd.name as district_name', 's.name as school_name', 'u.name as university_name',
-        'y.name as dormitory_name')
+        'y.name as dormitory_name', 'y.level as dormitory_level')
       .first(),
     app.channel_id ? db('channels').where({ id: app.channel_id }).first() : null,
     app.sub_unit_id ? db('sub_units').where({ id: app.sub_unit_id }).first() : null,
@@ -733,7 +789,7 @@ async function getApplicationDetail(applicantId) {
     } : null,
     education: education ? {
       cityId: education.city_id,
-      cityName: education.city_name,
+      cityName: education.city_name || education.city_other,
       districtId: education.district_id,
       districtName: education.district_name,
       schoolId: education.school_id,
@@ -748,6 +804,7 @@ async function getApplicationDetail(applicantId) {
       grade: education.grade,
       dormitoryId: education.dormitory_id,
       dormitoryName: education.dormitory_name,
+      dormitoryLevel: education.dormitory_level || null,
       tuitionScholarshipRate: education.tuition_scholarship_rate,
       annualTuitionFee: education.annual_tuition_fee,
     } : null,

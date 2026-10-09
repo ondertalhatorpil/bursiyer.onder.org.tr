@@ -6,6 +6,12 @@ const { notFound } = require('../../lib/errors');
 const { parseJson } = require('../../lib/rules');
 const { COUNTRIES } = require('../../lib/countries');
 const svc = require('../../services/application.service');
+const config = require('../../config');
+
+/** Frontend'in çalışma anında ihtiyaç duyduğu herkese açık ayarlar */
+function siteConfig(req, res) {
+  res.json({ turnstileSiteKey: config.turnstileSiteKey || null });
+}
 
 async function program(req, res) {
   const p = await svc.getOpenProgram();
@@ -133,4 +139,4 @@ async function channels(req, res) {
   })));
 }
 
-module.exports = { program, consent, content, cities, districts, schools, universities, faculties, countries, dormitories, channels };
+module.exports = { siteConfig, program, consent, content, cities, districts, schools, universities, faculties, countries, dormitories, channels };

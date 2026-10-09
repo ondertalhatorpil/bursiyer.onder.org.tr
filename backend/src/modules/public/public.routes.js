@@ -1,5 +1,6 @@
 /**
  * /api/public  (oturum gerektirmez, 5 dk önbelleklenebilir)
+ *   GET /config                       herkese açık ayarlar (Turnstile site anahtarı)
  *   GET /program                      dönem açık mı, başlık, tarihler
  *   GET /consents/:type               KVKK / rıza / şart metinleri (aktif versiyon)
  *   GET /content/:key                 ekran metinleri (ör. submit_success)
@@ -24,9 +25,12 @@ router.use((req, res, next) => {
   next();
 });
 
+router.get('/config', c.siteConfig);
 router.get('/program', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, c.program);
-router.get('/consents/:type', validate({ params: schema.consentParams }), c.consent);
-router.get('/content/:key', validate({ params: schema.contentParams }), c.content);
+// Panelden düzenlenen metinler: tarayıcı her seferinde güncelliğini sorar (değişiklik hemen yansır)
+const revalidate = (req, res, next) => { res.set('Cache-Control', 'no-cache'); next(); };
+router.get('/consents/:type', revalidate, validate({ params: schema.consentParams }), c.consent);
+router.get('/content/:key', revalidate, validate({ params: schema.contentParams }), c.content);
 router.get('/cities', c.cities);
 router.get('/cities/:cityId/districts', validate({ params: schema.cityParams }), c.districts);
 router.get('/schools', validate({ query: schema.schoolsQuery }), c.schools);

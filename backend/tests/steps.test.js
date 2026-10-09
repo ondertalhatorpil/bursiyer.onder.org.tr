@@ -153,7 +153,7 @@ describe('Adım 4: YL / Doktora şartları', () => {
     expect(res.body.birthYearWarning).toMatch(/1999/);
     expect(res.body.application.flags).toContain('birth_year_out_of_range');
     expect(res.body.application.steps[4]).toBe(true);
-    expect(await db('consents').count({ n: '*' }).first()).toEqual({ n: 3 }); // kvkk + paylaşım + şart
+    expect(await db('consents').count({ n: '*' }).first()).toEqual({ n: 2 }); // kvkk + şart
   });
 
   test('doktora 1991 sonrası: uyarı yok', async () => {
@@ -182,7 +182,7 @@ describe('Adım 4: veli (18 yaş altı)', () => {
     expect(res.body.error.details.phone).toMatch(/farklı/);
   });
 
-  test('veli kodu veliye gider, doğrulanınca rıza kaydedilir ve adım 4 tamamlanır', async () => {
+  test('veli kodu veliye gider, kodla doğrulanınca adım 4 tamamlanır (ayrı rıza kutusu yok)', async () => {
     const agent = await registerApplicant({ birthDate: '01/01/2011' });
     await agent.put('/api/application/category').send({ category: 'lise' });
     await agent.put('/api/application/channel').send({
@@ -199,14 +199,12 @@ describe('Adım 4: veli (18 yaş altı)', () => {
     expect(outbox.at(-1).phone).toBe('905339998877');
     expect(outbox.at(-1).text).toContain('Ahmet Yılmaz');
 
-    await agent.post('/api/application/guardian/verify').send({ code: lastCode(), consent: false }).expect(422);
-    const v = await agent.post('/api/application/guardian/verify').send({ code: lastCode(), consent: true }).expect(200);
+    const v = await agent.post('/api/application/guardian/verify').send({ code: lastCode() }).expect(200);
     expect(v.body.application.guardian).toMatchObject({ fullName: 'Hasan Yılmaz', idType: 'TC', idNumberMasked: '123******50', verified: true });
     expect(v.body.application.steps[4]).toBe(true);
     expect(v.body.application.currentStep).toBe(5);
 
-    const consent = await db('consents').whereNotNull('guardian_id').first();
-    expect(consent).toBeTruthy();
+    expect(await db('consents').whereNotNull('guardian_id').first()).toBeUndefined();
   });
 
   test('veli bilgisi değişirse doğrulama sıfırlanır; pasaport kabul edilir', async () => {
@@ -333,14 +331,32 @@ describe('Adım 5: eğitim', () => {
     expect(ok.body.application.education).toMatchObject({ faculty: 'Mühendislik Fakültesi', department: 'Bilgisayar Mühendisliği' });
   });
 
-  test('yüksek lisans: sınıf otomatik', async () => {
+  test('yüksek lisans: üniversite, enstitü, bölüm, şehir yazılır; sınıf otomatik', async () => {
     const agent = await registerApplicant({ birthDate: '01/01/2001' });
     await agent.put('/api/application/category').send({ category: 'yuksek_lisans' });
     await agent.post('/api/application/requirements').send({ accepted: true });
-    const res = await agent.put('/api/application/education').send({
-      cityId: 34, universityId: uni.devlet.id, faculty: 'Sosyal Bilimler Enstitüsü', department: 'Sosyoloji',
+
+    const missing = await agent.put('/api/application/education').send({ universityId: uni.devlet.id, cityId: 34 });
+    expect(missing.status).toBe(422);
+    expect(Object.keys(missing.body.error.details).sort()).toEqual(['cityName', 'department', 'faculty', 'universityName']);
+
+    // Listedeki üniversite ve il yazılırsa (büyük-küçük harf farkı önemsiz) kayda bağlanır
+    let res = await agent.put('/api/application/education').send({
+      universityName: 'test devlet üniversitesi', faculty: 'Sosyal Bilimler Enstitüsü', department: 'Sosyoloji', cityName: 'istanbul',
     }).expect(200);
-    expect(res.body.application.education.grade).toBe('yl');
+    expect(res.body.application.education).toMatchObject({
+      universityId: uni.devlet.id, universityType: 'devlet', cityId: 34, cityName: 'İstanbul', grade: 'yl',
+      faculty: 'Sosyal Bilimler Enstitüsü', department: 'Sosyoloji',
+    });
+
+    // Listede olmayan üniversite / şehir yazıldığı gibi saklanır, "listede yok" işareti konmaz
+    res = await agent.put('/api/application/education').send({
+      universityName: 'University of Oxford', faculty: 'Graduate School', department: 'Sociology', cityName: 'Oxford',
+    }).expect(200);
+    expect(res.body.application.education).toMatchObject({
+      universityId: null, universityName: 'University of Oxford', universityType: null, cityId: null, cityName: 'Oxford',
+    });
+    expect(res.body.application.flags).not.toContain('school_not_in_list');
   });
 
   test('kategori değişince kanal, eğitim ve işaretler temizlenir', async () => {

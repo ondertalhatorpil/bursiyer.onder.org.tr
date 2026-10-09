@@ -37,9 +37,10 @@ export const useChannels = (category) => useQuery({
   ...LONG,
 });
 
+// Onay metinleri panelden değiştirilebilir: kısa süre önbellekte tutulur
 export const useConsentText = (type, enabled = true) => useQuery({
   queryKey: ['public', 'consent', type],
   queryFn: () => publicApi.consent(type),
   enabled: !!type && enabled,
-  ...LONG,
+  staleTime: 60_000,
 });

@@ -127,28 +127,8 @@ export default function PersonalInfoForm({ defaultValues, onSubmit }) {
         <Section title="Onaylar">
           <fieldset className="space-y-5">
             <legend className="sr-only">Hukuki onaylar</legend>
-            <ConsentCheckbox
-              control={control}
-              name="consents.kvkk"
-              type="kvkk"
-              error={errors.consents?.kvkk?.message}
-            >
-              {(link) => (
-                <>
-                  {link("KVKK Aydınlatma Metni'ni")} okudum, anladım ve {link('Açık Rıza Beyanı')} kapsamında
-                  kişisel verilerimin işlenmesini onaylıyorum.
-                </>
-              )}
-            </ConsentCheckbox>
-            <ConsentCheckbox
-              control={control}
-              name="consents.sharing"
-              type="sharing"
-              linkText="Burs başvuru, değerlendirme ve burs tahsis süreçlerinin yürütülmesi"
-              error={errors.consents?.sharing?.message}
-            >
-              amacıyla; kimlik, iletişim ve eğitim bilgilerimin ÖNDER'in iş birliği içinde bulunduğu protokol kurumları, vakıflar ve sponsor kuruluşlar ile paylaşılmasına açık rıza gösteriyorum.
-            </ConsentCheckbox>
+            {/* Cümle ve metin admin panelindeki "Onay Metinleri"nden gelir: kutuya basınca metin açılır, onaylanınca işaretlenir */}
+            <ConsentCheckbox control={control} name="consents.kvkk" type="kvkk" error={errors.consents?.kvkk?.message} />
           </fieldset>
         </Section>
 

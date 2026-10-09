@@ -80,7 +80,7 @@ describe('belge listesi', () => {
     expect(res.body.items.map((i) => [i.code, i.required])).toEqual([
       ['ogrenci_belgesi', true], ['yks_yerlestirme', true], ['adli_sicil', true],
     ]);
-    expect(res.body.items.find((i) => i.code === 'adli_sicil')).toMatchObject({ consentType: 'criminal_record', consentGiven: false });
+    expect(res.body.items.find((i) => i.code === 'adli_sicil')).toMatchObject({ consentType: null, consentGiven: true });
     expect(res.body.complete).toBe(false);
   });
 });
@@ -127,19 +127,11 @@ describe('yükleme', () => {
     await up(agent, 'olmayan_tip', ogrenciPdf()).expect(404);
   });
 
-  test('adli sicil: rıza olmadan yüklenmez, rıza ile kaydedilir', async () => {
+  test('adli sicil: ek rıza istenmeden yüklenir', async () => {
     const agent = await universityApplicant();
-    const noConsent = await up(agent, 'adli_sicil', adliPdf());
-    expect(noConsent.status).toBe(422);
-    expect(noConsent.body.error.details.consent).toBeDefined();
-
-    const res = await up(agent, 'adli_sicil', adliPdf(), 'adli.pdf', true).expect(201);
-    expect(res.body.items.find((i) => i.code === 'adli_sicil').consentGiven).toBe(true);
-    expect(await db('consents as c').join('consent_texts as t', 't.id', 'c.consent_text_id')
-      .where('t.type', 'criminal_record').count({ n: '*' }).first()).toEqual({ n: 1 });
-
-    // İkinci yüklemede rıza tekrar istenmez
     await up(agent, 'adli_sicil', adliPdf()).expect(201);
+    expect(await db('consents as c').join('consent_texts as t', 't.id', 'c.consent_text_id')
+      .where('t.type', 'criminal_record').count({ n: '*' }).first()).toEqual({ n: 0 });
   });
 
   test('aynı tipe yeni yükleme eskisini arşivler', async () => {
@@ -165,10 +157,17 @@ describe('yükleme', () => {
     const agent = await registerApplicant({ birthDate: '01/01/2001' });
     await agent.put('/api/application/category').send({ category: 'yuksek_lisans' });
     await agent.post('/api/application/requirements').send({ accepted: true });
-    await agent.put('/api/application/education').send({ cityId: 34, universityId: uni.id, faculty: 'SBE', department: 'Sosyoloji' }).expect(200);
+    await agent.put('/api/application/education').send({ universityName: uni.name, faculty: 'SBE', department: 'Sosyoloji', cityName: 'İstanbul' }).expect(200);
     await up(agent, 'vesikalik', makePdf(['foto'])).expect(422);
     await up(agent, 'vesikalik', PNG, 'foto.png').expect(201);
     await up(agent, 'kimlik_fotokopisi', PNG, 'kimlik.png').expect(201);
+
+    // Akademik referans mektubu zorunlu, niyet mektubu (doktora) istenmez
+    const list = (await agent.get('/api/documents').expect(200)).body.items;
+    expect(list.find((i) => i.code === 'akademik_referans')).toMatchObject({ name: 'Akademik Referans Mektubu', required: true });
+    expect(list.find((i) => i.code === 'akademik_niyet')).toBeUndefined();
+    await up(agent, 'akademik_niyet', makePdf(['niyet'])).expect(404);
+    await up(agent, 'akademik_referans', makePdf(['referans'])).expect(201);
   });
 });
 

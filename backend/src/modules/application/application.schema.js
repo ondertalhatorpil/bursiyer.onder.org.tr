@@ -58,7 +58,8 @@ const guardian = z.object({
 
 const guardianVerify = z.object({
   code: z.string({ error: 'Doğrulama kodu zorunludur' }).regex(/^\d{6}$/, 'Doğrulama kodu 6 haneli olmalı'),
-  consent: z.literal(true, { error: 'Veli açık rıza beyanı onaylanmalıdır' }),
+  // Veli onayı velinin telefonuna gelen kodla verilir; ayrı rıza kutusu yoktur
+  consent: z.boolean().optional(),
 });
 
 // Adım 5 - eğitim. Hangi alanların zorunlu olduğu kategoriye göre serviste belirlenir.
@@ -84,6 +85,9 @@ const education = z.object({
   faculty: optionalText('Fakülte'),
   department: optionalText('Bölüm'),
   grade: z.string().optional(),
+  // Yüksek lisans / doktora: üniversite ve şehir serbest metin (enstitü = faculty, bölüm = department)
+  universityName: optionalText('Üniversite adı'),
+  cityName: optionalText('İl', 64),
   // Yurt Konaklama Bursu
   dormitoryId: id.optional(),
   tuitionScholarshipRate: z.preprocess(blankToUndefined, z.coerce.number().int().optional()),
@@ -122,8 +126,9 @@ const yurtScholarship = z.object({
   otherScholarship: yesNo('Başka bir kuruluştan/kişiden burs alıp almadığınızı seçiniz'),
   otherScholarshipOrg: optionalText('Burs aldığınız kurum', 255),
   otherScholarshipAmount: optionalMoney('Aldığınız burs miktarı'),
-  gsbSupport: yesNo('GSB beslenme barınma yardımı alıp almadığınızı seçiniz'),
-  kykSupport: z.enum(['yok', 'burs', 'kredi'], { error: "KYK'dan destek alıp almadığınızı seçiniz" }),
+  // GSB ve KYK sadece üniversite yurtlarında sorulur (zorunluluk serviste, yurt türüne göre)
+  gsbSupport: yesNo('GSB beslenme barınma yardımı alıp almadığınızı seçiniz').optional(),
+  kykSupport: z.enum(['yok', 'burs', 'kredi'], { error: "KYK'dan destek alıp almadığınızı seçiniz" }).optional(),
   requestedAmount: z.preprocess(
     blankToUndefined,
     z.coerce.number({ error: 'Talep ettiğiniz aylık burs miktarını yazınız' }).int('Tutarı tam TL olarak yazınız')

@@ -51,7 +51,7 @@ afterAll(async () => {
 });
 
 const publishAll = async () => {
-  for (const type of ['kvkk', 'sharing', 'guardian', 'criminal_record']) {
+  for (const type of ['kvkk']) {
     await admin.put(`/api/admin/settings/consents/${type}`)
       .send({ title: `${type} başlık`, label: 'Okudum, onaylıyorum ve kabul ediyorum.', body: `${type} metni burada yer alır, uzun metin.` })
       .expect(200);
@@ -70,10 +70,10 @@ describe('yetki', () => {
 
 describe('dönem', () => {
   test('metinler yayında değilken açılamaz; yayınlanınca açılır ve aday kayıt olabilir', async () => {
-    await db('consent_texts').whereIn('type', ['kvkk', 'sharing', 'guardian', 'criminal_record']).update({ body: null, is_active: false });
+    await db('consent_texts').whereIn('type', ['kvkk']).update({ body: null, is_active: false });
     await db('programs').update({ is_open: false });
     const list = await admin.get('/api/admin/settings/programs').expect(200);
-    expect(list.body.readiness.map((i) => i.code)).toEqual(expect.arrayContaining(['consent_missing:kvkk', 'consent_missing:guardian']));
+    expect(list.body.readiness.map((i) => i.code)).toEqual(['consent_missing:kvkk']); // sadece KVKK onayı kaldı
     const pid = list.body.programs[0].id;
 
     const fail = await admin.patch(`/api/admin/settings/programs/${pid}`).send({ isOpen: true }).expect(422);
@@ -151,8 +151,14 @@ describe('onay metinleri', () => {
   });
 
   test('boş metin yayınlanamaz', async () => {
-    const res = await admin.put('/api/admin/settings/consents/sharing').send({ title: 'x', label: 'kısa', body: '' }).expect(422);
+    const res = await admin.put('/api/admin/settings/consents/kvkk').send({ title: 'x', label: 'kısa', body: '' }).expect(422);
     expect(Object.keys(res.body.error.details)).toEqual(expect.arrayContaining(['title', 'label', 'body']));
+  });
+
+  test('kaldırılan rızalar (paylaşım, veli, adli sicil) panelde yok', async () => {
+    const list = await admin.get('/api/admin/settings/consents').expect(200);
+    expect(list.body.map((i) => i.type)).toEqual(['kvkk', 'requirements_yl', 'requirements_dr']);
+    await admin.put('/api/admin/settings/consents/sharing').send({ title: 'Başlık', label: 'Okudum, onaylıyorum.', body: 'Uzun metin burada.' }).expect(422);
   });
 });
 

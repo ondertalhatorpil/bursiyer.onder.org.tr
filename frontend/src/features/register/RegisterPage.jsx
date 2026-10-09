@@ -7,6 +7,7 @@ import PersonalInfoForm from './PersonalInfoForm';
 import StepHeading from '../../components/layout/StepHeading';
 import { authApi } from '../../api/endpoints';
 import { useProgram, useSetSession } from '../../hooks/useSession';
+import { useTurnstile } from '../../hooks/useTurnstile';
 
 /**
  * Yeni başvuru: Adım 1 (kişisel bilgiler) -> Adım 2 (SMS doğrulama).
@@ -18,6 +19,7 @@ export default function RegisterPage() {
   const program = useProgram();
   const [values, setValues] = useState(null);
   const [flow, setFlow] = useState(null); // { registrationToken, maskedPhone, expiresIn, resendIn }
+  const captcha = useTurnstile();
 
   if (program.isLoading) return <PageSpinner />;
 
@@ -32,7 +34,7 @@ export default function RegisterPage() {
   }
 
   const start = async (formValues) => {
-    const res = await authApi.registerStart(formValues);
+    const res = await authApi.registerStart(formValues, await captcha.getToken());
     setValues(formValues);
     setFlow(res);
     window.scrollTo({ top: 0 });
@@ -44,7 +46,7 @@ export default function RegisterPage() {
     navigate('/basvuru', { replace: true });
   };
 
-  const resend = () => authApi.registerResend(flow.registrationToken);
+  const resend = async () => authApi.registerResend(flow.registrationToken, await captcha.getToken());
 
   return (
     <section className="flex flex-1 flex-col py-8 sm:py-12">
@@ -63,6 +65,8 @@ export default function RegisterPage() {
           ) : (
             <PersonalInfoForm defaultValues={values} onSubmit={start} />
           )}
+          {/* Bot doğrulaması: gerekirse burada tek tıklamalık kutu çıkar */}
+          <div className="mt-6">{captcha.element}</div>
         </div>
       </Container>
     </section>

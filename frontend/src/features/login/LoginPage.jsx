@@ -5,6 +5,7 @@ import { OtpVerify } from '../../components/auth';
 import LoginForm from './LoginForm';
 import { authApi } from '../../api/endpoints';
 import { useSetSession } from '../../hooks/useSession';
+import { useTurnstile } from '../../hooks/useTurnstile';
 
 /** Başvuruya devam / durum sorgulama: kimlik no + SMS kodu */
 export default function LoginPage() {
@@ -13,8 +14,9 @@ export default function LoginPage() {
   const setSession = useSetSession();
   const [flow, setFlow] = useState(null);
   const step = flow ? 2 : 1;
+  const captcha = useTurnstile();
 
-  const start = async (idNumber) => setFlow(await authApi.loginStart(idNumber));
+  const start = async (idNumber) => setFlow(await authApi.loginStart(idNumber, await captcha.getToken()));
 
   const verify = async (code) => {
     const me = await authApi.loginVerify(flow.loginToken, code);
@@ -54,13 +56,15 @@ export default function LoginPage() {
             <OtpVerify
               info={flow}
               onVerify={verify}
-              onResend={() => authApi.loginResend(flow.loginToken)}
+              onResend={async () => authApi.loginResend(flow.loginToken, await captcha.getToken())}
               onBack={() => setFlow(null)}
               submitLabel="Giriş Yap"
             />
           ) : (
             <LoginForm onSubmit={start} />
           )}
+          {/* Bot doğrulaması: gerekirse burada tek tıklamalık kutu çıkar */}
+          <div className="mt-6">{captcha.element}</div>
         </div>
 
         {/* Yeni başvuru */}

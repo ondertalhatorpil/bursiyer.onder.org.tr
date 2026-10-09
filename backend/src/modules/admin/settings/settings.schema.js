@@ -20,7 +20,7 @@ const programCreate = z.object({
 });
 
 const consentParams = z.object({
-  type: z.enum(['kvkk', 'sharing', 'guardian', 'criminal_record', 'requirements_yl', 'requirements_dr'], { error: 'Geçersiz metin tipi' }),
+  type: z.enum(['kvkk', 'requirements_yl', 'requirements_dr'], { error: 'Geçersiz metin tipi' }),
 });
 
 const consentPublish = z.object({

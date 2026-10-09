@@ -14,10 +14,8 @@ const sms = require('./sms');
 // ---------------------------------------------------------------------------
 
 const CONSENT_TYPES = {
+  // Paylaşım, veli ve adli sicil rızası kaldırıldı (eski onay kayıtları veritabanında durur)
   kvkk: { name: 'KVKK Aydınlatma Metni ve Açık Rıza', usedIn: 'Adım 1: tüm adaylar' },
-  sharing: { name: 'Protokol kurumlarıyla paylaşım rızası', usedIn: 'Adım 1: tüm adaylar' },
-  guardian: { name: 'Veli / vasi açık rızası', usedIn: 'Adım 4: 18 yaş altı adayların velisi' },
-  criminal_record: { name: 'Adli sicil açık rızası', usedIn: 'Adım 6: adli sicil belgesi yüklenirken' },
   requirements_yl: { name: 'Yüksek lisans şartları', usedIn: 'Adım 4: yüksek lisans adayları' },
   requirements_dr: { name: 'Doktora şartları', usedIn: 'Adım 4: doktora adayları' },
 };

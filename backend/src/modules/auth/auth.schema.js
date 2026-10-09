@@ -41,6 +41,9 @@ const birthDate = z.string({ error: 'Doğum tarihi zorunludur' }).transform((v, 
 
 const mustAccept = (message) => z.literal(true, { error: message });
 
+// Turnstile belirteci: captcha kapalıyken (geliştirme) frontend göndermez ya da null gönderir
+const captchaToken = z.string().nullish().transform((v) => v || undefined);
+
 const registerStart = z.object({
   firstName: name('Ad'),
   lastName: name('Soyad'),
@@ -51,10 +54,10 @@ const registerStart = z.object({
   email: z.string({ error: 'E-posta zorunludur' }).trim().toLowerCase()
     .pipe(z.email({ error: 'Geçerli bir e-posta adresi giriniz' }).max(191)),
   consents: z.object({
+    // Kayıtta sadece KVKK onayı alınır
     kvkk: mustAccept('KVKK Aydınlatma Metni ve Açık Rıza Beyanı onaylanmalıdır'),
-    sharing: mustAccept('Protokol kurumlarıyla paylaşım rızası onaylanmalıdır'),
   }, { error: 'Onaylar zorunludur' }),
-  captchaToken: z.string().optional(),
+  captchaToken,
 }).superRefine((v, ctx) => {
   if (v.idNumber?.type === 'YKN' && !v.nationality) {
     ctx.addIssue({ code: 'custom', path: ['nationality'], message: 'Uyruk zorunludur' });
@@ -67,9 +70,9 @@ const token = z.string({ error: 'Oturum bilgisi eksik, lütfen baştan başlayı
 const code = z.string({ error: 'Doğrulama kodu zorunludur' }).regex(/^\d{6}$/, 'Doğrulama kodu 6 haneli olmalı');
 
 const registerVerify = z.object({ registrationToken: token, code });
-const registerResend = z.object({ registrationToken: token, captchaToken: z.string().optional() });
-const loginStart = z.object({ idNumber, captchaToken: z.string().optional() });
+const registerResend = z.object({ registrationToken: token, captchaToken });
+const loginStart = z.object({ idNumber, captchaToken });
 const loginVerify = z.object({ loginToken: token, code });
-const loginResend = z.object({ loginToken: token, captchaToken: z.string().optional() });
+const loginResend = z.object({ loginToken: token, captchaToken });
 
 module.exports = { registerStart, registerVerify, registerResend, loginStart, loginVerify, loginResend };

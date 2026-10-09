@@ -1,22 +1,20 @@
 import { useState } from 'react';
 import { CircleCheck, PencilLine, UsersRound } from 'lucide-react';
-import { Alert, Button, Card, CardBody, CardHeader, Checkbox } from '../../../components/ui';
-import { OtpVerify, ConsentModal } from '../../../components/auth';
+import { Alert, Button, Card, CardBody, CardHeader } from '../../../components/ui';
+import { OtpVerify } from '../../../components/auth';
 import GuardianForm from './GuardianForm';
 import { applicationApi } from '../../../api/endpoints';
 import { useApplicationUpdater } from '../../../hooks/useApplication';
 
 /**
  * 18 yaş altı adaylar için veli / vasi onayı:
- *   bilgiler -> velinin telefonuna kod -> kod + veli açık rızası -> onaylandı
+ *   bilgiler -> velinin telefonuna kod -> kod -> onaylandı
  */
 export default function GuardianSection({ application }) {
   const update = useApplicationUpdater();
   const guardian = application.guardian;
   const [editing, setEditing] = useState(!guardian?.verified);
   const [flow, setFlow] = useState(null);
-  const [consent, setConsent] = useState(false);
-  const [consentOpen, setConsentOpen] = useState(false);
 
   const save = async (values) => {
     const res = await applicationApi.saveGuardian(values);
@@ -25,7 +23,6 @@ export default function GuardianSection({ application }) {
       setEditing(false);
       return;
     }
-    setConsent(false);
     setFlow(res);
   };
 
@@ -62,20 +59,7 @@ export default function GuardianSection({ application }) {
             onResend={applicationApi.resendGuardian}
             onBack={() => setFlow(null)}
             submitLabel="Veli Onayını Tamamla"
-            canSubmit={consent}
-          >
-            <div className="rounded-xl bg-slate-50 p-4 ring-1 ring-inset ring-slate-200">
-              <Checkbox id="guardian-consent" checked={consent} onChange={(e) => setConsent(e.target.checked)}>
-                Veli olarak{' '}
-                <button type="button" onClick={(e) => { e.preventDefault(); setConsentOpen(true); }} className="font-semibold text-brand-700 underline underline-offset-2">
-                  Veli Açık Rıza Beyanı
-                </button>
-                'nı okudum; çocuğumun kişisel verilerinin burs süreçleri kapsamında işlenmesine ve paylaşılmasına açık rıza veriyorum.
-              </Checkbox>
-              {!consent && <p className="mt-2 pl-8 text-xs text-slate-500">Kodu girmeden önce veli onay kutusunu işaretleyiniz.</p>}
-            </div>
-            <ConsentModal type="guardian" open={consentOpen} onClose={() => setConsentOpen(false)} onAccept={() => setConsent(true)} />
-          </OtpVerify>
+          />
         ) : (
           <div className="space-y-5">
             {!guardian && (

@@ -28,7 +28,7 @@ const DOCUMENT_TYPES = [
     rules: [{ when: { category: ['universite'], grade: ['hazirlik', '1'] }, required: true }],
   },
   {
-    code: 'adli_sicil', name: 'Adli Sicil Kaydı', formats: PDF, consent_type: 'criminal_record',
+    code: 'adli_sicil', name: 'Adli Sicil Kaydı', formats: PDF,
     description: "Son 30 gün içerisinde e-Devlet üzerinden 'Resmî Kuruma Verilmek Üzere' düzenlenmiş, karekodlu Adli Sicil Kayıt Belgesi.",
     rules: [{ when: { category: ['universite', ...LISANSUSTU] }, required: true }],
   },
@@ -59,6 +59,16 @@ const DOCUMENT_TYPES = [
     code: 'yabanci_dil', name: 'Yabancı Dil Sınavı Sonuç Belgesi', formats: PDF,
     description: 'ÖSYM tarafından geçerliliği kabul edilen YDS, YÖKDİL veya eşdeğerliği bulunan uluslararası yabancı dil sınav sonuç belgesi (TOEFL vb.).',
     rules: [{ when: { category: LISANSUSTU }, required: false }],
+  },
+  {
+    code: 'akademik_referans', name: 'Akademik Referans Mektubu', formats: PDF,
+    description: 'Lisans döneminizde dersinizi almış veya çalışmalarınızı yakından tanıyan bir öğretim üyesinden alınmış, imzalı akademik referans mektubu.',
+    rules: [{ when: { category: ['yuksek_lisans'] }, required: true }],
+  },
+  {
+    code: 'akademik_niyet', name: 'Akademik Niyet Mektubu', formats: PDF,
+    description: 'Doktora çalışmanızın konusu, amaçları ve akademik hedeflerinizi anlatan, tarafınızdan imzalanmış niyet mektubu.',
+    rules: [{ when: { category: ['doktora'] }, required: true }],
   },
   {
     code: 'hizmet_dokumu', name: 'Gelir Beyanı - SGK Tescil ve Hizmet Dökümü (4A/4B/4C)', formats: PDF,

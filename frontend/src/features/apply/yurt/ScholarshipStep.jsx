@@ -17,6 +17,7 @@ const bool = (v) => (v === true || v === false ? v : undefined);
 /**
  * Yurt Konaklama Bursu Adım 6: başka burs / destekler ve talep edilen aylık burs.
  * IBAN burada alınmaz; başvuru onaylandıktan sonra istenir.
+ * Lise (ortaöğretim) yurdunun formunda GSB ve KYK soruları yoktur.
  */
 export default function ScholarshipStep() {
   const navigate = useNavigate();
@@ -24,13 +25,14 @@ export default function ScholarshipStep() {
   const update = useApplicationUpdater();
   const [saving, setSaving] = useState(false);
   const saved = application.yurt?.scholarship;
+  const lise = application.education?.dormitoryLevel === 'lise';
 
   const { control, register, handleSubmit, setError, formState: { errors } } = useForm({
     defaultValues: {
       otherScholarship: saved ? saved.otherScholarship : '',
       otherScholarshipOrg: saved?.otherScholarshipOrg || '',
       otherScholarshipAmount: str(saved?.otherScholarshipAmount),
-      gsbSupport: saved ? saved.gsbSupport : '',
+      gsbSupport: saved?.gsbSupport ?? '',
       kykSupport: saved?.kykSupport || '',
       requestedAmount: str(saved?.requestedAmount),
       commissionNote: saved?.commissionNote || '',
@@ -45,8 +47,7 @@ export default function ScholarshipStep() {
         otherScholarshipOrg: v.otherScholarshipOrg,
         otherScholarshipAmount: v.otherScholarshipAmount || undefined,
       } : {}),
-      gsbSupport: bool(v.gsbSupport),
-      kykSupport: v.kykSupport || undefined,
+      ...(lise ? {} : { gsbSupport: bool(v.gsbSupport), kykSupport: v.kykSupport || undefined }),
       requestedAmount: v.requestedAmount || undefined,
       commissionNote: v.commissionNote,
     };
@@ -91,19 +92,23 @@ export default function ScholarshipStep() {
           </div>
         )}
 
-        <Field label="GSB Beslenme ve Barınma Yardımı Alıyor musunuz?" required error={errors.gsbSupport?.message}>
-          <Controller control={control} name="gsbSupport" render={({ field }) => (
-            <RadioCardGroup name="gsbSupport" size="sm" value={field.value} onChange={field.onChange}
-              invalid={!!errors.gsbSupport} options={YES_NO} />
-          )} />
-        </Field>
+        {!lise && (
+          <>
+            <Field label="GSB Beslenme ve Barınma Yardımı Alıyor musunuz?" required error={errors.gsbSupport?.message}>
+              <Controller control={control} name="gsbSupport" render={({ field }) => (
+                <RadioCardGroup name="gsbSupport" size="sm" value={field.value} onChange={field.onChange}
+                  invalid={!!errors.gsbSupport} options={YES_NO} />
+              )} />
+            </Field>
 
-        <Field label="KYK'dan Destek Alıyor musunuz?" required error={errors.kykSupport?.message}>
-          <Controller control={control} name="kykSupport" render={({ field }) => (
-            <RadioCardGroup name="kykSupport" size="sm" columns={3} value={field.value} onChange={field.onChange}
-              invalid={!!errors.kykSupport} options={KYK_SUPPORT} />
-          )} />
-        </Field>
+            <Field label="KYK'dan Destek Alıyor musunuz?" required error={errors.kykSupport?.message}>
+              <Controller control={control} name="kykSupport" render={({ field }) => (
+                <RadioCardGroup name="kykSupport" size="sm" columns={3} value={field.value} onChange={field.onChange}
+                  invalid={!!errors.kykSupport} options={KYK_SUPPORT} />
+              )} />
+            </Field>
+          </>
+        )}
 
         <Field label="Talep Ettiğiniz Aylık Burs Miktarı (TL)" htmlFor="requestedAmount" required error={errors.requestedAmount?.message}
           className="sm:max-w-xs">

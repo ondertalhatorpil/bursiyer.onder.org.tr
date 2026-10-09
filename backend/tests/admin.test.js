@@ -173,7 +173,7 @@ describe('detay ve belge', () => {
     expect(a.education).toMatchObject({ university: 'Test Devlet Üniversitesi', grade: '3', universityType: 'devlet' });
     expect(a.documents.map((d) => d.typeCode)).toEqual(['ogrenci_belgesi', 'transkript', 'adli_sicil']);
     expect(a.history.map((h) => h.to)).toEqual(['draft', 'submitted']);
-    expect(a.consents.map((c) => c.type)).toEqual(expect.arrayContaining(['kvkk', 'sharing', 'criminal_record']));
+    expect(a.consents.map((c) => c.type)).toEqual(['kvkk']); // sadece KVKK onayı alınır
     expect(a.allowedTransitions.map((t) => t.to).sort()).toEqual(['in_review', 'rejected']);
 
     const file = await gm.get(`/api/admin/applications/${publicId}/documents/${a.documents[0].id}/file`).expect(200);

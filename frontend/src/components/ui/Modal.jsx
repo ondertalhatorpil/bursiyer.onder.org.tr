@@ -3,8 +3,9 @@ import { X } from 'lucide-react';
 
 /**
  * Erişilebilir modal (native <dialog>): Esc ile kapanır, odak içeride kalır.
+ * İçerik uzunsa gövde kendi içinde kayar; bodyRef / onBodyScroll ile bu kayan alan izlenebilir.
  */
-export default function Modal({ open, onClose, title, children, footer, size = 'lg' }) {
+export default function Modal({ open, onClose, title, children, footer, size = 'lg', bodyRef, onBodyScroll }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -31,7 +32,7 @@ export default function Modal({ open, onClose, title, children, footer, size = '
             <X className="size-5" />
           </button>
         </div>
-        <div className="overflow-y-auto px-5 py-5 sm:px-6">{children}</div>
+        <div ref={bodyRef} onScroll={onBodyScroll} className="overflow-y-auto overscroll-contain px-5 py-5 sm:px-6">{children}</div>
         {footer && <div className="flex justify-end gap-3 border-t border-slate-100 px-5 py-4 sm:px-6">{footer}</div>}
       </div>
     </dialog>

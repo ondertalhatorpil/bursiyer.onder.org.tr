@@ -3,7 +3,7 @@
  *
  *   saveGuardian  : bilgileri kaydeder ve velinin telefonuna SMS kodu gönderir
  *   resend        : kodu tekrar gönderir
- *   verify        : kod + veli açık rızası -> veli doğrulandı
+ *   verify        : velinin telefonuna gelen kod -> veli doğrulandı
  *
  * Veli telefonu adayın telefonuyla aynı olamaz (aday kendi kodunu girip onay veremesin diye).
  * Veli bilgisi (ad, kimlik, telefon) değişirse doğrulama sıfırlanır.
@@ -79,28 +79,16 @@ async function resend(applicantId, { ip }) {
   });
 }
 
-async function verify(applicantId, { code }, { ip, userAgent }) {
-  const { app, applicant } = await requireMinorApplication(applicantId);
+async function verify(applicantId, { code }) {
+  const { app } = await requireMinorApplication(applicantId);
   const guardian = await db('guardians').where({ application_id: app.id }).first();
   if (!guardian) throw new AppError(409, 'STEP_ORDER', 'Önce veli bilgilerini giriniz');
-
-  const text = await app$.getActiveConsentText('guardian');
-  if (!text) throw new AppError(503, 'CONSENT_TEXT_MISSING', 'Veli onay metni henüz yayınlanmadı');
 
   await otp.verifyOtp({ phone: guardian.phone, purpose: 'guardian', subjectRef: subjectRef(guardian.id), code });
 
   await db.transaction(async (trx) => {
     const now = new Date();
     await trx('guardians').where({ id: guardian.id }).update({ phone_verified_at: now, updated_at: now });
-    await trx('consents').insert({
-      applicant_id: applicant.id,
-      application_id: app.id,
-      guardian_id: guardian.id,
-      consent_text_id: text.id,
-      accepted_at: now,
-      ip: ip || '',
-      user_agent: userAgent ? String(userAgent).slice(0, 512) : null,
-    });
     if (app.category === app$.YURT) {
       // Yurtta veli onayı Adım 4'te (eğitim bilgileri) alınır
       if (await trx('education').where({ application_id: app.id }).first('application_id')) await app$.advanceStep(trx, app, 5);

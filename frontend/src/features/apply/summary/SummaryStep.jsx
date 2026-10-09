@@ -131,7 +131,7 @@ export default function SummaryStep() {
         ['İlçe', edu.districtName],
         [edu.schoolName ? 'Okul' : 'Üniversite', edu.schoolName || edu.universityName],
         ['Üniversite Türü', edu.universityType ? (edu.universityType === 'vakif' ? 'Vakıf' : 'Devlet') : null],
-        ['Fakülte', edu.faculty],
+        [grad ? 'Enstitü' : 'Fakülte', edu.faculty],
         ['Bölüm', edu.department],
         ['Sınıf', GRADE_LABELS[edu.grade]],
         ['Konakladığı Yurt', edu.dormitoryName],
@@ -163,7 +163,8 @@ export default function SummaryStep() {
           ['Başka Kuruluştan / Kişiden Burs', yesNo(scholarship.otherScholarship)],
           ['Burs Aldığı Kurum', scholarship.otherScholarshipOrg],
           ['Aldığı Burs Miktarı', formatMoney(scholarship.otherScholarshipAmount)],
-          ['GSB Beslenme Barınma Yardımı', yesNo(scholarship.gsbSupport)],
+          // Lise yurdunda GSB / KYK sorulmaz (null)
+          ['GSB Beslenme Barınma Yardımı', scholarship.gsbSupport == null ? null : yesNo(scholarship.gsbSupport)],
           ["KYK'dan Destek", optionLabel(KYK_SUPPORT, scholarship.kykSupport)],
           ['Talep Edilen Aylık Burs', formatMoney(scholarship.requestedAmount)],
         ] : []}>

@@ -16,7 +16,6 @@ export const registerSchema = z.object({
   email: z.email('Geçerli bir e-posta adresi giriniz'),
   consents: z.object({
     kvkk: z.literal(true, { error: 'KVKK Aydınlatma Metni ve Açık Rıza Beyanı onaylanmalıdır' }),
-    sharing: z.literal(true, { error: 'Paylaşım rızası onaylanmalıdır' }),
   }),
 }).superRefine((v, ctx) => {
   if (isYkn(v.idNumber) && !v.nationality) {
@@ -25,10 +24,10 @@ export const registerSchema = z.object({
 });
 
 export const REGISTER_FIELDS = [
-  'firstName', 'lastName', 'idNumber', 'nationality', 'birthDate', 'phone', 'email', 'consents.kvkk', 'consents.sharing',
+  'firstName', 'lastName', 'idNumber', 'nationality', 'birthDate', 'phone', 'email', 'consents.kvkk',
 ];
 
 export const registerDefaults = {
   firstName: '', lastName: '', idNumber: '', nationality: '', birthDate: '', phone: '', email: '',
-  consents: { kvkk: false, sharing: false },
+  consents: { kvkk: false },
 };

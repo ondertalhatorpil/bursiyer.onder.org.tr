@@ -128,7 +128,7 @@ function listRow(r, admin, names = new Map()) {
     channel: r.channel_name,
     subUnit: r.sub_unit_name,
     institution: institution(r),
-    city: r.city_name,
+    city: r.city_name || r.city_other,
     status: r.status,
     statusLabel: STATUS_LABELS[r.status],
     flags: (parseJson(r.flags) || []).map((f) => ({ code: f, label: FLAG_LABELS[f] || f })),
@@ -150,7 +150,7 @@ const LIST_COLUMNS = [
   'a.id', 'a.public_id', 'a.tracking_no', 'a.category', 'a.status', 'a.flags', 'a.is_minor', 'a.submitted_at',
   'a.created_at', 'a.reference_verified_at', 'a.is_qualified', 'p.first_name', 'p.last_name', 'p.id_number_enc', 'p.phone', 'p.email',
   'p.birth_date', 'ch.name as channel_name', 'su.name as sub_unit_name', 'c.name as city_name',
-  's.name as school_name', 'e.school_other', 'u.name as university_name', 'e.university_other', 'e.university_type',
+  's.name as school_name', 'e.school_other', 'u.name as university_name', 'e.university_other', 'e.university_type', 'e.city_other',
   'e.faculty', 'e.department', 'e.grade',
   'yr.dorm_at as yr_dorm_at', 'yr.hq_at as yr_hq_at', 'yr.final_amount as yr_final_amount',
 ];
@@ -462,7 +462,7 @@ async function detail(admin, publicId) {
       verifiedAt: guardian.phone_verified_at,
     } : null,
     education: education ? {
-      city: education.city_name,
+      city: education.city_name || education.city_other,
       district: education.district_name,
       school: education.school_name || education.school_other,
       schoolMebCode: education.meb_code || null,

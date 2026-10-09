@@ -43,8 +43,8 @@ async function registerStart(req, res) {
   const v = req.valid.body;
   const program = await svc.requireOpenProgram();
 
-  const [kvkk, sharing] = await Promise.all([svc.getActiveConsentText('kvkk'), svc.getActiveConsentText('sharing')]);
-  if (!kvkk || !sharing) {
+  const kvkk = await svc.getActiveConsentText('kvkk');
+  if (!kvkk) {
     throw new AppError(503, 'CONSENT_TEXT_MISSING', 'Başvuru metinleri henüz yayınlanmadı, lütfen daha sonra tekrar deneyiniz');
   }
 
@@ -71,7 +71,7 @@ async function registerStart(req, res) {
   });
 
   const registrationToken = sealToken('reg', {
-    reg, programId: program.id, consentTextIds: [kvkk.id, sharing.id],
+    reg, programId: program.id, consentTextIds: [kvkk.id],
   });
   res.json({ registrationToken, ...sent });
 }

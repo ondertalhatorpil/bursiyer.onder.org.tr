@@ -43,14 +43,14 @@ describe('belge matrisi', () => {
   test('yüksek lisans, T.C.', () => {
     expect(codes({ category: 'yuksek_lisans', idType: 'TC', grade: 'yl', age: 25 })).toEqual({
       ogrenci_belgesi: true, transkript: true, adli_sicil: true, kimlik_fotokopisi: true,
-      vesikalik: true, ales: true, yabanci_dil: false, hizmet_dokumu: true, gelir_ek_belge: false,
+      vesikalik: true, ales: true, yabanci_dil: false, akademik_referans: true, hizmet_dokumu: true, gelir_ek_belge: false,
     });
   });
 
   test('doktora, YKN (uluslararası)', () => {
     expect(codes({ category: 'doktora', idType: 'YKN', grade: 'dr', age: 30 })).toEqual({
       ogrenci_belgesi: true, transkript: true, adli_sicil: true, pasaport_ikamet: true,
-      vesikalik: true, ales_gre_gmat: false, yabanci_dil: false, gelir_ek_belge: false,
+      vesikalik: true, ales_gre_gmat: false, yabanci_dil: false, akademik_niyet: true, gelir_ek_belge: false,
     });
   });
 });

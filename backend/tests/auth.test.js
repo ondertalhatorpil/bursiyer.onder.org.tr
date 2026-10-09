@@ -49,11 +49,11 @@ describe('kayıt (Adım 1-2)', () => {
 
   test('alan hataları alan bazında döner', async () => {
     const res = await request(app).post('/api/auth/register/start').send(validBody({
-      idNumber: '12345678901', phone: '0212 111 22 33', birthDate: '31/02/2005', email: 'x', consents: { kvkk: true, sharing: false },
+      idNumber: '12345678901', phone: '0212 111 22 33', birthDate: '31/02/2005', email: 'x', consents: { kvkk: false },
     }));
     expect(res.status).toBe(422);
     expect(Object.keys(res.body.error.details).sort())
-      .toEqual(['birthDate', 'consents.sharing', 'email', 'idNumber', 'phone']);
+      .toEqual(['birthDate', 'consents.kvkk', 'email', 'idNumber', 'phone']);
   });
 
   test('YKN ile uyruk zorunlu', async () => {
@@ -81,11 +81,16 @@ describe('kayıt (Adım 1-2)', () => {
     const applicant = await db('applicants').first();
     expect(applicant.id_number_enc).not.toContain(TC);
     expect(applicant.phone).toBe('905321112233');
-    expect(await db('consents').count({ n: '*' }).first()).toEqual({ n: 2 });
+    expect(await db('consents').count({ n: '*' }).first()).toEqual({ n: 1 }); // sadece KVKK
     expect(await db('status_history').first()).toMatchObject({ from_status: null, to_status: 'draft', actor_type: 'applicant' });
 
     const me = await agent.get('/api/auth/me').expect(200);
     expect(me.body.application.id).toBe(verify.body.application.id);
+  });
+
+  test('captcha kapalıyken captchaToken null gelse de kayıt başlar', async () => {
+    const { res } = await register({ captchaToken: null });
+    expect(res.body.application.status).toBe('draft');
   });
 
   test('18 yaş altı işaretlenir', async () => {

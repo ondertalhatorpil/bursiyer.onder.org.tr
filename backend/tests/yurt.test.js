@@ -259,6 +259,38 @@ describe('Yurt Konaklama Bursu', () => {
     expect(Object.keys(res2.body.error.details).sort()).toEqual(['otherScholarshipAmount', 'otherScholarshipOrg']);
   });
 
+  test('burs bilgileri: GSB ve KYK üniversite yurdunda zorunlu, lise yurdunda sorulmaz', async () => {
+    const besiktas = await db('dormitories').where({ name: 'Beşiktaş Kız Öğrenci Yurdu' }).first();
+    const agent = await yurtApplicant();
+    await agent.put('/api/application/education').send(education()).expect(200);
+    await agent.put('/api/application/yurt/family').send(family()).expect(200);
+
+    // Üniversite yurdu: GSB / KYK eksikse hata
+    const res = await agent.put('/api/application/yurt/scholarship')
+      .send(scholarship({ gsbSupport: undefined, kykSupport: undefined }));
+    expect(res.status).toBe(422);
+    expect(Object.keys(res.body.error.details).sort()).toEqual(['gsbSupport', 'kykSupport']);
+    await agent.put('/api/application/yurt/scholarship').send(scholarship({ gsbSupport: true })).expect(200);
+
+    // Lise yurduna geçilince GSB / KYK cevapları silinir, burs bilgileri geçerli kalır
+    let d = (await agent.put('/api/application/education').send({ dormitoryId: besiktas.id, grade: '9' }).expect(200)).body.application;
+    expect(d.education.dormitoryLevel).toBe('lise');
+    expect(d.yurt.scholarship).toMatchObject({ gsbSupport: null, kykSupport: null, requestedAmount: 3000 });
+    expect(d.steps[6]).toBe(true);
+
+    // Lise yurdunda GSB / KYK gönderilse de tutulmaz
+    d = (await agent.put('/api/application/yurt/scholarship')
+      .send({ otherScholarship: false, requestedAmount: 2000, gsbSupport: true, kykSupport: 'kredi' }).expect(200)).body.application;
+    expect(d.yurt.scholarship).toMatchObject({ gsbSupport: null, kykSupport: null, requestedAmount: 2000 });
+
+    // Tekrar üniversite yurduna geçilince burs bilgileri yeniden istenir
+    d = (await agent.put('/api/application/education').send(education()).expect(200)).body.application;
+    expect(d.yurt.scholarship).toBeNull();
+    expect(d.steps[6]).toBe(false);
+    const summary = (await agent.get('/api/application/summary').expect(200)).body;
+    expect(summary.missing.map((m) => m.field)).toEqual(['scholarship']);
+  });
+
   test('kategori değişince yurt bilgileri silinir', async () => {
     const agent = await yurtApplicant();
     await agent.put('/api/application/education').send(education()).expect(200);

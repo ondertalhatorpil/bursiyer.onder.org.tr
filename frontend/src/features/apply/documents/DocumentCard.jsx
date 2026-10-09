@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import clsx from 'clsx';
 import { Eye, FileText, Image, RefreshCw, Trash2 } from 'lucide-react';
-import { Alert, Badge, Button, Checkbox } from '../../../components/ui';
-import { ConsentModal } from '../../../components/auth';
+import { Alert, Badge, Button } from '../../../components/ui';
+import { ConsentCheck } from '../../../components/auth';
 import UploadDropzone from './UploadDropzone';
 import { documentsApi } from '../../../api/endpoints';
 import { formatBytes, formatDateTime } from '../../../lib/format';
@@ -17,7 +17,6 @@ export default function DocumentCard({ item, onChange, canRemove = true }) {
   const [removing, setRemoving] = useState(false);
   const [error, setError] = useState(null);
   const [consent, setConsent] = useState(false);
-  const [consentOpen, setConsentOpen] = useState(false);
 
   const up = item.upload;
   const needsConsent = item.consentType && !item.consentGiven;
@@ -57,13 +56,16 @@ export default function DocumentCard({ item, onChange, canRemove = true }) {
 
   return (
     <article className={clsx('rounded-xl bg-white p-4 ring-1 ring-inset sm:p-5', revision ? 'ring-accent-300' : up ? 'ring-emerald-200' : 'ring-slate-200')}>
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0">
+      {/* Zorunlu / isteğe bağlı etiketi her kartta sağ üst köşede; yüklenince yanına "Yüklendi" eklenir */}
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <h3 className="font-bold text-brand-900">{item.name}</h3>
           {item.description && <p className="mt-1 text-sm text-slate-600">{item.description}</p>}
         </div>
-        {up && !revision ? <Badge tone="success" dot>Yüklendi</Badge>
-          : item.required ? <Badge tone="danger">Zorunlu</Badge> : <Badge>Varsa yükleyiniz</Badge>}
+        <div className="flex shrink-0 flex-col items-end gap-1.5 sm:flex-row sm:items-center">
+          {item.required ? <Badge tone="danger">Zorunlu</Badge> : <Badge>İsteğe bağlı</Badge>}
+          {up && !revision && <Badge tone="success" dot>Yüklendi</Badge>}
+        </div>
       </div>
 
       {revision && (
@@ -100,13 +102,8 @@ export default function DocumentCard({ item, onChange, canRemove = true }) {
         <div className="mt-4 space-y-3">
           {needsConsent && (
             <div className="rounded-lg bg-amber-50 p-3 ring-1 ring-inset ring-amber-200">
-              <Checkbox id={`consent-${item.code}`} checked={consent} onChange={(e) => { setConsent(e.target.checked); setError(null); }}>
-                <button type="button" onClick={(e) => { e.preventDefault(); setConsentOpen(true); }} className="font-semibold text-brand-700 underline underline-offset-2">
-                  Özel nitelikli kişisel veri açık rıza metnini
-                </button>{' '}
-                okudum; bu belgenin burs değerlendirmesi amacıyla işlenmesine açık rıza veriyorum.
-              </Checkbox>
-              <ConsentModal type={item.consentType} open={consentOpen} onClose={() => setConsentOpen(false)} onAccept={() => setConsent(true)} />
+              <ConsentCheck id={`consent-${item.code}`} type={item.consentType} checked={consent}
+                onChange={(v) => { setConsent(v); setError(null); }} />
             </div>
           )}
           <UploadDropzone formats={item.formats} maxMb={item.maxMb} onFile={upload} uploading={uploading} />

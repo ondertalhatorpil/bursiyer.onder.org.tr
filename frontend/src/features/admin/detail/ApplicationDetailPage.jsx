@@ -121,7 +121,7 @@ export default function ApplicationDetailPage() {
               { label: 'Okul', value: e.school && <>{e.school}{e.schoolMebCode && <span className="text-slate-500"> ({e.schoolMebCode})</span>}{e.schoolNotInList && <WarnText> · listede yok</WarnText>}</>, wide: true },
               { label: 'Üniversite', value: e.university && <>{e.university}{e.universityNotInList && <WarnText> · listede yok</WarnText>}</>, wide: true },
               { label: 'Üniversite türü', value: UNI_TYPES[e.universityType] },
-              { label: 'Fakülte', value: e.faculty },
+              { label: ['yuksek_lisans', 'doktora'].includes(app.category) ? 'Enstitü' : 'Fakülte', value: e.faculty },
               { label: 'Bölüm / program', value: e.department },
               { label: 'Sınıf', value: GRADE_LABELS[e.grade] || e.grade },
               { label: 'Konakladığı yurt', value: e.dormitory, wide: true },
@@ -150,7 +150,7 @@ export default function ApplicationDetailPage() {
               { label: 'Başka kuruluştan / kişiden burs', value: YES_NO(scholarship.otherScholarship) },
               { label: 'Burs aldığı kurum', value: scholarship.otherScholarshipOrg },
               { label: 'Aldığı burs miktarı', value: formatMoney(scholarship.otherScholarshipAmount) },
-              { label: 'GSB beslenme barınma yardımı', value: YES_NO(scholarship.gsbSupport) },
+              { label: 'GSB beslenme barınma yardımı', value: scholarship.gsbSupport == null ? null : YES_NO(scholarship.gsbSupport) },
               { label: "KYK'dan destek", value: optionLabel(KYK_SUPPORT, scholarship.kykSupport) },
               { label: 'Burs Komisyonuna', value: scholarship.commissionNote && <span className="whitespace-pre-line">{scholarship.commissionNote}</span>, wide: true },
             ] : []}>

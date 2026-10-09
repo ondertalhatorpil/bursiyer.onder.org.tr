@@ -4,6 +4,7 @@
 import { api } from './client';
 
 export const publicApi = {
+  config: () => api.get('/public/config'),
   program: () => api.get('/public/program'),
   consent: (type) => api.get(`/public/consents/${type}`),
   content: (key) => api.get(`/public/content/${key}`),
@@ -18,11 +19,12 @@ export const publicApi = {
 };
 
 export const authApi = {
-  registerStart: (body) => api.post('/auth/register/start', body),
-  registerResend: (registrationToken) => api.post('/auth/register/resend', { registrationToken }),
+  // SMS gönderen istekler: captchaToken (Turnstile) captcha açıksa zorunlu
+  registerStart: (body, captchaToken) => api.post('/auth/register/start', { ...body, ...captcha(captchaToken) }),
+  registerResend: (registrationToken, captchaToken) => api.post('/auth/register/resend', { registrationToken, ...captcha(captchaToken) }),
   registerVerify: (registrationToken, code) => api.post('/auth/register/verify', { registrationToken, code }),
-  loginStart: (idNumber) => api.post('/auth/login/start', { idNumber }),
-  loginResend: (loginToken) => api.post('/auth/login/resend', { loginToken }),
+  loginStart: (idNumber, captchaToken) => api.post('/auth/login/start', { idNumber, ...captcha(captchaToken) }),
+  loginResend: (loginToken, captchaToken) => api.post('/auth/login/resend', { loginToken, ...captcha(captchaToken) }),
   loginVerify: (loginToken, code) => api.post('/auth/login/verify', { loginToken, code }),
   me: () => api.get('/auth/me'),
   logout: () => api.post('/auth/logout', {}),
@@ -35,7 +37,7 @@ export const applicationApi = {
   acceptRequirements: () => api.post('/application/requirements', { accepted: true }),
   saveGuardian: (body) => api.put('/application/guardian', body),
   resendGuardian: () => api.post('/application/guardian/resend', {}),
-  verifyGuardian: (code) => api.post('/application/guardian/verify', { code, consent: true }),
+  verifyGuardian: (code) => api.post('/application/guardian/verify', { code }),
   setEducation: (body) => api.put('/application/education', body),
   // Yurt Konaklama Bursu
   setYurtFamily: (body) => api.put('/application/yurt/family', body),
@@ -55,6 +57,9 @@ export const documentsApi = {
   remove: (id) => api.del(`/documents/${id}`),
   fileUrl: (id) => `/api/documents/${id}/file`,
 };
+
+/** Captcha kapalıysa (token null) alan hiç gönderilmez */
+const captcha = (captchaToken) => (captchaToken ? { captchaToken } : {});
 
 function clean(params = {}) {
   return Object.fromEntries(Object.entries(params).filter(([, v]) => v !== undefined && v !== null && v !== ''));

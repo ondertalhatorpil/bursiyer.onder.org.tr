@@ -47,8 +47,10 @@ const schema = z.object({
   TEST_OTP_PHONES: z.string().default(''),
   TEST_OTP_CODE: z.string().regex(/^\d{6}$/, '6 haneli olmalı').default('123456'),
 
-  // Cloudflare Turnstile gizli anahtarı. Boşsa captcha kontrolü yapılmaz (geliştirme).
+  // Cloudflare Turnstile. İkisi birlikte verilir; boşsa captcha kontrolü yapılmaz (geliştirme).
+  // Site anahtarı herkese açıktır (frontend /api/public/config'ten alır), gizli anahtar sadece backend'de.
   TURNSTILE_SECRET: z.string().default(''),
+  TURNSTILE_SITE_KEY: z.string().default(''),
   // Aday oturumu: hareketsizlik ve mutlak süre (dakika)
   SESSION_IDLE_MIN: z.coerce.number().int().default(30),
   SESSION_MAX_MIN: z.coerce.number().int().default(720),
@@ -56,6 +58,9 @@ const schema = z.object({
 }).superRefine((env, ctx) => {
   if (env.SMS_DRIVER === 'ekomesaj' && (!env.EKOMESAJ_USERNAME || !env.EKOMESAJ_PASSWORD)) {
     ctx.addIssue({ code: 'custom', path: ['EKOMESAJ_USERNAME'], message: 'SMS_DRIVER=ekomesaj iken kullanıcı adı ve şifre zorunlu' });
+  }
+  if (Boolean(env.TURNSTILE_SECRET) !== Boolean(env.TURNSTILE_SITE_KEY)) {
+    ctx.addIssue({ code: 'custom', path: ['TURNSTILE_SITE_KEY'], message: 'TURNSTILE_SECRET ve TURNSTILE_SITE_KEY birlikte verilmeli' });
   }
   if (env.NODE_ENV === 'production' && env.SMS_DRIVER === 'log') {
     ctx.addIssue({ code: 'custom', path: ['SMS_DRIVER'], message: "production'da SMS_DRIVER=ekomesaj olmalı" });
@@ -106,6 +111,7 @@ module.exports = {
     code: env.TEST_OTP_CODE,
   },
   turnstileSecret: env.TURNSTILE_SECRET,
+  turnstileSiteKey: env.TURNSTILE_SITE_KEY,
   session: {
     cookieName: 'bk_sid',
     idleMs: env.SESSION_IDLE_MIN * 60 * 1000,

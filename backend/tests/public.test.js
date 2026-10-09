@@ -54,6 +54,8 @@ describe('public API', () => {
   });
 
   test('yurtlar', async () => {
+    // Turnstile site anahtarı (testlerde tanımsız -> captcha kapalı)
+    expect((await request(app).get('/api/public/config').expect(200)).body).toEqual({ turnstileSiteKey: null });
     const active = Number((await db('dormitories').where({ is_active: true }).count({ n: '*' }).first()).n);
     expect((await request(app).get('/api/public/dormitories').expect(200)).body).toHaveLength(active);
   });
